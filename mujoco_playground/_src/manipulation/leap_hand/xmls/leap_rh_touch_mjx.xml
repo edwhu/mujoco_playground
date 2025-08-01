@@ -14,20 +14,29 @@
     <material name="black" rgba="0.2 0.2 0.2 1"/>
     <material name="gray" rgba="0.5 0.5 0.5 1"/>
     <mesh name="leap_mount" file="meshes/leap_mount.obj"/>
+    <!-- Example path to palm right -->
+    <!-- mujoco_playground/external_deps/mujoco_menagerie/leap_hand/assets/palm_right.obj -->
+    <!-- original path, incorrect. -->
+    <!-- <mesh name="palm" file="../../../../../mujoco_menagerie/leap_hand/assets/palm_right.obj"/> -->
+    <!-- correct path -->
+    <mesh name="palm" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/palm_right.obj"/>
 
-    <mesh name="palm" file="../../../../../mujoco_menagerie/leap_hand/assets/palm_right.obj"/>
-    <mesh name="base" file="../../../../../mujoco_menagerie/leap_hand/assets/base.obj"/>
-    <mesh name="proximal" file="../../../../../mujoco_menagerie/leap_hand/assets/proximal.obj"/>
-    <mesh name="medial" file="../../../../../mujoco_menagerie/leap_hand/assets/medial.obj"/>
-    <mesh name="distal" file="../../../../../mujoco_menagerie/leap_hand/assets/distal.obj"/>
-    <mesh name="tip" file="../../../../../mujoco_menagerie/leap_hand/assets/tip.obj"/>
-    <mesh name="thumb_base" file="../../../../../mujoco_menagerie/leap_hand/assets/thumb_base.obj"/>
-    <mesh name="thumb_proximal" file="../../../../../mujoco_menagerie/leap_hand/assets/thumb_proximal.obj"/>
-    <mesh name="thumb_distal" file="../../../../../mujoco_menagerie/leap_hand/assets/thumb_distal.obj"/>
-    <mesh name="thumb_tip" file="../../../../../mujoco_menagerie/leap_hand/assets/thumb_tip.obj"/>
+
+    <mesh name="base" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/base.obj"/>
+    <mesh name="proximal" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/proximal.obj"/>
+    <mesh name="medial" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/medial.obj"/>
+    <mesh name="distal" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/distal.obj"/>
+    <mesh name="tip" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/tip.obj"/>
+    <mesh name="thumb_base" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/thumb_base.obj"/>
+    <mesh name="thumb_proximal" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/thumb_proximal.obj"/>
+    <mesh name="thumb_distal" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/thumb_distal.obj"/>
+    <mesh name="thumb_tip" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/thumb_tip.obj"/>
   </asset>
 
   <default>
+    <default class="leap_touch">
+      <site type="box" size="0.005 0.005 0.005" rgba="0.8 0.8 0.8 0.15" group="4"/>
+    </default>
     <default class="leap_rh">
       <geom group="3" friction="0.2" solref="0.02 1.5" solimp="0.9 0.99 0.001"/>
       <default class="visual">
@@ -132,6 +141,11 @@
       <body name="palm" pos="0.124 -0.0305 -0.06045" quat="0 1 0 -0.175">
         <inertial pos="-0.049542 -0.042914 -0.010227" quat="0.565586 0.427629 -0.574956 0.408254" mass="0.237"
           diaginertia="0.000407345 0.000304759 0.000180736"/>
+        <site name="leap_palm_center" type="box" pos="-0.05 -0.04 -0.0347" size="0.02 0.02 0.005" rgba="1 0 0 0.33"/>
+        <site name="leap_palm_right" type="box" pos="-0.05 0 -0.0347" size="0.02 0.02 0.005" rgba="1 0 0 0.33"/>
+        <site name="leap_palm_left" type="box" pos="-0.05 -0.08 -0.0347" size="0.02 0.02 0.005" rgba="1 0 0 0.33"/>
+        <site name="leap_palm_back" type="box" pos="-0.09 -0.04 -0.0347" size="0.02 0.02 0.005" rgba="1 0 0 0.33"/>
+        <site name="leap_palm_back_left" type="box" pos="-0.09 -0.08 -0.0347" size="0.02 0.02 0.005" rgba="1 0 0 0.33"/>
         <geom name="palm_visual" pos="-0.02 0.02575 -0.0347" quat="1 0 0 0" class="visual" mesh="palm"/>
         <geom name="palm_collision_1" size="0.011 0.013 0.017" pos="-0.009 0.008 -0.011" type="box"/>
         <geom name="palm_collision_2" size="0.011 0.013 0.017" pos="-0.009 -0.037 -0.011" type="box"/>
@@ -163,6 +177,7 @@
               <joint name="if_pip" class="pip"/>
               <geom name="if_md_visual" pos="0.0211 -0.0084 0.0097" quat="2.67949e-08 -1 0 0" class="visual"
                 mesh="medial"/>
+              <site name="leap_if_md" type="box" pos="-0.01 0.05 0.015" size="0.005 0.01 0.01" rgba="1 0 0 0.33"/>
               <geom name="if_md_collision_1" size="0.008 0.003 0.013" pos="0 -0.02 0.015" type="box"/>
               <geom name="if_md_collision_5" size="0.017 0.011 0.013" pos="0.0075 -0.035 0.015" type="box"/>
               <body name="if_ds" pos="0 -0.0361 0.0002">
@@ -174,7 +189,8 @@
                 <geom name="if_ds_collision_1" size="0.01 0.003 0.015" pos="0 -0.017 0.015" type="box"/>
                 <geom name="if_tip" class="tip"/>
                 <geom type="mesh" mesh="tip" class="visual" material="gray"/>
-                <site name="if_tip" pos="0 -0.05 0.015" group="4"/>
+                <site name="if_tip" pos="0 -0.05 0.015" group="4" />
+                <site name="leap_if_tip" type="sphere" pos="-0.01 -0.03 0.015" size="0.01" rgba="1 1 0 0.33"/>
               </body>
             </body>
           </body>
@@ -183,6 +199,7 @@
           <inertial pos="-0.022516 0.033882 0.016359" quat="0.388092 0.677951 -0.247713 0.573067" mass="0.044"
             diaginertia="1.74972e-05 1.61504e-05 7.21342e-06"/>
           <joint name="mf_mcp" class="mcp"/>
+          <site name="leap_mf_bs" type="box" pos="-0.01 0.05 0.015" size="0.005 0.01 0.01" rgba="1 0 0 0.33"/>
           <geom name="mf_bs_visual" pos="0.0084 0.0077 0.01465" quat="1 0 0 0" class="visual" mesh="base"/>
           <geom name="mf_bs_collision_1" size="0.01 0.003 0.017" pos="0 0.018 0.0147" type="box"/>
           <body name="mf_px" pos="-0.0122 0.0381 0.0145" quat="0.500003 -0.5 -0.499997 0.5">
@@ -210,6 +227,7 @@
                 <geom name="mf_tip" class="tip"/>
                 <geom type="mesh" mesh="tip" class="visual" material="gray"/>
                 <site name="mf_tip" pos="0 -0.05 0.015" group="4"/>
+                <site name="leap_mf_tip" type="sphere" pos="-0.01 -0.03 0.015" size="0.01" rgba="1 1 0 0.33"/>
               </body>
             </body>
           </body>
@@ -243,6 +261,7 @@
                 <geom name="rf_tip" class="tip"/>
                 <geom type="mesh" mesh="tip" class="visual" material="gray"/>
                 <site name="rf_tip" pos="0 -0.05 0.015" group="4"/>
+                <site name="leap_rf_tip" type="sphere" pos="-0.01 -0.03 0.015" size="0.01" rgba="1 1 0 0.33"/>
               </body>
             </body>
           </body>
@@ -273,6 +292,7 @@
                 <geom name="th_ds_collision_1" size="0.01 0.018 0.012" pos="0 -0.0085 -0.015" type="box"/>
                 <geom name="th_tip" class="thumb_tip"/>
                 <site name="th_tip" pos="0 -0.06 -0.015" group="4"/>
+                <site name="leap_th_tip" type="sphere" pos="-0.01 -0.04 -0.015" size="0.01" rgba="1 1 0 0.33"/>
                 <geom type="mesh" mesh="thumb_tip" class="visual" material="gray"/>
               </body>
             </body>
