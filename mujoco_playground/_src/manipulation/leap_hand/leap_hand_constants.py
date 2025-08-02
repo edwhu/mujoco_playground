@@ -18,6 +18,7 @@ from mujoco_playground._src import mjx_env
 
 ROOT_PATH = mjx_env.ROOT_PATH / "manipulation" / "leap_hand"
 CUBE_XML = ROOT_PATH / "xmls" / "scene_mjx_cube.xml"
+CUBE_TOUCH_XML = ROOT_PATH / "xmls" / "scene_mjx_cube_touch.xml"
 
 NQ = 16
 NV = 16
@@ -74,4 +75,32 @@ FINGERTIP_NAMES = [
     "if_tip",
     "mf_tip",
     "rf_tip",
+]
+
+TOUCH_SENSOR_NAMES = [
+    # palm
+    "palm_touch_center",
+    "palm_touch_right",
+    "palm_touch_left",
+    "palm_touch_back",
+    "palm_touch_back_left",
+    "palm_touch_if",
+    "palm_touch_mf",
+    "palm_touch_rf",
+    # index
+    "if_px_touch",
+    "if_md_touch",
+    "if_tip_touch",
+    # middle
+    "mf_px_touch",
+    "mf_md_touch",
+    "mf_tip_touch",
+    # ring
+    "rf_px_touch",
+    "rf_md_touch",
+    "rf_tip_touch",
+    # thumb
+    "th_px_touch",
+    "th_ds_touch",
+    "th_tip_touch",
 ]
