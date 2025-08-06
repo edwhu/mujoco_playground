@@ -30,6 +30,7 @@ from mujoco_playground._src.manipulation.leap_hand import reorient as leap_cube_
 from mujoco_playground._src.manipulation.leap_hand import reorient_touch as leap_cube_reorient_touch
 from mujoco_playground._src.manipulation.leap_hand import rotate_z as leap_rotate_z
 from mujoco_playground._src.manipulation.leap_hand import rotate_z_touch as leap_rotate_z_touch
+from mujoco_playground._src.manipulation.leap_hand import rotate_z_touch_circle_detail as leap_rotate_z_touch_circle_detail
 
 
 mjx_env.ensure_menagerie_exists()  # Ensure menagerie exists when module is imported.
@@ -46,6 +47,7 @@ _envs = {
     "LeapCubeReorientTouch": leap_cube_reorient_touch.CubeReorient,
     "LeapCubeRotateZAxis": leap_rotate_z.CubeRotateZAxis,
     "LeapCubeRotateZAxisTouch": leap_rotate_z_touch.CubeRotateZAxis,
+    "LeapCubeRotateZAxisTouchCircleDetail": leap_rotate_z_touch_circle_detail.CubeRotateZAxis,
 }
 
 _cfgs = {
@@ -60,6 +62,7 @@ _cfgs = {
     "LeapCubeReorientTouch": leap_cube_reorient_touch.default_config,
     "LeapCubeRotateZAxis": leap_rotate_z.default_config,
     "LeapCubeRotateZAxisTouch": leap_rotate_z_touch.default_config,
+    "LeapCubeRotateZAxisTouchCircleDetail": leap_rotate_z_touch_circle_detail.default_config,
 }
 
 _randomizer = {
@@ -67,6 +70,7 @@ _randomizer = {
     "LeapCubeReorientTouch": leap_cube_reorient_touch.domain_randomize,
     "LeapCubeRotateZAxis": leap_rotate_z.domain_randomize,
     "LeapCubeRotateZAxisTouch": leap_rotate_z_touch.domain_randomize,
+    "LeapCubeRotateZAxisTouchCircleDetail": leap_rotate_z_touch_circle_detail.domain_randomize,
 }
 
 
