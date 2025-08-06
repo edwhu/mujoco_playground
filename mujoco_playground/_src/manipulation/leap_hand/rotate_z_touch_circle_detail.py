@@ -125,7 +125,7 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    obs_history = jp.zeros(self._config.history_len * 52)
+    obs_history = jp.zeros(self._config.history_len * 359)  # 16 + 327 + 16 = 359
     obs = self._get_obs(data, info, obs_history)
     reward, done = jp.zeros(2)  # pylint: disable=redefined-outer-name
     return mjx_env.State(data, obs, reward, done, metrics, info)
@@ -165,7 +165,7 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
     """Get touch sensor data."""
     touch = jp.concatenate([
         mjx_env.get_sensor_data(self.mj_model, data, name)
-        for name in consts.TOUCH_SENSOR_NAMES
+        for name in consts.TOUCH_SENSOR_NAMES_CIRCLE_DETAIL
     ])
     if self._config.binarize_touch_sensors:
       touch = touch > 0.0
