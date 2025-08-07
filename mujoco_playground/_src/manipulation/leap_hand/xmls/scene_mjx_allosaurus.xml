@@ -1,6 +1,5 @@
 <mujoco model="leap_scene">
-  <include file="leap_rh_touch_mjx.xml"/>
-  <!-- <include file="toy_scissors.xml"/> -->
+  <include file="leap_rh_mjx.xml"/>
   <include file="reorientation_allosaurus.xml"/>
 
   <statistic center="0.15 0 0" extent="0.4" meansize="0.01"/>
@@ -23,17 +22,20 @@
 
   <worldbody>
     <camera name="side" pos="-0.183 0.396 0.296" xyaxes="-0.783 -0.622 -0.000 0.332 -0.419 0.845"/>
-    <geom name="floor" pos="0 0 -0.25" size="0 0 0.01" type="plane" material="groundplane" contype="2" conaffinity="2"/>
+    <geom name="floor" pos="0 0 -0.25" size="0 0 0.01" type="plane" material="groundplane" contype="3" conaffinity="3"/>
+    <body name="goal" mocap="true" pos="0.325 0.17 0.0475">
+      <geom material="material_0" mesh="model" type="mesh" contype="0" conaffinity="0" group="2"/>s
+    </body>
   </worldbody>
 
   <sensor>
-    <!-- cube. -->
-    <!-- <framepos name="cube_position" objtype="body" objname="cube"/>
-    <framequat name="cube_orientation" objtype="body" objname="cube"/>
-    <framelinvel name="cube_linvel" objtype="body" objname="cube"/>
-    <frameangvel name="cube_angvel" objtype="body" objname="cube"/>
-    <frameangacc name="cube_angacc" objtype="body" objname="cube"/>
-    <framezaxis name="cube_upvector" objtype="body" objname="cube"/> -->
+    <!-- allosaurus. -->
+    <framepos name="allosaurus_position" objtype="body" objname="allosaurus"/>
+    <framequat name="allosaurus_orientation" objtype="body" objname="allosaurus"/>
+    <framelinvel name="allosaurus_linvel" objtype="body" objname="allosaurus"/>
+    <frameangvel name="allosaurus_angvel" objtype="body" objname="allosaurus"/>
+    <frameangacc name="allosaurus_angacc" objtype="body" objname="allosaurus"/>
+    <framezaxis name="allosaurus_upvector" objtype="body" objname="allosaurus"/>
 
     <!-- hand. -->
     <framepos name="palm_position" objtype="site" objname="grasp_site"/>
@@ -43,8 +45,8 @@
     <framepos name="rf_tip_position" objtype="site" objname="rf_tip" reftype="site" refname="grasp_site"/>
 
     <!-- goal. -->
-    <!-- <framequat name="cube_goal_orientation" objtype="body" objname="goal"/>
-    <framezaxis name="cube_goal_upvector" objtype="body" objname="goal"/> -->
+    <framequat name="allosaurus_goal_orientation" objtype="body" objname="goal"/>
+    <framezaxis name="allosaurus_goal_upvector" objtype="body" objname="goal"/>
   </sensor>
 <!-- 
   <keyframe>

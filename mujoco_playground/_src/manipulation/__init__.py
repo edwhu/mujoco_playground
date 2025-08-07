@@ -29,6 +29,7 @@ from mujoco_playground._src.manipulation.franka_emika_panda_robotiq import push_
 from mujoco_playground._src.manipulation.leap_hand import reorient as leap_cube_reorient
 from mujoco_playground._src.manipulation.leap_hand import reorient_touch as leap_cube_reorient_touch
 from mujoco_playground._src.manipulation.leap_hand import rotate_z as leap_rotate_z
+from mujoco_playground._src.manipulation.leap_hand import rotate_allosaurus_z as leap_rotate_allosaurus_z
 from mujoco_playground._src.manipulation.leap_hand import rotate_z_touch as leap_rotate_z_touch
 from mujoco_playground._src.manipulation.leap_hand import rotate_z_touch_circle_detail as leap_rotate_z_touch_circle_detail
 
@@ -46,6 +47,7 @@ _envs = {
     "LeapCubeReorient": leap_cube_reorient.CubeReorient,
     "LeapCubeReorientTouch": leap_cube_reorient_touch.CubeReorient,
     "LeapCubeRotateZAxis": leap_rotate_z.CubeRotateZAxis,
+    "LeapAllosaurusRotateZAxis": leap_rotate_allosaurus_z.AllosaurusRotateZAxis,
     "LeapCubeRotateZAxisTouch": leap_rotate_z_touch.CubeRotateZAxis,
     "LeapCubeRotateZAxisTouchCircleDetail": leap_rotate_z_touch_circle_detail.CubeRotateZAxis,
 }
@@ -61,6 +63,7 @@ _cfgs = {
     "LeapCubeReorient": leap_cube_reorient.default_config,
     "LeapCubeReorientTouch": leap_cube_reorient_touch.default_config,
     "LeapCubeRotateZAxis": leap_rotate_z.default_config,
+    "LeapAllosaurusRotateZAxis": leap_rotate_allosaurus_z.default_config,
     "LeapCubeRotateZAxisTouch": leap_rotate_z_touch.default_config,
     "LeapCubeRotateZAxisTouchCircleDetail": leap_rotate_z_touch_circle_detail.default_config,
 }

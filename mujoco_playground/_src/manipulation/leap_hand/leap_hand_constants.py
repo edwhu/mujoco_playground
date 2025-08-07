@@ -22,6 +22,8 @@ CUBE_TOUCH_XML = ROOT_PATH / "xmls" / "scene_mjx_cube_touch.xml"
 CUBE_TOUCH_CIRCLE_DETAIL_NO_SIDES_XML = ROOT_PATH / "xmls" / "scene_mjx_cube_touch_circle_detail_no_sides.xml"
 CUBE_TOUCH_CIRCLE_DETAIL_XML = ROOT_PATH / "xmls" / "scene_mjx_cube_touch_circle_detail.xml"
 
+ALLOSAURUS_XML = ROOT_PATH / "xmls" / "scene_mjx_allosaurus.xml"
+
 NQ = 16
 NV = 16
 NU = 16

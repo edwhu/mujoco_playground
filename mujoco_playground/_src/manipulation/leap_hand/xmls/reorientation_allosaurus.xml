@@ -37,8 +37,10 @@
     <mesh name="model_collision_31" file="Schleich_Allosaurus/model_collision_31.obj"/>
   </asset>
   <worldbody>
-    <body name="model" pos="0.11 0.0 0.1" quat="1 0 0 0">
+    <body name="allosaurus" pos="0.11 0.0 0.1" quat="1 0 0 0">
+      <freejoint name="allosaurus_freejoint"/>
       <geom material="material_0" mesh="model" type="mesh" contype="0" conaffinity="0" group="2"/>
+      <site name="allosaurus_center" pos="0 -0.025 0.06" group="0" size="0.005" rgba="1 0 0 0.5"/>
       <geom mesh="model_collision_0" type="mesh" group="3"/>
       <geom mesh="model_collision_1" type="mesh" group="3"/>
       <geom mesh="model_collision_2" type="mesh" group="3"/>

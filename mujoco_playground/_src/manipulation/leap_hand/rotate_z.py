@@ -148,7 +148,7 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
 
     state.info["last_last_act"] = state.info["last_act"]
     state.info["last_act"] = action
-    state.info["last_cube_angvel"] = self.get_cube_angvel(data)
+    state.info["last_cube_angvel"] = self.get_object_angvel(data)
     for k, v in rewards.items():
       state.metrics[f"reward/{k}"] = v
 
@@ -157,7 +157,7 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
     return state
 
   def _get_termination(self, data: mjx.Data) -> jax.Array:
-    fall_termination = self.get_cube_position(data)[2] < -0.05
+    fall_termination = self.get_object_position(data)[2] < -0.05
     return fall_termination
 
   def _get_obs(
@@ -179,11 +179,11 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
 
-    cube_pos = self.get_cube_position(data)
+    cube_pos = self.get_object_position(data)
     palm_pos = self.get_palm_position(data)
     cube_pos_error = palm_pos - cube_pos
-    cube_quat = self.get_cube_orientation(data)
-    cube_angvel = self.get_cube_angvel(data)
+    cube_quat = self.get_object_orientation(data)
+    cube_angvel = self.get_object_angvel(data)
     cube_linvel = self.get_cube_linvel(data)
     fingertip_positions = self.get_fingertip_positions(data)
     joint_torques = data.actuator_force
@@ -214,10 +214,10 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
       done: jax.Array,
   ) -> dict[str, jax.Array]:
     del metrics  # Unused.
-    cube_pos = self.get_cube_position(data)
+    cube_pos = self.get_object_position(data)
     palm_pos = self.get_palm_position(data)
     cube_pos_error = palm_pos - cube_pos
-    cube_angvel = self.get_cube_angvel(data)
+    cube_angvel = self.get_object_angvel(data)
     cube_linvel = self.get_cube_linvel(data)
     return {
         "angvel": self._reward_angvel(cube_angvel, cube_pos_error),
