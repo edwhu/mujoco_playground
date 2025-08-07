@@ -186,7 +186,7 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
     touch = self.get_touch_sensors(data)
     state = jp.concatenate([
         noisy_joint_angles,  # 16
-        touch,  # 20
+        touch,  # 327
         info["last_act"],  # 16
     ])  # 48
     obs_history = jp.roll(obs_history, state.size)
