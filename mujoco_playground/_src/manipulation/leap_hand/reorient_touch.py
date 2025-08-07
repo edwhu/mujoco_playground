@@ -261,7 +261,7 @@ class CubeReorient(leap_hand_base.LeapHandEnv):
 
   def _get_termination(self, data: mjx.Data, info: dict[str, Any]) -> jax.Array:
     del info  # Unused.
-    fall_termination = self.get_cube_position(data)[2] < -0.05
+    fall_termination = self.get_object_position(data)[2] < -0.05
     nans = jp.any(jp.isnan(data.qpos)) | jp.any(jp.isnan(data.qvel))
     return fall_termination | nans
 
@@ -298,8 +298,8 @@ class CubeReorient(leap_hand_base.LeapHandEnv):
 
     def _get_cube_pose(data: mjx.Data) -> jax.Array:
       """Returns (potentially) noisy cube pose (xyz,wxyz)."""
-      cube_pos = self.get_cube_position(data)
-      cube_quat = self.get_cube_orientation(data)
+      cube_pos = self.get_object_position(data)
+      cube_quat = self.get_object_orientation(data)
       info["rng"], pos_rng, ori_rng = jax.random.split(info["rng"], 3)
       noisy_cube_quat = mjx._src.math.normalize(
           cube_quat
@@ -335,7 +335,7 @@ class CubeReorient(leap_hand_base.LeapHandEnv):
     info["cube_pos_error_history"] = cube_pos_error_history
 
     # Cube orientation error history.
-    goal_quat = self.get_cube_goal_orientation(data)
+    goal_quat = self.get_object_goal_orientation(data)
     quat_diff = mjx._src.math.quat_mul(
         noisy_pose[3:], mjx._src.math.quat_inv(goal_quat)
     )
@@ -346,8 +346,8 @@ class CubeReorient(leap_hand_base.LeapHandEnv):
     info["cube_ori_error_history"] = cube_ori_error_history
 
     # Uncorrupted cube pose for critic.
-    cube_pos_error_uncorrupted = palm_pos - self.get_cube_position(data)
-    cube_quat_uncorrupted = self.get_cube_orientation(data)
+    cube_pos_error_uncorrupted = palm_pos - self.get_object_position(data)
+    cube_quat_uncorrupted = self.get_object_orientation(data)
     quat_diff_uncorrupted = math.quat_mul(
         cube_quat_uncorrupted, math.quat_inv(goal_quat)
     )
@@ -373,7 +373,7 @@ class CubeReorient(leap_hand_base.LeapHandEnv):
         cube_pos_error_uncorrupted,
         xmat_diff_uncorrupted,
         self.get_cube_linvel(data),
-        self.get_cube_angvel(data),
+        self.get_object_angvel(data),
         info["pert_dir"],
         data.xfrc_applied[self._cube_body_id],
         touch,
@@ -396,7 +396,7 @@ class CubeReorient(leap_hand_base.LeapHandEnv):
   ) -> dict[str, jax.Array]:
     del done, metrics  # Unused.
 
-    cube_pos = self.get_cube_position(data)
+    cube_pos = self.get_object_position(data)
     palm_pos = self.get_palm_position(data)
     cube_pose_mse = jp.linalg.norm(palm_pos - cube_pos)
     cube_pos_reward = reward.tolerance(
@@ -429,8 +429,8 @@ class CubeReorient(leap_hand_base.LeapHandEnv):
     return jp.sum(jp.abs(qvel) * jp.abs(qfrc_actuator))
 
   def _cube_orientation_error(self, data: mjx.Data):
-    cube_ori = self.get_cube_orientation(data)
-    cube_goal_ori = self.get_cube_goal_orientation(data)
+    cube_ori = self.get_object_orientation(data)
+    cube_goal_ori = self.get_object_goal_orientation(data)
     quat_diff = math.quat_mul(cube_ori, math.quat_inv(cube_goal_ori))
     quat_diff = math.normalize(quat_diff)
     return 2.0 * jp.asin(jp.clip(math.norm(quat_diff[1:]), a_max=1.0))
