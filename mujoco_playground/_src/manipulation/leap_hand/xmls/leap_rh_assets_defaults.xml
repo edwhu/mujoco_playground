@@ -1,0 +1,102 @@
+<mujocoinclude>
+  <asset>
+    <material name="black" rgba="0.2 0.2 0.2 1"/>
+    <material name="gray" rgba="0.5 0.5 0.5 1"/>
+    <mesh name="leap_mount" file="meshes/leap_mount.obj" scale="1 1 1"/>
+    <!-- Files are resolved relative to meshdir set by the scene -->
+    <mesh name="palm" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/palm_right.obj" scale="1 1 1"/>
+    <mesh name="base" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/base.obj" scale="1 1 1"/>
+    <mesh name="proximal" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/proximal.obj" scale="1 1 1"/>
+    <mesh name="medial" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/medial.obj" scale="1 1 1"/>
+    <mesh name="distal" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/distal.obj" scale="1 1 1"/>
+    <mesh name="tip" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/tip.obj" scale="1 1 1"/>
+    <mesh name="thumb_base" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/thumb_base.obj" scale="1 1 1"/>
+    <mesh name="thumb_proximal" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/thumb_proximal.obj" scale="1 1 1"/>
+    <mesh name="thumb_distal" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/thumb_distal.obj" scale="1 1 1"/>
+    <mesh name="thumb_tip" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/thumb_tip.obj" scale="1 1 1"/>
+  </asset>
+
+  <default>
+    <default class="leap_rh">
+      <geom group="3" friction="0.2" solref="0.02 1.5" solimp="0.9 0.99 0.001"/>
+      <default class="visual">
+        <geom group="0" type="mesh" contype="0" conaffinity="0" density="0" material="black"/>
+      </default>
+      <default class="tip">
+        <geom size="0.01 0.012 0.016" pos="-0.0012969 -0.0335524 0.0145207" quat="0.703552 0.709596 -0.0292107 -0.0252203" type="box" friction="0.7 0.05 0.0002" rgba=".5 .5 .5 .3"/>
+      </default>
+      <default class="thumb_tip">
+        <geom size="0.01 0.012 0.016" pos="-0.00127744 -0.0455619 -0.0144774" quat="0.708101 0.705072 -0.0294902 -0.024426" type="box" friction="0.7 0.05 0.0002" rgba=".5 .5 .5 .3"/>
+      </default>
+      <position kp="3.0" inheritrange="1"/>
+      <joint axis="0 0 -1" damping="0.2" armature="0.00149376" actuatorfrcrange="-0.2196 0.2196" frictionloss="0.02"/>
+      <default class="mcp">
+        <joint range="-0.314 2.23"/>
+      </default>
+      <default class="rot">
+        <joint range="-1.047 1.047"/>
+      </default>
+      <default class="pip">
+        <joint range="-0.506 1.885"/>
+      </default>
+      <default class="dip">
+        <joint range="-0.366 2.042"/>
+      </default>
+      <default class="thumb_cmc">
+        <joint range="-0.349 2.094"/>
+      </default>
+      <default class="thumb_axl">
+        <joint range="-0.349 2.094"/>
+      </default>
+      <default class="thumb_mcp">
+        <joint range="-0.47 2.443"/>
+      </default>
+      <default class="thumb_ipl">
+        <joint range="-1.34 1.88"/>
+      </default>
+    </default>
+  </default>
+
+  <contact>
+    <!-- filter the palm from all other finger bodies except the tips -->
+    <exclude body1="palm" body2="if_bs"/>
+    <exclude body1="palm" body2="mf_bs"/>
+    <exclude body1="palm" body2="rf_bs"/>
+    <exclude body1="palm" body2="th_mp"/>
+
+    <exclude body1="palm" body2="if_px"/>
+    <exclude body1="palm" body2="mf_px"/>
+    <exclude body1="palm" body2="rf_px"/>
+    <exclude body1="palm" body2="th_bs"/>
+
+    <exclude body1="palm" body2="if_md"/>
+    <exclude body1="palm" body2="mf_md"/>
+    <exclude body1="palm" body2="rf_md"/>
+    <exclude body1="palm" body2="th_px"/>
+
+    <!-- filter the mount from all finger bodies except the tips -->
+    <exclude body1="leap_mount" body2="if_bs"/>
+    <exclude body1="leap_mount" body2="mf_bs"/>
+    <exclude body1="leap_mount" body2="rf_bs"/>
+    <exclude body1="leap_mount" body2="th_mp"/>
+
+    <exclude body1="leap_mount" body2="if_px"/>
+    <exclude body1="leap_mount" body2="mf_px"/>
+    <exclude body1="leap_mount" body2="rf_px"/>
+    <exclude body1="leap_mount" body2="th_bs"/>
+
+    <exclude body1="leap_mount" body2="if_md"/>
+    <exclude body1="leap_mount" body2="mf_md"/>
+    <exclude body1="leap_mount" body2="rf_md"/>
+    <exclude body1="leap_mount" body2="th_px"/>
+
+    <!-- none of the base fingertip geoms can touch each other -->
+    <exclude body1="if_bs" body2="mf_bs"/>
+    <exclude body1="if_bs" body2="rf_bs"/>
+    <exclude body1="mf_bs" body2="rf_bs"/>
+
+    <exclude body1="th_mp" body2="if_bs"/>
+    <exclude body1="th_mp" body2="mf_bs"/>
+    <exclude body1="th_mp" body2="rf_bs"/>
+  </contact>
+</mujocoinclude> 
