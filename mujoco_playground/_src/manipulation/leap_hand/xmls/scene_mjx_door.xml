@@ -39,14 +39,14 @@
     <asset>
         <!-- Textures -->
         <texture type="cube" name="texgeom" builtin="flat" mark="cross" rgb1="0.3 0.6 0.5" rgb2="0.3 0.6 0.5" width="127" height="762" />
-        <texture type="cube" name="wood" file="wood.png" />
-        <texture type="2d" name="wood2d" file="wood.png" />
-        <texture type="cube" name="square" file="square.png" />
-        <texture type="cube" name="foil" file="silverRaw.png" />
-        <texture type="cube" name="woodb" file="woodb.png" />
+        <texture type="cube" name="wood" file="resources/textures/wood.png" />
+        <texture type="2d" name="wood2d" file="resources/textures/wood.png" />
+        <texture type="cube" name="square" file="resources/textures/square.png" />
+        <texture type="cube" name="foil" file="resources/textures/silverRaw.png" />
+        <texture type="cube" name="woodb" file="resources/textures/woodb.png" />
         <texture type="2d" name="groundplane" builtin="checker" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" width="100" height="100" />
-        <texture type="2d" name="marble2d" file="marble.png" />
-        <texture type="cube" name="marblecube" file="marble.png" />
+        <texture type="2d" name="marble2d" file="resources/textures/marble.png" />
+        <texture type="cube" name="marblecube" file="resources/textures/marble.png" />
         
         <!-- Materials -->
         <material name="MatColl" specular="1" shininess="0.3" reflectance="0.5" rgba="0.4 0.5 0.6 1" />
