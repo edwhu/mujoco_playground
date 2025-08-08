@@ -16,7 +16,7 @@
     <size njmax="500" nconmax="100" nstack="600000" nuser_body="9" nuser_jnt="1" nuser_site="1" nuser_tendon="1" nuser_actuator="16" nuser_sensor="1" />
     
     <!-- Bring in Leap Hand assets/defaults and contacts -->
-    <include file="leap_rh_assets_defaults.xml"/>
+    <include file="leap_rh_assets_defaults_touch.xml"/>
 
     <!-- ======= VISUAL SETTINGS ======= -->
     <visual>
@@ -85,7 +85,7 @@
             <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-0.75 0.75" damping="20"/>
             <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-1 2" damping="20"/>
             <!-- include the hand kinematic subtree -->
-            <include file="leap_rh_body_include.xml"/>
+            <include file="leap_rh_body_include_touch.xml"/>
         </body>
 
         <!-- ======= TABLE (Marble Block) ======= -->
@@ -122,7 +122,7 @@
     </worldbody>
 
     <!-- Bring in Leap Hand actuators -->
-    <include file="leap_rh_actuators_include.xml"/>
+    <include file="leap_rh_actuators_include_touch.xml"/>
 
 
 
