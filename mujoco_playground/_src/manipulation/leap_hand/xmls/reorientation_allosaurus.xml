@@ -1,6 +1,6 @@
 <mujoco model="model">
   <asset>
-    <texture type="2d" name="texture" file="Schleich_Allosaurus/texture.png"/>
+    <!-- <texture type="2d" name="texture" file="Schleich_Allosaurus/texture.png"/>
     <material name="material_0" texture="texture" specular="0.5" shininess="0.5"/>
     <mesh name="model" file="Schleich_Allosaurus/model.obj"/>
     <mesh name="model_collision_0" file="Schleich_Allosaurus/model_collision_0.obj"/>
@@ -34,14 +34,46 @@
     <mesh name="model_collision_28" file="Schleich_Allosaurus/model_collision_28.obj"/>
     <mesh name="model_collision_29" file="Schleich_Allosaurus/model_collision_29.obj"/>
     <mesh name="model_collision_30" file="Schleich_Allosaurus/model_collision_30.obj"/>
-    <mesh name="model_collision_31" file="Schleich_Allosaurus/model_collision_31.obj"/>
+    <mesh name="model_collision_31" file="Schleich_Allosaurus/model_collision_31.obj"/> -->
   </asset>
   <worldbody>
     <body name="allosaurus" pos="0.11 0.0 0.1" quat="1 0 0 0">
       <freejoint name="allosaurus_freejoint"/>
       <geom material="material_0" mesh="model" type="mesh" contype="0" conaffinity="0" group="2"/>
       <site name="allosaurus_center" pos="0 -0.025 0.06" group="0" size="0.005" rgba="1 0 0 0.5"/>
-      <geom mesh="model_collision_0" type="mesh" group="3"/>
+      <geom name="body_center" type="box" pos="0 -0.02 0.065" size="0.0125 0.03 0.0125" rgba="1 0 0 0.5"/>
+      <geom name="neck" type="box" pos="-0.005 -0.07 0.08" euler="-0.2 0 -0.3" size="0.008 0.0175 0.008" rgba="1 0 0 0.5"/>
+      <geom name="head" type="box" pos="-0.018 -0.095 0.077" euler="0.5 0 -0.5" size="0.008 0.0175 0.008" rgba="1 1 0 0.5"/>
+      <body name="tail" pos="0 -0.02 0.065">
+        <geom name="tail_1" type="box" pos="0 0.04 0" size="0.01 0.02 0.01" rgba="1 0 0 0.5"/>
+        <geom name="tail_2" type="box" pos="-0.002 0.08 0.01" euler="0.5 0 0.2" size="0.005 0.02 0.005" rgba="1 0 0 0.5"/>
+        <geom name="tail_3" type="box" pos="-0.01 0.11 0.03" euler="0.8 0 0.3" size="0.005 0.02 0.005" rgba="1 0 0 0.5"/>
+      </body>
+
+
+      <body name="left_leg">
+        <geom name="left_thigh" type="box" pos="0.0125 -0.005 0.06" euler="-0.5 -0.3 0" size="0.005 0.005 0.02" rgba="1 0 0 0.5"/>
+        <geom name="left_calf" type="box" pos="0.015 0.005 0.035" euler="1.2 0.2 0" size="0.005 0.005 0.018" rgba="1 0 0 0.5"/>
+        <geom name="left_foot" type="box" pos="0.015 0.005 0.01" euler="-0.8 0.0 0" size="0.005 0.005 0.018" rgba="1 0 0 0.5"/>
+      </body>
+
+      <body name="right_leg" pos="-0.027 0 0">
+        <geom name="right_thigh" type="box" pos="0.0125 -0.005 0.06" euler="-1.1 0.3 0" size="0.005 0.005 0.02" rgba="1 0 0 0.5"/>
+        <geom name="right_calf" type="box" pos="0.01 -0.01 0.035" euler="0.8 0 0" size="0.005 0.005 0.018" rgba="1 0 0 0.5"/>
+        <geom name="right_foot" type="box" pos="0.01 -0.01 0.01" euler="-0.8 0 0" size="0.005 0.005 0.018" rgba="1 0 0 0.5"/>
+      </body>
+
+      <body name="right_arm" pos="0.0 -0.05 0.06">
+        <geom name="right_arm_1" type="box" pos="-0.016 0.005 0" euler="0.5 0.4 0" size="0.003 0.003 0.012" rgba="1 0 0 0.5"/>
+        <geom name="right_arm_2" type="box" pos="-0.025 -0.005 -0.01" euler="0.2 0 -0.2" size="0.003 0.012 0.003" rgba="0 1 1 0.5"/>
+      </body>
+
+      <body name="left_arm" pos="0.03 -0.05 0.05">
+        <geom name="left_arm_1" type="box" pos="-0.018 0.005 0" euler="0.5 0 0" size="0.003 0.003 0.012" rgba="1 0 0 0.5"/>
+        <geom name="left_arm_2" type="box" pos="-0.022 -0.005 -0.01" euler="0.2 0 -0.5" size="0.003 0.012 0.003" rgba="1 0 0 0.5"/>
+      </body>
+  
+      <!-- <geom mesh="model_collision_0" type="mesh" group="3"/>
       <geom mesh="model_collision_1" type="mesh" group="3"/>
       <geom mesh="model_collision_2" type="mesh" group="3"/>
       <geom mesh="model_collision_3" type="mesh" group="3"/>
@@ -72,7 +104,7 @@
       <geom mesh="model_collision_28" type="mesh" group="3"/>
       <geom mesh="model_collision_29" type="mesh" group="3"/>
       <geom mesh="model_collision_30" type="mesh" group="3"/>
-      <geom mesh="model_collision_31" type="mesh" group="3"/>
+      <geom mesh="model_collision_31" type="mesh" group="3"/> -->
     </body>
   </worldbody>
 </mujoco>
