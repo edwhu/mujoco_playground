@@ -1,0 +1,28 @@
+<mujocoinclude>
+<!-- ======================================================
+    Touch Sensors :: Leap Hand (Basic)
+    
+    This file contains basic touch sensor definitions for the Leap Hand.
+    It can be included in other files to add basic touch sensing.
+====================================================== -->
+
+<!-- Basic palm touch sensors -->
+<site name="palm_touch_center" type="cylinder" size="0.005 0.001" pos="-0.05 -0.04 -0.036" rgba="1 0 0 0.33"/>
+<site name="palm_touch_left" type="cylinder" size="0.005 0.001" pos="-0.05 -0.02 -0.036" rgba="1 0 0 0.33"/>
+<site name="palm_touch_right" type="cylinder" size="0.005 0.001" pos="-0.05 -0.06 -0.036" rgba="1 0 0 0.33"/>
+
+<!-- Basic finger tip touch sensors -->
+<site name="if_tip_touch" type="cylinder" size="0.005 0.001" pos="-0.012 -0.033 0.014" quat="0.7071068 0 0.7071068 0" rgba="1 1 0 0.33"/>
+<site name="mf_tip_touch" type="cylinder" size="0.005 0.001" pos="-0.012 -0.033 0.014" quat="0.7071068 0 0.7071068 0" rgba="1 1 0 0.33"/>
+<site name="rf_tip_touch" type="cylinder" size="0.005 0.001" pos="-0.012 -0.033 0.014" quat="0.7071068 0 0.7071068 0" rgba="1 1 0 0.33"/>
+<site name="th_tip_touch" type="cylinder" size="0.005 0.001" pos="-0.012 -0.047 -0.015" quat="0.7071068 0 0.7071068 0" rgba="1 1 0 0.33"/>
+
+<!-- Touch sensor definitions -->
+<touch name="palm_touch_center" site="palm_touch_center"/>
+<touch name="palm_touch_left" site="palm_touch_left"/>
+<touch name="palm_touch_right" site="palm_touch_right"/>
+<touch name="if_tip_touch" site="if_tip_touch"/>
+<touch name="mf_tip_touch" site="mf_tip_touch"/>
+<touch name="rf_tip_touch" site="rf_tip_touch"/>
+<touch name="th_tip_touch" site="th_tip_touch"/>
+</mujocoinclude> 

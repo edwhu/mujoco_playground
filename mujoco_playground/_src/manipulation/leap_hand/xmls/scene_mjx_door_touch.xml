@@ -12,7 +12,13 @@
 
     <!-- ======= COMPILER & OPTIONS ======= -->
     <compiler angle="radian" meshdir='.' />
-    <option apirate="200" iterations="20" noslip_iterations="20"/>
+    <option timestep="0.01" integrator="Euler" iterations="5" ls_iterations="8">
+      <flag eulerdamp="enable"/>
+    </option>
+    <custom>
+      <numeric data="30" name="max_contact_points"/>
+      <numeric data="12" name="max_geom_pairs"/>
+    </custom>
     <size njmax="500" nconmax="100" nstack="600000" nuser_body="9" nuser_jnt="1" nuser_site="1" nuser_tendon="1" nuser_actuator="16" nuser_sensor="1" />
     
     <!-- Bring in Leap Hand assets/defaults and contacts -->
@@ -80,10 +86,10 @@
 
         <!-- ======= LEAP HAND BASE (floating) ======= -->
         <body name="hand_base" pos="0 0 0.2" euler="-1.57 0 3.14">
-            <joint name="H_Tz" pos="0 0 0" axis="0 0 1" type="slide" range="-0.3 0.5" damping="20"/>
-            <joint name="H_Rx" pos="0 0 0" axis="1 0 0" range="-0.75 0.75" damping="20"/>
-            <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-0.75 0.75" damping="20"/>
-            <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-1 2" damping="20"/>
+            <joint name="H_Tz" pos="0 0 0" axis="0 0 1" type="slide" range="-0.3 0.5" damping="50" armature="0.1"/>
+            <joint name="H_Rx" pos="0 0 0" axis="1 0 0" range="-0.75 0.75" damping="50" armature="0.1"/>
+            <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-0.75 0.75" damping="50" armature="0.1"/>
+            <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-1 2" damping="50" armature="0.1"/>
             <!-- include the hand kinematic subtree -->
             <include file="leap_rh_body_include_touch.xml"/>
         </body>

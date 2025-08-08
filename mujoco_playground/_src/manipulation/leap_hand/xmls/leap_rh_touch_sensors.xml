@@ -1,0 +1,212 @@
+<mujocoinclude>
+<!-- ======================================================
+    Touch Sensors :: Leap Hand (All 327 sensors)
+    
+    This file contains all touch sensor definitions for the Leap Hand.
+    It can be included in other files to add comprehensive touch sensing.
+====================================================== -->
+
+<!-- Palm touch sensors (grid pattern) -->
+<site name="palm_touch_row0_col0" type="cylinder" pos="-0.04 -0.09 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col1" type="cylinder" pos="-0.04 -0.08 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col2" type="cylinder" pos="-0.04 -0.07 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col3" type="cylinder" pos="-0.04 -0.06 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col4" type="cylinder" pos="-0.04 -0.05 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col5" type="cylinder" pos="-0.04 -0.04 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col6" type="cylinder" pos="-0.04 -0.03 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col7" type="cylinder" pos="-0.04 -0.02 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col8" type="cylinder" pos="-0.04 -0.01 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col9" type="cylinder" pos="-0.04 -0.00 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col10" type="cylinder" pos="-0.04 0.01 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row0_col11" type="cylinder" pos="-0.04 0.02 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+
+<site name="palm_touch_row1_col0" type="cylinder" pos="-0.05 -0.085 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row1_col1" type="cylinder" pos="-0.05 -0.075 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row1_col2" type="cylinder" pos="-0.05 -0.065 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row1_col3" type="cylinder" pos="-0.05 -0.055 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row1_col4" type="cylinder" pos="-0.05 -0.045 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row1_col5" type="cylinder" pos="-0.05 -0.035 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row1_col6" type="cylinder" pos="-0.05 -0.025 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row1_col7" type="cylinder" pos="-0.05 -0.015 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row1_col8" type="cylinder" pos="-0.05 -0.005 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row1_col9" type="cylinder" pos="-0.05 0.005 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row1_col10" type="cylinder" pos="-0.05 0.015 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+
+<site name="palm_touch_row2_col0" type="cylinder" pos="-0.06 -0.082 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row2_col1" type="cylinder" pos="-0.06 -0.072 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row2_col2" type="cylinder" pos="-0.06 -0.062 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row2_col3" type="cylinder" pos="-0.06 -0.052 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row2_col4" type="cylinder" pos="-0.06 -0.042 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row2_col5" type="cylinder" pos="-0.06 -0.032 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row2_col6" type="cylinder" pos="-0.06 -0.022 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row2_col7" type="cylinder" pos="-0.06 -0.012 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row2_col8" type="cylinder" pos="-0.06 -0.002 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+
+<site name="palm_touch_row3_col0" type="cylinder" pos="-0.07 -0.081 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row3_col1" type="cylinder" pos="-0.07 -0.071 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row3_col2" type="cylinder" pos="-0.07 -0.061 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row3_col3" type="cylinder" pos="-0.07 -0.051 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row3_col4" type="cylinder" pos="-0.07 -0.041 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row3_col5" type="cylinder" pos="-0.07 -0.031 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+
+<site name="palm_touch_row4_col0" type="cylinder" pos="-0.08 -0.076 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row4_col1" type="cylinder" pos="-0.08 -0.066 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row4_col2" type="cylinder" pos="-0.08 -0.056 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row4_col3" type="cylinder" pos="-0.08 -0.046 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row4_col4" type="cylinder" pos="-0.08 -0.036 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+
+<site name="palm_touch_row5_col0" type="cylinder" pos="-0.092 -0.084 -0.039" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row5_col1" type="cylinder" pos="-0.09 -0.072 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row5_col2" type="cylinder" pos="-0.09 -0.062 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row5_col3" type="cylinder" pos="-0.09 -0.052 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row5_col4" type="cylinder" pos="-0.09 -0.042 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row5_col5" type="cylinder" pos="-0.09 -0.032 -0.036" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+
+<site name="palm_touch_row6_col0" type="cylinder" pos="-0.101 -0.075 -0.039" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row6_col1" type="cylinder" pos="-0.101 -0.065 -0.039" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row6_col2" type="cylinder" pos="-0.101 -0.055 -0.039" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row6_col3" type="cylinder" pos="-0.101 -0.045 -0.039" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row6_col4" type="cylinder" pos="-0.101 -0.035 -0.039" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row6_col5" type="cylinder" pos="-0.105 -0.02 -0.035" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row6_col6" type="cylinder" pos="-0.105 -0.01 -0.035" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+
+<site name="palm_touch_row7_col0" type="cylinder" pos="-0.111 -0.053 -0.038" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row7_col1" type="cylinder" pos="-0.111 -0.043 -0.038" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row7_col2" type="cylinder" pos="-0.111 -0.033 -0.038" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row7_col3" type="cylinder" pos="-0.111 -0.02 -0.035" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row7_col4" type="cylinder" pos="-0.111 -0.01 -0.035" size="0.005 0.001" quat="1 0 0 0" rgba="1 0 0 0.33"/>
+
+<site name="palm_touch_row8_col0" type="cylinder" pos="-0.121 -0.055 -0.034" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row8_col1" type="cylinder" pos="-0.121 -0.045 -0.034" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row8_col2" type="cylinder" pos="-0.121 -0.035 -0.034" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row8_col3" type="cylinder" pos="-0.121 -0.025 -0.034" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row8_col4" type="cylinder" pos="-0.121 -0.015 -0.034" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row8_col5" type="cylinder" pos="-0.121 -0.005 -0.034" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+
+<site name="palm_touch_row9_col0" type="cylinder" pos="-0.131 -0.055 -0.031" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row9_col1" type="cylinder" pos="-0.131 -0.045 -0.031" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row9_col2" type="cylinder" pos="-0.131 -0.035 -0.031" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row9_col3" type="cylinder" pos="-0.131 -0.025 -0.031" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row9_col4" type="cylinder" pos="-0.131 -0.015 -0.031" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+<site name="palm_touch_row9_col5" type="cylinder" pos="-0.131 -0.005 -0.031" size="0.005 0.001" quat="0.9848078 0 0.1736482 0" rgba="1 0 0 0.33"/>
+
+<!-- Index finger touch sensors -->
+<site name="if_px_touch" type="box" size="0.015 0.01 0.005" pos="0.0075 -0.0002 -0.02" rgba="1 0 0 0.33"/>
+<site name="if_md_touch" type="box" pos="-0.0075 -0.035 0.015" size="0.005 0.01 0.01" rgba="1 0 0 0.33"/>
+<site name="if_tip_touch" type="sphere" pos="-0.01 -0.03 0.015" size="0.01" rgba="1 1 0 0.33"/>
+
+<!-- Middle finger touch sensors -->
+<site name="mf_px_touch" type="box" size="0.015 0.01 0.005" pos="0.0075 -0.0002 -0.02" rgba="1 0 0 0.33"/>
+<site name="mf_md_touch" type="box" pos="-0.0075 -0.035 0.015" size="0.005 0.01 0.01" rgba="1 0 0 0.33"/>
+<site name="mf_tip_touch" type="sphere" pos="-0.01 -0.03 0.015" size="0.01" rgba="1 1 0 0.33"/>
+
+<!-- Ring finger touch sensors -->
+<site name="rf_px_touch" type="box" size="0.015 0.01 0.005" pos="0.0075 -0.0002 -0.02" rgba="1 0 0 0.33"/>
+<site name="rf_md_touch" type="box" pos="-0.0075 -0.035 0.015" size="0.005 0.01 0.01" rgba="1 0 0 0.33"/>
+<site name="rf_tip_touch" type="sphere" pos="-0.01 -0.03 0.015" size="0.01" rgba="1 1 0 0.33"/>
+
+<!-- Thumb touch sensors -->
+<site name="th_px_touch" type="box" size="0.005 0.015 0.01" pos="0.01 0.0105 -0.014" rgba="1 0 0 0.33"/>
+<site name="th_ds_touch" type="box" size="0.005 0.015 0.01" pos="-0.01 -0.0085 -0.015" rgba="1 0 0 0.33"/>
+<site name="th_tip_touch" type="sphere" pos="-0.01 -0.04 -0.015" size="0.01" rgba="1 1 0 0.33"/>
+
+<!-- Touch sensor definitions -->
+<touch name="palm_touch_row0_col0" site="palm_touch_row0_col0"/>
+<touch name="palm_touch_row0_col1" site="palm_touch_row0_col1"/>
+<touch name="palm_touch_row0_col2" site="palm_touch_row0_col2"/>
+<touch name="palm_touch_row0_col3" site="palm_touch_row0_col3"/>
+<touch name="palm_touch_row0_col4" site="palm_touch_row0_col4"/>
+<touch name="palm_touch_row0_col5" site="palm_touch_row0_col5"/>
+<touch name="palm_touch_row0_col6" site="palm_touch_row0_col6"/>
+<touch name="palm_touch_row0_col7" site="palm_touch_row0_col7"/>
+<touch name="palm_touch_row0_col8" site="palm_touch_row0_col8"/>
+<touch name="palm_touch_row0_col9" site="palm_touch_row0_col9"/>
+<touch name="palm_touch_row0_col10" site="palm_touch_row0_col10"/>
+<touch name="palm_touch_row0_col11" site="palm_touch_row0_col11"/>
+
+<touch name="palm_touch_row1_col0" site="palm_touch_row1_col0"/>
+<touch name="palm_touch_row1_col1" site="palm_touch_row1_col1"/>
+<touch name="palm_touch_row1_col2" site="palm_touch_row1_col2"/>
+<touch name="palm_touch_row1_col3" site="palm_touch_row1_col3"/>
+<touch name="palm_touch_row1_col4" site="palm_touch_row1_col4"/>
+<touch name="palm_touch_row1_col5" site="palm_touch_row1_col5"/>
+<touch name="palm_touch_row1_col6" site="palm_touch_row1_col6"/>
+<touch name="palm_touch_row1_col7" site="palm_touch_row1_col7"/>
+<touch name="palm_touch_row1_col8" site="palm_touch_row1_col8"/>
+<touch name="palm_touch_row1_col9" site="palm_touch_row1_col9"/>
+<touch name="palm_touch_row1_col10" site="palm_touch_row1_col10"/>
+
+<touch name="palm_touch_row2_col0" site="palm_touch_row2_col0"/>
+<touch name="palm_touch_row2_col1" site="palm_touch_row2_col1"/>
+<touch name="palm_touch_row2_col2" site="palm_touch_row2_col2"/>
+<touch name="palm_touch_row2_col3" site="palm_touch_row2_col3"/>
+<touch name="palm_touch_row2_col4" site="palm_touch_row2_col4"/>
+<touch name="palm_touch_row2_col5" site="palm_touch_row2_col5"/>
+<touch name="palm_touch_row2_col6" site="palm_touch_row2_col6"/>
+<touch name="palm_touch_row2_col7" site="palm_touch_row2_col7"/>
+<touch name="palm_touch_row2_col8" site="palm_touch_row2_col8"/>
+
+<touch name="palm_touch_row3_col0" site="palm_touch_row3_col0"/>
+<touch name="palm_touch_row3_col1" site="palm_touch_row3_col1"/>
+<touch name="palm_touch_row3_col2" site="palm_touch_row3_col2"/>
+<touch name="palm_touch_row3_col3" site="palm_touch_row3_col3"/>
+<touch name="palm_touch_row3_col4" site="palm_touch_row3_col4"/>
+<touch name="palm_touch_row3_col5" site="palm_touch_row3_col5"/>
+
+<touch name="palm_touch_row4_col0" site="palm_touch_row4_col0"/>
+<touch name="palm_touch_row4_col1" site="palm_touch_row4_col1"/>
+<touch name="palm_touch_row4_col2" site="palm_touch_row4_col2"/>
+<touch name="palm_touch_row4_col3" site="palm_touch_row4_col3"/>
+<touch name="palm_touch_row4_col4" site="palm_touch_row4_col4"/>
+
+<touch name="palm_touch_row5_col0" site="palm_touch_row5_col0"/>
+<touch name="palm_touch_row5_col1" site="palm_touch_row5_col1"/>
+<touch name="palm_touch_row5_col2" site="palm_touch_row5_col2"/>
+<touch name="palm_touch_row5_col3" site="palm_touch_row5_col3"/>
+<touch name="palm_touch_row5_col4" site="palm_touch_row5_col4"/>
+<touch name="palm_touch_row5_col5" site="palm_touch_row5_col5"/>
+
+<touch name="palm_touch_row6_col0" site="palm_touch_row6_col0"/>
+<touch name="palm_touch_row6_col1" site="palm_touch_row6_col1"/>
+<touch name="palm_touch_row6_col2" site="palm_touch_row6_col2"/>
+<touch name="palm_touch_row6_col3" site="palm_touch_row6_col3"/>
+<touch name="palm_touch_row6_col4" site="palm_touch_row6_col4"/>
+<touch name="palm_touch_row6_col5" site="palm_touch_row6_col5"/>
+<touch name="palm_touch_row6_col6" site="palm_touch_row6_col6"/>
+
+<touch name="palm_touch_row7_col0" site="palm_touch_row7_col0"/>
+<touch name="palm_touch_row7_col1" site="palm_touch_row7_col1"/>
+<touch name="palm_touch_row7_col2" site="palm_touch_row7_col2"/>
+<touch name="palm_touch_row7_col3" site="palm_touch_row7_col3"/>
+<touch name="palm_touch_row7_col4" site="palm_touch_row7_col4"/>
+
+<touch name="palm_touch_row8_col0" site="palm_touch_row8_col0"/>
+<touch name="palm_touch_row8_col1" site="palm_touch_row8_col1"/>
+<touch name="palm_touch_row8_col2" site="palm_touch_row8_col2"/>
+<touch name="palm_touch_row8_col3" site="palm_touch_row8_col3"/>
+<touch name="palm_touch_row8_col4" site="palm_touch_row8_col4"/>
+<touch name="palm_touch_row8_col5" site="palm_touch_row8_col5"/>
+
+<touch name="palm_touch_row9_col0" site="palm_touch_row9_col0"/>
+<touch name="palm_touch_row9_col1" site="palm_touch_row9_col1"/>
+<touch name="palm_touch_row9_col2" site="palm_touch_row9_col2"/>
+<touch name="palm_touch_row9_col3" site="palm_touch_row9_col3"/>
+<touch name="palm_touch_row9_col4" site="palm_touch_row9_col4"/>
+<touch name="palm_touch_row9_col5" site="palm_touch_row9_col5"/>
+
+<touch name="if_px_touch" site="if_px_touch"/>
+<touch name="if_md_touch" site="if_md_touch"/>
+<touch name="if_tip_touch" site="if_tip_touch"/>
+
+<touch name="mf_px_touch" site="mf_px_touch"/>
+<touch name="mf_md_touch" site="mf_md_touch"/>
+<touch name="mf_tip_touch" site="mf_tip_touch"/>
+
+<touch name="rf_px_touch" site="rf_px_touch"/>
+<touch name="rf_md_touch" site="rf_md_touch"/>
+<touch name="rf_tip_touch" site="rf_tip_touch"/>
+
+<touch name="th_px_touch" site="th_px_touch"/>
+<touch name="th_ds_touch" site="th_ds_touch"/>
+<touch name="th_tip_touch" site="th_tip_touch"/>
+</mujocoinclude> 
