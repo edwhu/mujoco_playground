@@ -130,4 +130,6 @@
     <!-- Bring in Leap Hand actuators -->
     <include file="leap_rh_actuators_include.xml"/>
 
+
+
 </mujoco>

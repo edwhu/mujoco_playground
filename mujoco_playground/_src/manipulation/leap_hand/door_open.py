@@ -71,12 +71,12 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     self._post_init()
 
   def _post_init(self) -> None:
-    # Get hand joint IDs (including base motion joints)
+    # Get hand joint IDs (including base motion joints) - only hand joints are controllable
     hand_joint_names = ["H_Tz", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES
     self._hand_qids = mjx_env.get_qpos_ids(self.mj_model, hand_joint_names)
     self._hand_dqids = mjx_env.get_qvel_ids(self.mj_model, hand_joint_names)
     
-    # Get door and latch joint IDs
+    # Get door and latch joint IDs (these are not controllable)
     self._door_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_hinge"])[0]
     self._latch_qid = mjx_env.get_qpos_ids(self.mj_model, ["latch"])[0]
     
@@ -84,17 +84,15 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     self._palm_site_id = self._mj_model.site("grasp_site").id
     self._handle_site_id = self._mj_model.site("S_handle").id
     
-    # Get actuator IDs for hand control
-    hand_actuator_names = ["A_H_Tz", "A_H_Rx", "A_H_Ry", "A_H_Rz"] + [
-        name for name in consts.JOINT_NAMES if name in self._mj_model.actuator_names
-    ]
-    self._hand_actuator_ids = [
-        self._mj_model.actuator(name).id for name in hand_actuator_names
-    ]
+    # Get actuator IDs for hand control (not needed for this environment)
+    # The hand actuators are handled automatically by the base class
 
-    home_key = self._mj_model.keyframe("home")
-    self._init_q = jp.array(home_key.qpos)
-    self._default_pose = self._init_q[self._hand_qids]
+    # Initialize default pose without keyframe
+    # Create a default pose for hand joints (20 joints: 4 base + 16 hand)
+    default_hand_pose = jp.array([0.8, 0.0, 0.8, 0.8] + [0.8] * 16)  # 4 base + 16 hand joints
+    self._default_pose = default_hand_pose
+    
+    # Get actuator limits for hand joints only
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
 
   def reset(self, rng: jax.Array) -> mjx_env.State:
@@ -118,7 +116,7 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
         qpos=qpos,
         qvel=qvel,
         ctrl=q_hand,
-        mocap_pos=jp.array([-100, -100, -100]),  # Hide goal for this task.
+        # No mocap bodies in this environment, so don't pass mocap_pos
     )
 
     info = {
@@ -133,7 +131,9 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    obs_history = jp.zeros(self._config.history_len * 32)
+    # State size is 20 hand joints + 20 previous actions = 40
+    state_size = len(self._hand_qids) + self.mjx_model.nu
+    obs_history = jp.zeros(self._config.history_len * state_size)
     obs = self._get_obs(data, info, obs_history)
     reward, done = jp.zeros(2)  # pylint: disable=redefined-outer-name
     return mjx_env.State(data, obs, reward, done, metrics, info)
