@@ -1,4 +1,8 @@
 <mujoco model="leap_scene">
+  <default>
+      <mesh maxhullvert="200"/>
+  </default>
+
   <include file="leap_rh_mjx.xml"/>
   <include file="reorientation_allosaurus.xml"/>
 
@@ -48,7 +52,7 @@
     <framequat name="allosaurus_goal_orientation" objtype="body" objname="goal"/>
     <framezaxis name="allosaurus_goal_upvector" objtype="body" objname="goal"/>
   </sensor>
-<!-- 
+
   <keyframe>
     <key name="home"
       qpos="
@@ -63,5 +67,5 @@
       0.8 0 0.8 0.8
       0.8 0.8 0.8 0" mpos="0.25 0.16 0"
       mquat="1 0 0 0"/>
-  </keyframe> -->
+  </keyframe>
 </mujoco>
