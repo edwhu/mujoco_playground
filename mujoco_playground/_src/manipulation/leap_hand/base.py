@@ -36,6 +36,7 @@ def get_assets() -> Dict[str, bytes]:
       assets, consts.ROOT_PATH / "xmls" / "reorientation_cube_textures"
   )
   mjx_env.update_assets(assets, consts.ROOT_PATH / "xmls" / "meshes")
+  mjx_env.update_assets(assets, consts.ROOT_PATH / "xmls" / "resources" / "textures")
   return assets
 
 
