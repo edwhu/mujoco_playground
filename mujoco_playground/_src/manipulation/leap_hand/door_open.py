@@ -33,7 +33,7 @@ def default_config() -> config_dict.ConfigDict:
       sim_dt=0.01,
       action_scale=0.6,
       action_repeat=1,
-      episode_length=500,
+      episode_length=200,
       early_termination=True,
       history_len=1,
       noise_config=config_dict.create(
