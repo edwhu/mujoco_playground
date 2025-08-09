@@ -45,11 +45,10 @@ def default_config() -> config_dict.ConfigDict:
       reward_config=config_dict.create(
           scales=config_dict.create(
               get_to_handle=0.1,
-              open_door=0.1,
               velocity_penalty=1e-5,
-              door_bonus=1.0,
-              termination=-100.0,
               action_rate=0.0,
+              door_angle=1.0,
+              door_open=100.0,
           ),
       ),
   )
@@ -84,33 +83,29 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     self._palm_site_id = self._mj_model.site("grasp_site").id
     self._handle_site_id = self._mj_model.site("S_handle").id
     
-    # Get actuator IDs for hand control (not needed for this environment)
-    # The hand actuators are handled automatically by the base class
-
-    # Initialize default pose without keyframe
-    # Create a default pose for hand joints (20 joints: 4 base + 16 hand)
-    default_hand_pose = jp.array([0.8, 0.0, 0.8, 0.8] + [0.8] * 16)  # 4 base + 16 hand joints
+    # Initialize defaults from model qpos0 to match viewer
+    self._qpos0 = jp.array(self._mj_model.qpos0)
+    default_hand_pose = self._qpos0[self._hand_qids]
     self._default_pose = default_hand_pose
     
     # Get actuator limits for hand joints only
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
 
   def reset(self, rng: jax.Array) -> mjx_env.State:
-    # Randomize hand qpos and qvel
-    rng, pos_rng, vel_rng = jax.random.split(rng, 3)
-    q_hand = jp.clip(
-        self._default_pose + 0.1 * jax.random.normal(pos_rng, (len(self._hand_qids),)),
-        self._lowers,
-        self._uppers,
-    )
-    v_hand = 0.0 * jax.random.normal(vel_rng, (len(self._hand_dqids),))
+    # Use exact XML initial pose (no randomization)
+    q_hand = self._default_pose
+    v_hand = jp.zeros_like(self._default_pose)
 
-    # Initialize door and latch positions
-    q_door = jp.zeros(2)  # door_hinge and latch
-    v_door = jp.zeros(2)
+    # Start from model qpos0 so all non-hand joints match viewer exactly
+    qpos = jp.array(self._mj_model.qpos0)
+    qvel = jp.zeros_like(qpos)
+    # Set hand joints
+    qpos = qpos.at[self._hand_qids].set(q_hand)
+    qvel = qvel.at[self._hand_dqids].set(v_hand)
+    # Explicitly set door and latch closed at start
+    qpos = qpos.at[self._door_qid].set(0.0)
+    qpos = qpos.at[self._latch_qid].set(0.0)
 
-    qpos = jp.concatenate([q_hand, q_door])
-    qvel = jp.concatenate([v_hand, v_door])
     data = mjx_env.init(
         self.mjx_model,
         qpos=qpos,
@@ -166,9 +161,10 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     return state
 
   def _get_termination(self, data: mjx.Data) -> jax.Array:
-    # Episode ends when door is fully opened (1.57 radians)
-    door_fully_open = data.qpos[self._door_qid] >= 1.57
-    return door_fully_open
+    # Episode ends when door is sufficiently open (~90° with small tolerance)
+    angle = data.qpos[self._door_qid]
+    threshold = 0.5 * jp.pi - 0.01 # tolerance
+    return angle >= threshold
 
   def _get_obs(
       self, data: mjx.Data, info: dict[str, Any], obs_history: jax.Array
@@ -227,28 +223,31 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
       metrics: dict[str, Any],
       done: jax.Array,
   ) -> dict[str, jax.Array]:
-    del metrics  # Unused.
-    
     # Get palm and handle positions
     palm_pos = data.site_xpos[self._palm_site_id]
     handle_pos = data.site_xpos[self._handle_site_id]
     palm_to_handle_dist = jp.linalg.norm(palm_pos - handle_pos)
     
-    # Get door angle
-    door_angle = data.qpos[self._door_qid]
+    # Door angle terms
+    current_angle = data.qpos[self._door_qid]
+    last_angle = jp.squeeze(info["last_door_angle"])  # shape () from (1,)
+    delta_angle = current_angle - last_angle
+
+    # Success proximity (same threshold as termination)
+    threshold = 0.5 * jp.pi - 0.01
+    door_open_event = jp.where(current_angle >= threshold, 1.0, 0.0)
     
     # Get velocities for penalty
     qvel = data.qvel
     
     return {
-        "get_to_handle": palm_to_handle_dist,  # Negative reward for distance
-        "open_door": -jp.square(door_angle - 1.57),  # Reward for opening door
+        "get_to_handle": -palm_to_handle_dist,  # Closer to current handle is better
         "velocity_penalty": jp.sum(jp.square(qvel)),  # Penalty for high velocities
-        "door_bonus": self._get_door_bonus(door_angle),
-        "termination": done,
         "action_rate": self._cost_action_rate(
             action, info["last_act"], info["last_last_act"]
         ),
+        "door_angle": delta_angle,  # Positive if opening further this step
+        "door_open": door_open_event,  # Big bonus when near 90 deg
     }
 
   def _get_door_bonus(self, door_angle: jax.Array) -> jax.Array:

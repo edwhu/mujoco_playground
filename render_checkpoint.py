@@ -215,8 +215,8 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
         # Fallback for older mujoco versions
         for i in range(len(scene_option.geomgroup)):
             scene_option.geomgroup[i] = 1
-    # Enable transparent rendering so semi-transparent fingertip geoms and materials show up
-    scene_option.flags[mujoco.mjtVisFlag.mjVIS_TRANSPARENT] = True
+    # Disable transparency so all objects render solid
+    scene_option.flags[mujoco.mjtVisFlag.mjVIS_TRANSPARENT] = False
     scene_option.flags[mujoco.mjtVisFlag.mjVIS_PERTFORCE] = False
     scene_option.flags[mujoco.mjtVisFlag.mjVIS_CONTACTFORCE] = False
     
