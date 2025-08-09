@@ -160,6 +160,11 @@ class BraxDomainRandomizationVmapWrapper(Wrapper):
   ):
     super().__init__(env)
     self._mjx_model_v, self._in_axes = randomization_fn(self.mjx_model)
+    # Cache body id for the door frame if present (used for rendering sync)
+    try:
+      self._frame_body_id = self.env.unwrapped._mj_model.body("frame").id
+    except Exception:
+      self._frame_body_id = None
 
   def _env_fn(self, mjx_model: mjx.Model) -> mjx_env.MjxEnv:
     env = self.env
@@ -183,6 +188,35 @@ class BraxDomainRandomizationVmapWrapper(Wrapper):
         self._mjx_model_v, state, action
     )
     return res
+
+  def render(
+      self,
+      trajectory: List[mjx_env.State],
+      height: int = 240,
+      width: int = 320,
+      camera: Optional[str] = None,
+      scene_option: Optional[mujoco.MjvOption] = None,
+      modify_scene_fns: Optional[
+          Sequence[Callable[[mujoco.MjvScene], None]]
+      ] = None,
+  ) -> Sequence[np.ndarray]:
+    # Use world 0 for visualization; sync MjModel body_pos for the frame body.
+    if self._frame_body_id is None:
+      return self.env.render(
+          trajectory, height, width, camera, scene_option, modify_scene_fns
+      )
+    mj_model = self.env.mj_model
+    frame_id = self._frame_body_id
+    # Backup current model body position and set randomized one.
+    old_pos = np.array(mj_model.body_pos[frame_id])
+    try:
+      new_pos = np.array(self._mjx_model_v.body_pos[0, frame_id])
+      mj_model.body_pos[frame_id] = new_pos
+      return self.env.render(
+          trajectory, height, width, camera, scene_option, modify_scene_fns
+      )
+    finally:
+      mj_model.body_pos[frame_id] = old_pos
 
 
 def _identity_vision_randomization_fn(
