@@ -8,7 +8,9 @@ from typing import Optional
 
 # Set environment variables for headless rendering
 os.environ["MUJOCO_GL"] = "egl"
-os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+OS_ENV_PREALLOCATE = "XLA_PYTHON_CLIENT_PREALLOCATE"
+if OS_ENV_PREALLOCATE not in os.environ:
+  os.environ[OS_ENV_PREALLOCATE] = "false"
 
 import jax
 import jax.numpy as jp
@@ -40,6 +42,9 @@ _EPISODE_LENGTH = flags.DEFINE_integer(
 )
 _RENDER_EVERY = flags.DEFINE_integer(
     "render_every", 1, "Render every N steps"
+)
+_NUM_EPISODES = flags.DEFINE_integer(
+    "num_episodes", 1, "Number of episodes to render into one video"
 )
 
 
@@ -139,63 +144,69 @@ def load_checkpoint_and_create_inference_fn(checkpoint_path, env_name):
     return inference_fn, params
 
 
-def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2):
-    """Render a rollout using the trained model."""
+def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2, num_episodes: int = 1):
+    """Render one or more episodes using the trained model, concatenated.
+
+    Args:
+      env: wrapped evaluation environment (same wrapping as training).
+      inference_fn: compiled policy function.
+      episode_length: max steps per episode before forcing reset.
+      render_every: subsample cadence for rendering.
+      num_episodes: number of episodes to record back-to-back.
+    Returns:
+      frames: list of RGB frames.
+      fps: frames per second used for the video.
+    """
     
     # JIT compile the functions
     jit_reset = jax.jit(env.reset)
     jit_step = jax.jit(env.step)
     jit_inference_fn = jax.jit(inference_fn)
     
-    # Reset environment - use single RNG for evaluation
+    # RNG
     rng = jax.random.PRNGKey(123)
-    rng, reset_rng = jax.random.split(rng)
     
-    # For wrapped environments, we need to create batched RNG keys
-    # The number of environments is determined by the PPO parameters
-    num_envs = 1  # For evaluation, we use a single environment
+    # For evaluation we use a single environment
+    num_envs = 1
     print(f"Using {num_envs} environments for evaluation")
     
-    # Create batched RNG keys like in the training script
-    reset_rng = jp.asarray(jax.random.split(reset_rng, num_envs))
+    rollout = []
+    print(f"Starting rendering for {num_episodes} episode(s), episode length: {episode_length}")
     
-    state = jit_reset(reset_rng)
-    state0 = state  # For single environment, no need to extract first element
-    rollout = [state0]
-    
-    print(f"Starting rollout with episode length: {episode_length}")
-    
-    # Run the rollout (exactly like training script)
-    for step in range(episode_length):
-        act_rng, rng = jax.random.split(rng)
-        ctrl, _ = jit_inference_fn(state.obs, act_rng)
-        state = jit_step(state, ctrl)
-        state0 = state  # For single environment, no need to extract first element
+    for ep in range(num_episodes):
+        # Reset each episode to ensure fresh randomization
+        rng, reset_rng = jax.random.split(rng)
+        reset_rng = jp.asarray(jax.random.split(reset_rng, num_envs))
+        state = jit_reset(reset_rng)
+        state0 = state
         rollout.append(state0)
-        
-        # Log every timestep
-        if hasattr(state0.reward, 'shape') and len(state0.reward.shape) > 0:
-            # Batched environment - take mean values for logging
-            reward_mean = jp.mean(state0.reward).item()
-            done_mean = jp.mean(state0.done).item()
-            print(f"Step {step + 1}: reward={reward_mean:.4f}, done={done_mean:.4f}")
-        else:
-            # Single environment
-            print(f"Step {step + 1}: reward={state0.reward:.4f}, done={state0.done}")
-        
-        # Check if episode is done
-        if hasattr(state0.done, 'shape') and len(state0.done.shape) > 0:
-            # Batched environment - check if any environment is done
-            if jp.any(state0.done):
-                print(f"Episode terminated at step {step + 1}")
-                break
-        else:
-            # Single environment
-            if state0.done:
-                print(f"Episode terminated at step {step + 1}")
-                break
+
+        for step in range(episode_length):
+            act_rng, rng = jax.random.split(rng)
+            ctrl, _ = jit_inference_fn(state.obs, act_rng)
+            state = jit_step(state, ctrl)
+            state0 = state
+            rollout.append(state0)
+            
+            # Logging
+            if hasattr(state0.reward, 'shape') and len(state0.reward.shape) > 0:
+                reward_mean = jp.mean(state0.reward).item()
+                done_mean = jp.mean(state0.done).item()
+                print(f"Ep {ep+1} Step {step + 1}: reward={reward_mean:.4f}, done={done_mean:.4f}")
+            else:
+                print(f"Ep {ep+1} Step {step + 1}: reward={state0.reward:.4f}, done={state0.done}")
+            
+            # Stop early if episode terminates
+            if hasattr(state0.done, 'shape') and len(state0.done.shape) > 0:
+                if jp.any(state0.done):
+                    print(f"Episode {ep+1} terminated at step {step + 1}")
+                    break
+            else:
+                if state0.done:
+                    print(f"Episode {ep+1} terminated at step {step + 1}")
+                    break
     
-    print(f"Rollout completed with {len(rollout)} steps")
+    print(f"Rollout completed with {len(rollout)} states across {num_episodes} episode(s)")
     
     # Render the rollout
     print("Rendering video...")
@@ -237,12 +248,14 @@ def main(argv):
     output_path = _OUTPUT_PATH.value
     episode_length = _EPISODE_LENGTH.value
     render_every = _RENDER_EVERY.value
+    num_episodes = _NUM_EPISODES.value
     
     print(f"Loading checkpoint from: {checkpoint_dir}")
     print(f"Environment: {env_name}")
     print(f"Output path: {output_path}")
     print(f"Episode length: {episode_length}")
     print(f"Render every: {render_every} steps")
+    print(f"Num episodes: {num_episodes}")
     
     try:
         # Load environment
@@ -272,7 +285,7 @@ def main(argv):
         print(f"Using wrapped environment for evaluation (same as training)")
         
         # Render rollout using the wrapped environment
-        frames, fps = render_rollout(eval_env, inference_fn, episode_length, render_every)
+        frames, fps = render_rollout(eval_env, inference_fn, episode_length, render_every, num_episodes)
         
         # Save video
         media.write_video(output_path, frames, fps=fps)
