@@ -91,6 +91,10 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     self._door_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_hinge"])[0]
     self._latch_qid = mjx_env.get_qpos_ids(self.mj_model, ["latch"])[0]
 
+    # New: translational joints for door frame randomization (x, y, z)
+    self._door_xyz_qids = mjx_env.get_qpos_ids(self.mj_model, ["door_tx", "door_ty", "door_tz"])
+    self._door_offsets = jp.zeros(3)
+
     # Get site IDs for palm and handle
     self._palm_site_id = self._mj_model.site("grasp_site").id
     self._handle_site_id = self._mj_model.site("S_handle").id
@@ -111,59 +115,33 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
 
   def _randomize_door_pose(self, rng: jax.Array) -> jax.Array:
-    """Randomize the 'frame' body pose (position + orientation) within ranges.
+    """Randomize the door frame translation via dedicated slide joints.
 
-    Returns the new RNG.
+    We set both qpos and qpos0 for joints (door_tx, door_ty, door_tz) so that
+    the randomized placement is the model's reference and won't be pulled back
+    by any default-reset behavior.
     """
     if not self._config.door_randomization.enabled:
+      # Ensure offsets are zeroed when disabled
+      self._door_offsets = jp.zeros(3)
+      # Also ensure qpos0 reflects zero for these joints
+      qpos0 = self.mjx_model.qpos0.at[self._door_xyz_qids].set(self._door_offsets)
+      self.mjx_model = self.mjx_model.tree_replace({"qpos0": qpos0})
       return rng
+
     rng, key_pos = jax.random.split(rng)
-    # Position deltas in [-range, range]
+    # Position deltas in [-range, range] (x, y, z)
     ranges = jp.array([
         self._config.door_randomization.dx,
         self._config.door_randomization.dy,
         self._config.door_randomization.dz,
     ])
     deltas = (2.0 * jax.random.uniform(key_pos, (3,)) - 1.0) * ranges
-    new_pos = self._frame_pos0 + deltas
-    new_pos = new_pos.at[2].set(jp.maximum(new_pos[2], self._config.door_randomization.min_z))
 
-    # Orientation deltas (degrees → radians)
-    rng, key_ang = jax.random.split(rng)
-    ang_scales = jp.array([
-        self._config.door_randomization.roll_deg,   # about x
-        self._config.door_randomization.pitch_deg,  # about y
-        self._config.door_randomization.yaw_deg,    # about z
-    ]) * (jp.pi / 180.0)
-    angs = (2.0 * jax.random.uniform(key_ang, (3,)) - 1.0) * ang_scales
-    roll, pitch, yaw = angs[0], angs[1], angs[2]
-
-    def quat_axis_angle(axis, angle):
-      half = angle * 0.5
-      s = jp.sin(half)
-      return jp.array([jp.cos(half), axis[0]*s, axis[1]*s, axis[2]*s])
-
-    def quat_mul(q1, q2):
-      w1,x1,y1,z1 = q1
-      w2,x2,y2,z2 = q2
-      return jp.array([
-          w1*w2 - x1*x2 - y1*y2 - z1*z2,
-          w1*x2 + x1*w2 + y1*z2 - z1*y2,
-          w1*y2 - x1*z2 + y1*w2 + z1*x2,
-          w1*z2 + x1*y2 - y1*x2 + z1*w2,
-      ])
-
-    # Z-Y-X (yaw, pitch, roll)
-    qz = quat_axis_angle(jp.array([0.0, 0.0, 1.0]), yaw)
-    qy = quat_axis_angle(jp.array([0.0, 1.0, 0.0]), pitch)
-    qx = quat_axis_angle(jp.array([1.0, 0.0, 0.0]), roll)
-    q_delta = quat_mul(qz, quat_mul(qy, qx))
-    new_quat = quat_mul(q_delta, self._frame_quat0)
-
-    # Apply to mjx model (immutable tree)
-    body_pos = self.mjx_model.body_pos.at[self._frame_body_id].set(new_pos)
-    body_quat = self.mjx_model.body_quat.at[self._frame_body_id].set(new_quat)
-    self.mjx_model = self.mjx_model.tree_replace({"body_pos": body_pos, "body_quat": body_quat})
+    # Store offsets and set qpos0 so viewer resets keep the randomized pose
+    self._door_offsets = deltas
+    qpos0 = self.mjx_model.qpos0.at[self._door_xyz_qids].set(self._door_offsets)
+    self.mjx_model = self.mjx_model.tree_replace({"qpos0": qpos0})
     return rng
 
   def reset(self, rng: jax.Array) -> mjx_env.State:
@@ -180,6 +158,9 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     # Set hand joints
     qpos = qpos.at[self._hand_qids].set(q_hand)
     qvel = qvel.at[self._hand_dqids].set(v_hand)
+    # Set randomized door frame translation joints
+    if len(self._door_xyz_qids) == 3:
+      qpos = qpos.at[self._door_xyz_qids].set(self._door_offsets)
     # Randomize door hinge small angle around closed
     rng, key_hinge = jax.random.split(rng)
     hinge = (2.0 * jax.random.uniform(key_hinge) - 1.0) * (self._config.door_randomization.hinge_deg * jp.pi / 180.0)
@@ -403,73 +384,24 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
     )
     dof_armature = model.dof_armature.at[hand_qids].set(armature)
 
-    # Scale all link masses: *U(0.9, 1.1).
+    # Scale damping: *U(0.9, 1.1).
     rng, key = jax.random.split(rng)
-    dmass = jax.random.uniform(
-        key, shape=(len(hand_body_ids),), minval=0.9, maxval=1.1
+    damping = model.dof_damping[hand_qids] * jax.random.uniform(
+        key, shape=(len(hand_qids),), minval=0.9, maxval=1.1
     )
-    body_mass = model.body_mass.at[hand_body_ids].set(
-        model.body_mass[hand_body_ids] * dmass
+    dof_damping = model.dof_damping.at[hand_qids].set(damping)
+
+    # Apply updates to model
+    model2 = model.tree_replace(
+        {
+            "geom_friction": geom_friction,
+            "qpos0": qpos0,
+            "dof_frictionloss": dof_frictionloss,
+            "dof_armature": dof_armature,
+            "dof_damping": dof_damping,
+        }
     )
+    return model2, rng
 
-    # Joint stiffness: *U(0.8, 1.2).
-    rng, key = jax.random.split(rng)
-    kp = model.actuator_gainprm[:, 0] * jax.random.uniform(
-        key, (model.nu,), minval=0.8, maxval=1.2
-    )
-    actuator_gainprm = model.actuator_gainprm.at[:, 0].set(kp)
-    actuator_biasprm = model.actuator_biasprm.at[:, 1].set(-kp)
-
-    # Joint damping: *U(0.8, 1.2).
-    rng, key = jax.random.split(rng)
-    kd = model.dof_damping[hand_qids] * jax.random.uniform(
-        key, (len(hand_qids),), minval=0.8, maxval=1.2
-    )
-    dof_damping = model.dof_damping.at[hand_qids].set(kd)
-
-    return (
-        geom_friction,
-        body_mass,
-        qpos0,
-        dof_frictionloss,
-        dof_armature,
-        dof_damping,
-        actuator_gainprm,
-        actuator_biasprm,
-    )
-
-  (
-      geom_friction,
-      body_mass,
-      qpos0,
-      dof_frictionloss,
-      dof_armature,
-      dof_damping,
-      actuator_gainprm,
-      actuator_biasprm,
-  ) = rand(rng)
-
-  in_axes = jax.tree_util.tree_map(lambda x: None, model)
-  in_axes = in_axes.tree_replace({
-      "geom_friction": 0,
-      "body_mass": 0,
-      "qpos0": 0,
-      "dof_frictionloss": 0,
-      "dof_armature": 0,
-      "dof_damping": 0,
-      "actuator_gainprm": 0,
-      "actuator_biasprm": 0,
-  })
-
-  model = model.tree_replace({
-      "geom_friction": geom_friction,
-      "body_mass": body_mass,
-      "qpos0": qpos0,
-      "dof_frictionloss": dof_frictionloss,
-      "dof_armature": dof_armature,
-      "dof_damping": dof_damping,
-      "actuator_gainprm": actuator_gainprm,
-      "actuator_biasprm": actuator_biasprm,
-  })
-
-  return model, in_axes 
+  model, rng = rand(rng)  # vmap over batch dim if needed
+  return model, rng 
