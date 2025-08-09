@@ -51,6 +51,18 @@ def default_config() -> config_dict.ConfigDict:
               door_open=100.0,
           ),
       ),
+      # Door randomization ranges (delta added to nominal frame body pose)
+      door_randomization=config_dict.create(
+          enabled=True,
+          dx=0.15,  # ± in meters (lateral)
+          dy=0.2,  # ± in meters (toward/away)
+          dz=0.05,  # ± in meters (height)
+          yaw_deg=20.0,   # ± degrees about z
+          pitch_deg=8.0,  # ± degrees about y
+          roll_deg=8.0,   # ± degrees about x
+          hinge_deg=5.0,  # initial hinge angle jitter (± degrees)
+          min_z=0.20,     # clamp door base z to stay above table
+      ),
   )
 
 
@@ -71,28 +83,94 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
 
   def _post_init(self) -> None:
     # Get hand joint IDs (including base motion joints) - only hand joints are controllable
-    hand_joint_names = ["H_Tz", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES
+    hand_joint_names = ["H_Tx", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES
     self._hand_qids = mjx_env.get_qpos_ids(self.mj_model, hand_joint_names)
     self._hand_dqids = mjx_env.get_qvel_ids(self.mj_model, hand_joint_names)
-    
+
     # Get door and latch joint IDs (these are not controllable)
     self._door_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_hinge"])[0]
     self._latch_qid = mjx_env.get_qpos_ids(self.mj_model, ["latch"])[0]
-    
+
     # Get site IDs for palm and handle
     self._palm_site_id = self._mj_model.site("grasp_site").id
     self._handle_site_id = self._mj_model.site("S_handle").id
-    
+
+    # Cache the body id of the door frame so we can randomize its position
+    self._frame_body_id = self._mj_model.body("frame").id
+    # Nominal frame position from model (XYZ)
+    self._frame_pos0 = jp.array(self.mjx_model.body_pos[self._frame_body_id])
+    # Nominal frame orientation (w, x, y, z)
+    self._frame_quat0 = jp.array(self.mjx_model.body_quat[self._frame_body_id])
+
     # Initialize defaults from model qpos0 to match viewer
     self._qpos0 = jp.array(self._mj_model.qpos0)
     default_hand_pose = self._qpos0[self._hand_qids]
     self._default_pose = default_hand_pose
-    
+
     # Get actuator limits for hand joints only
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
 
+  def _randomize_door_pose(self, rng: jax.Array) -> jax.Array:
+    """Randomize the 'frame' body pose (position + orientation) within ranges.
+
+    Returns the new RNG.
+    """
+    if not self._config.door_randomization.enabled:
+      return rng
+    rng, key_pos = jax.random.split(rng)
+    # Position deltas in [-range, range]
+    ranges = jp.array([
+        self._config.door_randomization.dx,
+        self._config.door_randomization.dy,
+        self._config.door_randomization.dz,
+    ])
+    deltas = (2.0 * jax.random.uniform(key_pos, (3,)) - 1.0) * ranges
+    new_pos = self._frame_pos0 + deltas
+    new_pos = new_pos.at[2].set(jp.maximum(new_pos[2], self._config.door_randomization.min_z))
+
+    # Orientation deltas (degrees → radians)
+    rng, key_ang = jax.random.split(rng)
+    ang_scales = jp.array([
+        self._config.door_randomization.roll_deg,   # about x
+        self._config.door_randomization.pitch_deg,  # about y
+        self._config.door_randomization.yaw_deg,    # about z
+    ]) * (jp.pi / 180.0)
+    angs = (2.0 * jax.random.uniform(key_ang, (3,)) - 1.0) * ang_scales
+    roll, pitch, yaw = angs[0], angs[1], angs[2]
+
+    def quat_axis_angle(axis, angle):
+      half = angle * 0.5
+      s = jp.sin(half)
+      return jp.array([jp.cos(half), axis[0]*s, axis[1]*s, axis[2]*s])
+
+    def quat_mul(q1, q2):
+      w1,x1,y1,z1 = q1
+      w2,x2,y2,z2 = q2
+      return jp.array([
+          w1*w2 - x1*x2 - y1*y2 - z1*z2,
+          w1*x2 + x1*w2 + y1*z2 - z1*y2,
+          w1*y2 - x1*z2 + y1*w2 + z1*x2,
+          w1*z2 + x1*y2 - y1*x2 + z1*w2,
+      ])
+
+    # Z-Y-X (yaw, pitch, roll)
+    qz = quat_axis_angle(jp.array([0.0, 0.0, 1.0]), yaw)
+    qy = quat_axis_angle(jp.array([0.0, 1.0, 0.0]), pitch)
+    qx = quat_axis_angle(jp.array([1.0, 0.0, 0.0]), roll)
+    q_delta = quat_mul(qz, quat_mul(qy, qx))
+    new_quat = quat_mul(q_delta, self._frame_quat0)
+
+    # Apply to mjx model (immutable tree)
+    body_pos = self.mjx_model.body_pos.at[self._frame_body_id].set(new_pos)
+    body_quat = self.mjx_model.body_quat.at[self._frame_body_id].set(new_quat)
+    self.mjx_model = self.mjx_model.tree_replace({"body_pos": body_pos, "body_quat": body_quat})
+    return rng
+
   def reset(self, rng: jax.Array) -> mjx_env.State:
-    # Use exact XML initial pose (no randomization)
+    # Per-episode door placement randomization (before creating data)
+    rng = self._randomize_door_pose(rng)
+
+    # Use exact XML initial pose (no randomization) for hand
     q_hand = self._default_pose
     v_hand = jp.zeros_like(self._default_pose)
 
@@ -102,8 +180,11 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     # Set hand joints
     qpos = qpos.at[self._hand_qids].set(q_hand)
     qvel = qvel.at[self._hand_dqids].set(v_hand)
-    # Explicitly set door and latch closed at start
-    qpos = qpos.at[self._door_qid].set(0.0)
+    # Randomize door hinge small angle around closed
+    rng, key_hinge = jax.random.split(rng)
+    hinge = (2.0 * jax.random.uniform(key_hinge) - 1.0) * (self._config.door_randomization.hinge_deg * jp.pi / 180.0)
+    qpos = qpos.at[self._door_qid].set(hinge)
+    # Latch closed at start
     qpos = qpos.at[self._latch_qid].set(0.0)
 
     data = mjx_env.init(
@@ -267,7 +348,7 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
 
 def domain_randomize(model: mjx.Model, rng: jax.Array):
   mj_model = DoorOpen().mj_model
-  hand_qids = mjx_env.get_qpos_ids(mj_model, ["H_Tz", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES)
+  hand_qids = mjx_env.get_qpos_ids(mj_model, ["H_Tx", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES)
   hand_body_names = [
       "palm",
       "if_bs",
