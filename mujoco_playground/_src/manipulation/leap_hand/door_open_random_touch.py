@@ -51,10 +51,11 @@ def default_config() -> config_dict.ConfigDict:
               door_open=100.0,
           ),
       ),
+      binarize_touch_sensors=True,
   )
 
 
-class DoorOpenRandom(leap_hand_base.LeapHandEnv):
+class DoorOpenRandomTouch(leap_hand_base.LeapHandEnv):
   """Open a door using the Leap Hand."""
 
   def __init__(
@@ -63,7 +64,7 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
     super().__init__(
-        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_door_random.xml",
+        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_door_random_touch.xml",
         config=config,
         config_overrides=config_overrides,
     )
@@ -95,6 +96,11 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
     self._door_tx_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_tx"])[0]
     self._door_ty_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_ty"])[0]
     self._door_tz_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_tz"])[0]
+    
+    # Precompute touch sensor ids and total size for observation history
+    self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_DETAIL
+    self._touch_sensor_ids = [self._mj_model.sensor(name).id for name in self._touch_sensor_names]
+    self._touch_size = int(np.sum(self._mj_model.sensor_dim[self._touch_sensor_ids]))
 
   def reset(self, rng: jax.Array) -> mjx_env.State:
     # Sample continuous frame offsets within joint ranges and set in qpos
@@ -141,8 +147,8 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    # State size is 20 hand joints + 20 previous actions = 40
-    state_size = len(self._hand_qids) + self.mjx_model.nu
+    # State size = hand joints + touch sensors + previous actions
+    state_size = len(self._hand_qids) + self._touch_size + self.mjx_model.nu
     obs_history = jp.zeros(self._config.history_len * state_size)
     obs = self._get_obs(data, info, obs_history)
     reward, done = jp.zeros(2)  # pylint: disable=redefined-outer-name
@@ -181,6 +187,16 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
     threshold = 0.5 * jp.pi - 0.01 # tolerance
     return angle >= threshold
 
+  def get_touch_sensors(self, data: mjx.Data) -> jax.Array:
+    """Get touch sensor data using TOUCH_SENSOR_NAMES_DETAIL."""
+    touch = jp.concatenate([
+        mjx_env.get_sensor_data(self.mj_model, data, name)
+        for name in self._touch_sensor_names
+    ])
+    if getattr(self._config, "binarize_touch_sensors", False):
+      touch = touch > 0.0
+    return touch
+
   def _get_obs(
       self, data: mjx.Data, info: dict[str, Any], obs_history: jax.Array
   ) -> Dict[str, jax.Array]:
@@ -192,9 +208,11 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
         * self._config.noise_config.level
         * self._config.noise_config.scales.joint_pos
     )
+    touch = self.get_touch_sensors(data)
 
     state = jp.concatenate([
         noisy_joint_angles,  # Hand joints
+        touch,               # Touch sensors
         info["last_act"],  # Previous actions
     ])
     obs_history = jp.roll(obs_history, state.size)
@@ -223,6 +241,7 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
         door_angle,
         latch_angle,
         door_open,
+        touch,
     ])
 
     return {

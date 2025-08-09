@@ -1,37 +1,27 @@
-<!-- ======================================================
-    Model       :: Door Opening Environment (Leap Hand)
+<mujoco model="Door-Open-Environment">
 
-    Based on    :: ADROIT Door Environment
-    Modified for:: Leap Hand manipulation
-
-    Author      :: Adapted from Vikash Kumar's ADROIT door
-    Purpose     :: Door opening task with floating Leap hand
-====================================================== -->
-
-<mujoco model='Door-Open-Environment'>
-
-    <!-- ======= COMPILER & OPTIONS ======= -->
-    <compiler angle="radian" meshdir='.' />
+    
+    <compiler angle="radian" meshdir="." />
     <option timestep="0.01" integrator="Euler" iterations="5" ls_iterations="8">
-      <flag eulerdamp="enable"/>
+      <flag eulerdamp="enable" />
     </option>
 
     <custom>
-      <numeric data="30" name="max_contact_points"/>
-      <numeric data="12" name="max_geom_pairs"/>
+      <numeric data="30" name="max_contact_points" />
+      <numeric data="12" name="max_geom_pairs" />
     </custom>
     
-    <!-- Bring in Leap Hand assets/defaults and contacts -->
-    <include file="leap_rh_assets_defaults.xml"/>
+    
+    <include file="leap_rh_assets_defaults.xml" />
 
-    <!-- ======= VISUAL SETTINGS ======= -->
+    
     <visual>
         <global offwidth="3024" offheight="1680" />
         <quality shadowsize="4096" offsamples="8" />
         <map force="0.1" fogend="5" />
     </visual>
 
-    <!-- ======= DEFAULTS ======= -->
+    
     <default class="main">
         <mesh scale="0.001 0.001 0.001" />
         <joint limited="true" margin="0.01" armature="0.001" damping="0.05" frictionloss="0.001" />
@@ -41,9 +31,9 @@
         <general ctrllimited="true" ctrlrange="-1 1" user="0 1 0.03 0.0939711 0.513477 0.0358776 1.23598 8.40409 0.485031 6.04244 1.02187 0.175297 0.121642 0 0 0" />
     </default>
 
-    <!-- ======= ASSETS ======= -->
+    
     <asset>
-        <!-- Textures -->
+        
         <texture type="cube" name="texgeom" builtin="flat" mark="cross" rgb1="0.3 0.6 0.5" rgb2="0.3 0.6 0.5" width="127" height="762" />
         <texture type="cube" name="wood" file="resources/textures/wood.png" />
         <texture type="2d" name="wood2d" file="resources/textures/wood.png" />
@@ -54,7 +44,7 @@
         <texture type="2d" name="marble2d" file="resources/textures/marble.png" />
         <texture type="cube" name="marblecube" file="resources/textures/marble.png" />
         
-        <!-- Materials -->
+        
         <material name="MatColl" specular="1" shininess="0.3" reflectance="0.5" rgba="0.4 0.5 0.6 1" />
         <material name="MatViz" specular="0.75" shininess="0.1" reflectance="0.5" rgba="0.9 0.7 0.5 1" />
         <material name="MatGnd" specular="0.3" shininess="0.3" reflectance="0.3" rgba="0.5 0.55 0.5 1" />
@@ -71,67 +61,64 @@
         <material name="MatWoodB" texture="woodb" specular="1" shininess="0.3" />
     </asset>
 
-    <!-- ======= WORLD ======= -->
+    
     <worldbody>
-        <!-- Lighting -->
-        <light directional='false' diffuse='.7 .7 .7' specular='0.03 0.03 0.03' pos='-1 -1.0 4.0' dir='1 1.0 -4'/>
         
-        <!-- Ground -->
-        <geom name='ground' size="1.5 1.5 0.25" pos="0 0 -1" type="plane" contype="1" conaffinity="0" material="groundplane" />
+        <light directional="false" diffuse=".7 .7 .7" specular="0.03 0.03 0.03" pos="-1 -1.0 4.0" dir="1 1.0 -4" />
         
-        <!-- Cameras -->
+        
+        <geom name="ground" size="1.5 1.5 0.25" pos="0 0 -1" type="plane" contype="1" conaffinity="0" material="groundplane" />
+        
+        
         <camera name="fixed" pos="0 -0.7 0.7" quat="0.92388 0.382683 0 0" />
         <camera name="vil_camera" pos="0 -1.2 1.2" quat="0.92388 0.382683 0 0" />
         <camera name="hand_close" pos="0.1 -0.4 0.35" quat="0.92388 0.382683 0 0" />
 
-        <!-- ======= LEAP HAND BASE (floating) ======= -->
+        
         <body name="hand_base" pos="0 -0.3 0.2" euler="3.14 0 -1.57">
-            <joint name="H_Tx" pos="0 0 0" axis="1 0 0" type="slide" range="-0.3 0.5" damping="50" armature="0.1"/>
-            <joint name="H_Rx" pos="0 0 0" axis="1 0 0" range="-1 2" damping="50" armature="0.1"/>
-            <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-0.75 0.75" damping="50" armature="0.1"/>
-            <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-0.75 0.75" damping="50" armature="0.1"/>
-            <!-- include the hand kinematic subtree -->
-            <include file="leap_rh_body_include.xml"/>
+            <joint name="H_Tx" pos="0 0 0" axis="1 0 0" type="slide" range="-0.3 0.5" damping="50" armature="0.1" />
+            <joint name="H_Rx" pos="0 0 0" axis="1 0 0" range="-1 2" damping="50" armature="0.1" />
+            <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-0.75 0.75" damping="50" armature="0.1" />
+            <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-0.75 0.75" damping="50" armature="0.1" />
+            
+            <include file="leap_rh_body_include.xml" />
         </body>
 
-        <!-- ======= TABLE (Marble Block) ======= -->
+        
         <body name="table">
             <geom size="0.45 0.45 0.494" pos="0 0 -0.506" type="box" material="tablecube" />
         </body>
 
-        <!-- ======= DOOR FRAME ======= -->
-        <!-- <body name="frame" pos="-0.107339 0.0435293 0.447376" user="1001 0 2002 -0.4 -0.1 0.252 0 0.3 0.45"> -->
-        <body name="frame" pos="-0.28 0.3 0.3" user="1001 0 2002 -0.4 -0.1 0.252 0 0.3 0.45">
-            <joint name="door_tx" type="slide" axis="1 0 0" range="-0.15 0.15" stiffness="0" damping="1000" armature="10" frictionloss="100"/>
-            <joint name="door_ty" type="slide" axis="0 1 0" range="-0.2 0.2" stiffness="0" damping="1000" armature="10" frictionloss="100"/>
-            <joint name="door_tz" type="slide" axis="0 0 1" range="-0.01 0.05" stiffness="0" damping="1000" armature="10" frictionloss="100"/>
+        
+        
+        <body name="frame" pos="-0.310 0.300 0.300" user="1001 0 2002 -0.4 -0.1 0.252 0 0.3 0.45">
             <inertial pos="0.29 0 0" quat="0.5 0.5 0.5 0.5" mass="7.85398" diaginertia="0.923301 0.764585 0.168533" />
             <geom size="0.05 0.2" pos="0.6 0 0" type="capsule" material="MatWood" rgba="1 0 0 1" />
             <geom size="0.05 0.2" pos="-0.02 0 0" type="capsule" material="MatWood" rgba="1 0 0 1" />
-            <site name="S_handle_target" pos="0.75 -0.5 -.18" size="0.025" group='3'/>
+            <site name="S_handle_target" pos="0.75 -0.5 -.18" size="0.025" group="3" />
             
-            <!-- ======= DOOR ======= -->
+            
             <body name="door" pos="0.29 0 0">
                 <inertial pos="0.0296816 -0.00152345 0" quat="0.701072 0 0 0.713091" mass="2.43455" diaginertia="0.0913751 0.0521615 0.043714" />
                 <joint name="door_hinge" pos="0.31 0 0" axis="0 0 1" range="0 1.57" damping="1" frictionloss="2" />
                 <geom size="0.25 0.05 0.25" type="box" friction="1 1 1" material="MatWood" />
                 
-                <!-- ======= LATCH ======= -->
+                
                 <body name="latch" pos="-0.15 0 -0.025">
                     <inertial pos="-0.017762 0.0138544 0" quat="0.365653 0.605347 -0.36522 0.605365" mass="3.53743" diaginertia="0.0483771 0.0410001 0.0111013" />
                     <joint name="latch" pos="0 0 0" axis="0 1 0" range="0 1.8" frictionloss="5" />
                     <geom size="0.05 0.15" quat="0.707388 0.706825 0 0" type="capsule" material="MatFoil" />
                     <geom size="0.02 0.1" pos="0.1 -0.15 0" quat="0.707388 0 0.706825 0" type="capsule" material="MatFoil" />
                     <geom size="0.04 0.07" pos="-0.1 0.1 0" quat="0.707388 0 0.706825 0" type="capsule" material="MatFoil" />
-                    <site name="S_handle" pos="0.15 -0.15 0" size="0.025" group='3'/>
+                    <site name="S_handle" pos="0.15 -0.15 0" size="0.025" group="3" />
                 </body>
             </body>
         </body>
 
     </worldbody>
 
-    <!-- Bring in Leap Hand actuators -->
-    <include file="leap_rh_actuators_include.xml"/>
+    
+    <include file="leap_rh_actuators_include.xml" />
 
 
 

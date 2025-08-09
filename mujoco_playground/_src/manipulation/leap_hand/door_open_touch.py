@@ -26,7 +26,6 @@ from mujoco_playground._src import mjx_env
 from mujoco_playground._src.manipulation.leap_hand import base as leap_hand_base
 from mujoco_playground._src.manipulation.leap_hand import leap_hand_constants as consts
 
-
 def default_config() -> config_dict.ConfigDict:
   return config_dict.create(
       ctrl_dt=0.05,
@@ -51,10 +50,11 @@ def default_config() -> config_dict.ConfigDict:
               door_open=100.0,
           ),
       ),
+      binarize_touch_sensors=True,
   )
 
 
-class DoorOpenRandom(leap_hand_base.LeapHandEnv):
+class DoorOpenTouch(leap_hand_base.LeapHandEnv):
   """Open a door using the Leap Hand."""
 
   def __init__(
@@ -63,7 +63,7 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
     super().__init__(
-        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_door_random.xml",
+        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_door_touch.xml",
         config=config,
         config_overrides=config_overrides,
     )
@@ -91,19 +91,13 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
     # Get actuator limits for hand joints only
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
     
-    # Door frame translation joints (for continuous randomization)
-    self._door_tx_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_tx"])[0]
-    self._door_ty_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_ty"])[0]
-    self._door_tz_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_tz"])[0]
+    # Precompute touch sensor ids and total size for observation history    
+    self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_DETAIL
+    self._touch_sensor_ids = [self._mj_model.sensor(name).id for name in self._touch_sensor_names]
+    self._touch_size = int(np.sum(self._mj_model.sensor_dim[self._touch_sensor_ids]))
 
   def reset(self, rng: jax.Array) -> mjx_env.State:
-    # Sample continuous frame offsets within joint ranges and set in qpos
-    rng, kx, ky, kz = jax.random.split(rng, 4)
-    tx = jax.random.uniform(kx, (), minval=-0.15, maxval=0.15)
-    ty = jax.random.uniform(ky, (), minval=-0.2, maxval=0.2)
-    tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.05)
-
-    # Use exact XML initial hand pose
+    # Use exact XML initial pose (no randomization)
     q_hand = self._default_pose
     v_hand = jp.zeros_like(self._default_pose)
 
@@ -113,10 +107,6 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
     # Set hand joints
     qpos = qpos.at[self._hand_qids].set(q_hand)
     qvel = qvel.at[self._hand_dqids].set(v_hand)
-    # Apply door frame translations via the new joints
-    qpos = qpos.at[self._door_tx_qid].set(tx)
-    qpos = qpos.at[self._door_ty_qid].set(ty)
-    qpos = qpos.at[self._door_tz_qid].set(tz)
     # Explicitly set door and latch closed at start
     qpos = qpos.at[self._door_qid].set(0.0)
     qpos = qpos.at[self._latch_qid].set(0.0)
@@ -141,8 +131,8 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    # State size is 20 hand joints + 20 previous actions = 40
-    state_size = len(self._hand_qids) + self.mjx_model.nu
+    # State size = hand joints + touch sensors + previous actions
+    state_size = len(self._hand_qids) + self._touch_size + self.mjx_model.nu
     obs_history = jp.zeros(self._config.history_len * state_size)
     obs = self._get_obs(data, info, obs_history)
     reward, done = jp.zeros(2)  # pylint: disable=redefined-outer-name
@@ -181,6 +171,16 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
     threshold = 0.5 * jp.pi - 0.01 # tolerance
     return angle >= threshold
 
+  def get_touch_sensors(self, data: mjx.Data) -> jax.Array:
+    """Get touch sensor data using TOUCH_SENSOR_NAMES_DETAIL."""
+    touch = jp.concatenate([
+        mjx_env.get_sensor_data(self.mj_model, data, name)
+        for name in consts.TOUCH_SENSOR_NAMES_DETAIL
+    ])
+    if getattr(self._config, "binarize_touch_sensors", False):
+      touch = touch > 0.0
+    return touch
+
   def _get_obs(
       self, data: mjx.Data, info: dict[str, Any], obs_history: jax.Array
   ) -> Dict[str, jax.Array]:
@@ -192,10 +192,12 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
         * self._config.noise_config.level
         * self._config.noise_config.scales.joint_pos
     )
+    touch = self.get_touch_sensors(data)
 
     state = jp.concatenate([
         noisy_joint_angles,  # Hand joints
-        info["last_act"],  # Previous actions
+        touch,               # Touch sensors
+        info["last_act"],   # Previous actions
     ])
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
@@ -223,6 +225,7 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
         door_angle,
         latch_angle,
         door_open,
+        touch,
     ])
 
     return {
@@ -281,26 +284,129 @@ class DoorOpenRandom(leap_hand_base.LeapHandEnv):
 
 
 def domain_randomize(model: mjx.Model, rng: jax.Array):
-  """Replicates model across batch without changing physics (fast compile).
-
-  We only replicate body_pos so that rendering sync in the wrapper can index
-  per-env body positions, but we do not alter any model parameters. All other
-  fields are left unbatched/broadcasted.
-  """
+  mj_model = DoorOpenTouch().mj_model
+  hand_qids = mjx_env.get_qpos_ids(mj_model, ["H_Tx", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES)
+  hand_body_names = [
+      "palm",
+      "if_bs",
+      "if_px",
+      "if_md",
+      "if_ds",
+      "mf_bs",
+      "mf_px",
+      "mf_md",
+      "mf_ds",
+      "rf_bs",
+      "rf_px",
+      "rf_md",
+      "rf_ds",
+      "th_mp",
+      "th_bs",
+      "th_px",
+      "th_ds",
+  ]
+  hand_body_ids = np.array([mj_model.body(n).id for n in hand_body_names])
+  fingertip_geoms = ["th_tip", "if_tip", "mf_tip", "rf_tip"]
+  fingertip_geom_ids = [mj_model.geom(g).id for g in fingertip_geoms]
 
   @jax.vmap
-  def replicate_body_pos(_rng):
-    return model.body_pos
+  def rand(rng):
+    # Fingertip friction: =U(0.5, 1.0).
+    rng, key = jax.random.split(rng)
+    fingertip_friction = jax.random.uniform(key, (1,), minval=0.5, maxval=1.0)
+    geom_friction = model.geom_friction.at[fingertip_geom_ids, 0].set(
+        fingertip_friction
+    )
 
-  body_pos = replicate_body_pos(rng)
+    # Jitter qpos0: +U(-0.05, 0.05).
+    rng, key = jax.random.split(rng)
+    qpos0 = model.qpos0
+    qpos0 = qpos0.at[hand_qids].set(
+        qpos0[hand_qids]
+        + jax.random.uniform(key, shape=(len(hand_qids),), minval=-0.05, maxval=0.05)
+    )
 
-  in_axes = jax.tree_util.tree_map(lambda _: None, model)
+    # Scale static friction: *U(0.9, 1.1).
+    rng, key = jax.random.split(rng)
+    frictionloss = model.dof_frictionloss[hand_qids] * jax.random.uniform(
+        key, shape=(len(hand_qids),), minval=0.5, maxval=2.0
+    )
+    dof_frictionloss = model.dof_frictionloss.at[hand_qids].set(frictionloss)
+
+    # Scale armature: *U(1.0, 1.05).
+    rng, key = jax.random.split(rng)
+    armature = model.dof_armature[hand_qids] * jax.random.uniform(
+        key, shape=(len(hand_qids),), minval=1.0, maxval=1.05
+    )
+    dof_armature = model.dof_armature.at[hand_qids].set(armature)
+
+    # Scale all link masses: *U(0.9, 1.1).
+    rng, key = jax.random.split(rng)
+    dmass = jax.random.uniform(
+        key, shape=(len(hand_body_ids),), minval=0.9, maxval=1.1
+    )
+    body_mass = model.body_mass.at[hand_body_ids].set(
+        model.body_mass[hand_body_ids] * dmass
+    )
+
+    # Joint stiffness: *U(0.8, 1.2).
+    rng, key = jax.random.split(rng)
+    kp = model.actuator_gainprm[:, 0] * jax.random.uniform(
+        key, (model.nu,), minval=0.8, maxval=1.2
+    )
+    actuator_gainprm = model.actuator_gainprm.at[:, 0].set(kp)
+    actuator_biasprm = model.actuator_biasprm.at[:, 1].set(-kp)
+
+    # Joint damping: *U(0.8, 1.2).
+    rng, key = jax.random.split(rng)
+    kd = model.dof_damping[hand_qids] * jax.random.uniform(
+        key, (len(hand_qids),), minval=0.8, maxval=1.2
+    )
+    dof_damping = model.dof_damping.at[hand_qids].set(kd)
+
+    return (
+        geom_friction,
+        body_mass,
+        qpos0,
+        dof_frictionloss,
+        dof_armature,
+        dof_damping,
+        actuator_gainprm,
+        actuator_biasprm,
+    )
+
+  (
+      geom_friction,
+      body_mass,
+      qpos0,
+      dof_frictionloss,
+      dof_armature,
+      dof_damping,
+      actuator_gainprm,
+      actuator_biasprm,
+  ) = rand(rng)
+
+  in_axes = jax.tree_util.tree_map(lambda x: None, model)
   in_axes = in_axes.tree_replace({
-      "body_pos": 0,
+      "geom_friction": 0,
+      "body_mass": 0,
+      "qpos0": 0,
+      "dof_frictionloss": 0,
+      "dof_armature": 0,
+      "dof_damping": 0,
+      "actuator_gainprm": 0,
+      "actuator_biasprm": 0,
   })
 
   model = model.tree_replace({
-      "body_pos": body_pos,
+      "geom_friction": geom_friction,
+      "body_mass": body_mass,
+      "qpos0": qpos0,
+      "dof_frictionloss": dof_frictionloss,
+      "dof_armature": dof_armature,
+      "dof_damping": dof_damping,
+      "actuator_gainprm": actuator_gainprm,
+      "actuator_biasprm": actuator_biasprm,
   })
 
   return model, in_axes 

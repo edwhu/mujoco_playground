@@ -22,6 +22,11 @@ CUBE_TOUCH_XML = ROOT_PATH / "xmls" / "scene_mjx_cube_touch.xml"
 CUBE_TOUCH_CIRCLE_DETAIL_NO_SIDES_XML = ROOT_PATH / "xmls" / "scene_mjx_cube_touch_circle_detail_no_sides.xml"
 CUBE_TOUCH_CIRCLE_DETAIL_XML = ROOT_PATH / "xmls" / "scene_mjx_cube_touch_circle_detail.xml"
 
+DOOR_XML = ROOT_PATH / "xmls" / "scene_mjx_door.xml"
+DOOR_TOUCH_XML = ROOT_PATH / "xmls" / "scene_mjx_door_touch.xml"
+DOOR_RANDOM_XML = ROOT_PATH / "xmls" / "scene_mjx_door_random.xml"
+DOOR_RANDOM_TOUCH_XML = ROOT_PATH / "xmls" / "scene_mjx_door_random_touch.xml"
+
 NQ = 16
 NV = 16
 NU = 16
@@ -439,7 +444,7 @@ TOUCH_SENSOR_NAMES_CIRCLE_DETAIL_NO_SIDES = [
 ]
 
 # Use regex to parse this
-TOUCH_SENSOR_NAMES_CIRCLE_DETAIL = [
+TOUCH_SENSOR_NAMES_DETAIL = [
 	"palm_touch_row0_col0",
 	"palm_touch_row0_col1",
 	"palm_touch_row0_col2",
