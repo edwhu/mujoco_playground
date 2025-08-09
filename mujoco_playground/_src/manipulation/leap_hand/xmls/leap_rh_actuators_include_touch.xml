@@ -1,10 +1,6 @@
 <mujocoinclude>
   <actuator>
     <!-- Base motion actuators similar to ADROIT forearm joints -->
-    <!-- <general name="A_H_Tz" joint="H_Tz" ctrlrange="-0.3 0.5" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
-    <general name="A_H_Rx" joint="H_Rx" ctrlrange="-.75 .75" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
-    <general name="A_H_Ry" joint="H_Ry" ctrlrange="-.75 .75" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
-    <general name="A_H_Rz" joint="H_Rz" ctrlrange="-1.0 2.0" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" /> -->
     <general name="A_H_Tx" joint="H_Tx" ctrlrange="-0.3 0.5" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
     <general name="A_H_Rx" joint="H_Rx" ctrlrange="-.75 .75" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
     <general name="A_H_Ry" joint="H_Ry" ctrlrange="-.75 .75" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
@@ -32,15 +28,352 @@
   </actuator>
 
   <sensor>
-    <!-- Palm touch sensors -->
-    <touch name="palm_touch_center" site="palm_touch_center"/>
-    <touch name="palm_touch_left" site="palm_touch_left"/>
-    <touch name="palm_touch_right" site="palm_touch_right"/>
+    <!-- Palm grid touch sensors -->
+    <touch name="palm_touch_row0_col0" site="palm_touch_row0_col0"/>
+    <touch name="palm_touch_row0_col1" site="palm_touch_row0_col1"/>
+    <touch name="palm_touch_row0_col2" site="palm_touch_row0_col2"/>
+    <touch name="palm_touch_row0_col3" site="palm_touch_row0_col3"/>
+    <touch name="palm_touch_row0_col4" site="palm_touch_row0_col4"/>
+    <touch name="palm_touch_row0_col5" site="palm_touch_row0_col5"/>
+    <touch name="palm_touch_row0_col6" site="palm_touch_row0_col6"/>
+    <touch name="palm_touch_row0_col7" site="palm_touch_row0_col7"/>
+    <touch name="palm_touch_row0_col8" site="palm_touch_row0_col8"/>
+    <touch name="palm_touch_row0_col9" site="palm_touch_row0_col9"/>
+    <touch name="palm_touch_row0_col10" site="palm_touch_row0_col10"/>
+    <touch name="palm_touch_row0_col11" site="palm_touch_row0_col11"/>
+
+    <touch name="palm_touch_row1_col0" site="palm_touch_row1_col0"/>
+    <touch name="palm_touch_row1_col1" site="palm_touch_row1_col1"/>
+    <touch name="palm_touch_row1_col2" site="palm_touch_row1_col2"/>
+    <touch name="palm_touch_row1_col3" site="palm_touch_row1_col3"/>
+    <touch name="palm_touch_row1_col4" site="palm_touch_row1_col4"/>
+    <touch name="palm_touch_row1_col5" site="palm_touch_row1_col5"/>
+    <touch name="palm_touch_row1_col6" site="palm_touch_row1_col6"/>
+    <touch name="palm_touch_row1_col7" site="palm_touch_row1_col7"/>
+    <touch name="palm_touch_row1_col8" site="palm_touch_row1_col8"/>
+    <touch name="palm_touch_row1_col9" site="palm_touch_row1_col9"/>
+    <touch name="palm_touch_row1_col10" site="palm_touch_row1_col10"/>
+
+    <touch name="palm_touch_row2_col0" site="palm_touch_row2_col0"/>
+    <touch name="palm_touch_row2_col1" site="palm_touch_row2_col1"/>
+    <touch name="palm_touch_row2_col2" site="palm_touch_row2_col2"/>
+    <touch name="palm_touch_row2_col3" site="palm_touch_row2_col3"/>
+    <touch name="palm_touch_row2_col4" site="palm_touch_row2_col4"/>
+    <touch name="palm_touch_row2_col5" site="palm_touch_row2_col5"/>
+    <touch name="palm_touch_row2_col6" site="palm_touch_row2_col6"/>
+    <touch name="palm_touch_row2_col7" site="palm_touch_row2_col7"/>
+    <touch name="palm_touch_row2_col8" site="palm_touch_row2_col8"/>
+
+    <touch name="palm_touch_row3_col0" site="palm_touch_row3_col0"/>
+    <touch name="palm_touch_row3_col1" site="palm_touch_row3_col1"/>
+    <touch name="palm_touch_row3_col2" site="palm_touch_row3_col2"/>
+    <touch name="palm_touch_row3_col3" site="palm_touch_row3_col3"/>
+    <touch name="palm_touch_row3_col4" site="palm_touch_row3_col4"/>
+    <touch name="palm_touch_row3_col5" site="palm_touch_row3_col5"/>
+
+    <touch name="palm_touch_row4_col0" site="palm_touch_row4_col0"/>
+    <touch name="palm_touch_row4_col1" site="palm_touch_row4_col1"/>
+    <touch name="palm_touch_row4_col2" site="palm_touch_row4_col2"/>
+    <touch name="palm_touch_row4_col3" site="palm_touch_row4_col3"/>
+    <touch name="palm_touch_row4_col4" site="palm_touch_row4_col4"/>
+
+    <touch name="palm_touch_row5_col0" site="palm_touch_row5_col0"/>
+    <touch name="palm_touch_row5_col1" site="palm_touch_row5_col1"/>
+    <touch name="palm_touch_row5_col2" site="palm_touch_row5_col2"/>
+    <touch name="palm_touch_row5_col3" site="palm_touch_row5_col3"/>
+    <touch name="palm_touch_row5_col4" site="palm_touch_row5_col4"/>
+    <touch name="palm_touch_row5_col5" site="palm_touch_row5_col5"/>
+
+    <touch name="palm_touch_row6_col0" site="palm_touch_row6_col0"/>
+    <touch name="palm_touch_row6_col1" site="palm_touch_row6_col1"/>
+    <touch name="palm_touch_row6_col2" site="palm_touch_row6_col2"/>
+    <touch name="palm_touch_row6_col3" site="palm_touch_row6_col3"/>
+    <touch name="palm_touch_row6_col4" site="palm_touch_row6_col4"/>
+    <touch name="palm_touch_row6_col5" site="palm_touch_row6_col5"/>
+    <touch name="palm_touch_row6_col6" site="palm_touch_row6_col6"/>
+
+    <touch name="palm_touch_row7_col0" site="palm_touch_row7_col0"/>
+    <touch name="palm_touch_row7_col1" site="palm_touch_row7_col1"/>
+    <touch name="palm_touch_row7_col2" site="palm_touch_row7_col2"/>
+    <touch name="palm_touch_row7_col3" site="palm_touch_row7_col3"/>
+    <touch name="palm_touch_row7_col4" site="palm_touch_row7_col4"/>
+
+    <touch name="palm_touch_row8_col0" site="palm_touch_row8_col0"/>
+    <touch name="palm_touch_row8_col1" site="palm_touch_row8_col1"/>
+    <touch name="palm_touch_row8_col2" site="palm_touch_row8_col2"/>
+    <touch name="palm_touch_row8_col3" site="palm_touch_row8_col3"/>
+    <touch name="palm_touch_row8_col4" site="palm_touch_row8_col4"/>
+    <touch name="palm_touch_row8_col5" site="palm_touch_row8_col5"/>
     
-    <!-- Finger tip touch sensors -->
+    <touch name="palm_touch_row9_col0" site="palm_touch_row9_col0"/>
+    <touch name="palm_touch_row9_col1" site="palm_touch_row9_col1"/>
+    <touch name="palm_touch_row9_col2" site="palm_touch_row9_col2"/>
+    <touch name="palm_touch_row9_col3" site="palm_touch_row9_col3"/>
+    <touch name="palm_touch_row9_col4" site="palm_touch_row9_col4"/>
+    <touch name="palm_touch_row9_col5" site="palm_touch_row9_col5"/>
+
+    <!-- Index finger touch sensors -->
+    <touch name="if_px_touch" site="if_px_touch"/>
+    <touch name="if_px_touch_left" site="if_px_touch_left"/>
+    <touch name="if_px_touch_right" site="if_px_touch_right"/>
+    <touch name="if_px_touch_up" site="if_px_touch_up"/>
+    <touch name="if_px_touch_down" site="if_px_touch_down"/>
+    <touch name="if_px_touch_left_down" site="if_px_touch_left_down"/>
+    <touch name="if_px_touch_left_up" site="if_px_touch_left_up"/>
+    <touch name="if_px_touch_right_down" site="if_px_touch_right_down"/>
+    <touch name="if_px_touch_right_up" site="if_px_touch_right_up"/>
+    <touch name="if_md_touch" site="if_md_touch"/>
+    <touch name="if_md_touch_left" site="if_md_touch_left"/>
+    <touch name="if_md_touch_right" site="if_md_touch_right"/>
+    <touch name="if_md_touch_up" site="if_md_touch_up"/>
+    <touch name="if_md_touch_down" site="if_md_touch_down"/>
+    <touch name="if_md_touch_left_down" site="if_md_touch_left_down"/>
+    <touch name="if_md_touch_left_up" site="if_md_touch_left_up"/>
+    <touch name="if_md_touch_right_down" site="if_md_touch_right_down"/>
+    <touch name="if_md_touch_right_up" site="if_md_touch_right_up"/>
     <touch name="if_tip_touch" site="if_tip_touch"/>
+    <touch name="if_tip_touch_left" site="if_tip_touch_left"/>
+    <touch name="if_tip_touch_right" site="if_tip_touch_right"/>
+    <touch name="if_tip_touch_up" site="if_tip_touch_up"/>
+    <touch name="if_tip_touch_down" site="if_tip_touch_down"/>
+    <touch name="if_tip_touch_left_down" site="if_tip_touch_left_down"/>
+    <touch name="if_tip_touch_right_down" site="if_tip_touch_right_down"/>
+    <touch name="if_tip_touch_left_up" site="if_tip_touch_left_up"/>
+    <touch name="if_tip_touch_right_up" site="if_tip_touch_right_up"/>
+    <touch name="if_front_touch" site="if_front_touch"/>
+    <touch name="if_front_touch_left" site="if_front_touch_left"/>
+    <touch name="if_front_touch_right" site="if_front_touch_right"/>
+    <touch name="if_front_right_touch_up" site="if_front_right_touch_up"/>
+    <touch name="if_front_right_touch_middle" site="if_front_right_touch_middle"/>
+    <touch name="if_front_right_touch_down" site="if_front_right_touch_down"/>
+    <touch name="if_front_left_touch_up" site="if_front_left_touch_up"/>
+    <touch name="if_front_left_touch_middle" site="if_front_left_touch_middle"/>
+    <touch name="if_front_left_touch_down" site="if_front_left_touch_down"/>
+    <touch name="if_front_touch_lower" site="if_front_touch_lower"/>
+    <touch name="if_front_touch_left_lower" site="if_front_touch_left_lower"/>
+    <touch name="if_front_touch_right_lower" site="if_front_touch_right_lower"/>
+    <touch name="if_front_right_touch_up_lower" site="if_front_right_touch_up_lower"/>
+    <touch name="if_front_right_touch_middle_lower" site="if_front_right_touch_middle_lower"/>
+    <touch name="if_front_right_touch_down_lower" site="if_front_right_touch_down_lower"/>
+    <touch name="if_front_left_touch_up_lower" site="if_front_left_touch_up_lower"/>
+    <touch name="if_front_left_touch_middle_lower" site="if_front_left_touch_middle_lower"/>
+    <touch name="if_front_left_touch_down_lower" site="if_front_left_touch_down_lower"/>
+    <touch name="if_tip_touch_back" site="if_tip_touch_back"/>
+    <touch name="if_tip_touch_left_back" site="if_tip_touch_left_back"/>
+    <touch name="if_tip_touch_right_back" site="if_tip_touch_right_back"/>
+    <touch name="if_tip_touch_up_back" site="if_tip_touch_up_back"/>
+    <touch name="if_tip_touch_down_back" site="if_tip_touch_down_back"/>
+    <touch name="if_tip_touch_left_down_back" site="if_tip_touch_left_down_back"/>
+    <touch name="if_tip_touch_right_down_back" site="if_tip_touch_right_down_back"/>
+    <touch name="if_tip_touch_left_up_back" site="if_tip_touch_left_up_back"/>
+    <touch name="if_tip_touch_right_up_back" site="if_tip_touch_right_up_back"/>
+    <touch name="if_tip_touch_joint_right" site="if_tip_touch_joint_right"/>
+    <touch name="if_tip_touch_joint_left" site="if_tip_touch_joint_left"/>
+
+    <!-- Middle finger touch sensors -->
+    <touch name="mf_px_touch" site="mf_px_touch"/>
+    <touch name="mf_px_touch_left" site="mf_px_touch_left"/>
+    <touch name="mf_px_touch_right" site="mf_px_touch_right"/>
+    <touch name="mf_px_touch_up" site="mf_px_touch_up"/>
+    <touch name="mf_px_touch_down" site="mf_px_touch_down"/>
+    <touch name="mf_px_touch_left_down" site="mf_px_touch_left_down"/>
+    <touch name="mf_px_touch_left_up" site="mf_px_touch_left_up"/>
+    <touch name="mf_px_touch_right_down" site="mf_px_touch_right_down"/>
+    <touch name="mf_px_touch_right_up" site="mf_px_touch_right_up"/>
+    <touch name="mf_md_touch" site="mf_md_touch"/>
+    <touch name="mf_md_touch_left" site="mf_md_touch_left"/>
+    <touch name="mf_md_touch_right" site="mf_md_touch_right"/>
+    <touch name="mf_md_touch_up" site="mf_md_touch_up"/>
+    <touch name="mf_md_touch_down" site="mf_md_touch_down"/>
+    <touch name="mf_md_touch_left_down" site="mf_md_touch_left_down"/>
+    <touch name="mf_md_touch_left_up" site="mf_md_touch_left_up"/>
+    <touch name="mf_md_touch_right_down" site="mf_md_touch_right_down"/>
+    <touch name="mf_md_touch_right_up" site="mf_md_touch_right_up"/>
     <touch name="mf_tip_touch" site="mf_tip_touch"/>
+    <touch name="mf_tip_touch_left" site="mf_tip_touch_left"/>
+    <touch name="mf_tip_touch_right" site="mf_tip_touch_right"/>
+    <touch name="mf_tip_touch_up" site="mf_tip_touch_up"/>
+    <touch name="mf_tip_touch_down" site="mf_tip_touch_down"/>
+    <touch name="mf_tip_touch_left_down" site="mf_tip_touch_left_down"/>
+    <touch name="mf_tip_touch_right_down" site="mf_tip_touch_right_down"/>
+    <touch name="mf_tip_touch_left_up" site="mf_tip_touch_left_up"/>
+    <touch name="mf_tip_touch_right_up" site="mf_tip_touch_right_up"/>
+    <touch name="mf_front_touch" site="mf_front_touch"/>
+    <touch name="mf_front_touch_left" site="mf_front_touch_left"/>
+    <touch name="mf_front_touch_right" site="mf_front_touch_right"/>
+    <touch name="mf_front_right_touch_up" site="mf_front_right_touch_up"/>
+    <touch name="mf_front_right_touch_middle" site="mf_front_right_touch_middle"/>
+    <touch name="mf_front_right_touch_down" site="mf_front_right_touch_down"/>
+    <touch name="mf_front_left_touch_up" site="mf_front_left_touch_up"/>
+    <touch name="mf_front_left_touch_middle" site="mf_front_left_touch_middle"/>
+    <touch name="mf_front_left_touch_down" site="mf_front_left_touch_down"/>
+    <touch name="mf_front_touch_lower" site="mf_front_touch_lower"/>
+    <touch name="mf_front_touch_left_lower" site="mf_front_touch_left_lower"/>
+    <touch name="mf_front_touch_right_lower" site="mf_front_touch_right_lower"/>
+    <touch name="mf_front_right_touch_up_lower" site="mf_front_right_touch_up_lower"/>
+    <touch name="mf_front_right_touch_middle_lower" site="mf_front_right_touch_middle_lower"/>
+    <touch name="mf_front_right_touch_down_lower" site="mf_front_right_touch_down_lower"/>
+    <touch name="mf_front_left_touch_up_lower" site="mf_front_left_touch_up_lower"/>
+    <touch name="mf_front_left_touch_middle_lower" site="mf_front_left_touch_middle_lower"/>
+    <touch name="mf_front_left_touch_down_lower" site="mf_front_left_touch_down_lower"/>
+    <touch name="mf_tip_touch_back" site="mf_tip_touch_back"/>
+    <touch name="mf_tip_touch_left_back" site="mf_tip_touch_left_back"/>
+    <touch name="mf_tip_touch_right_back" site="mf_tip_touch_right_back"/>
+    <touch name="mf_tip_touch_up_back" site="mf_tip_touch_up_back"/>
+    <touch name="mf_tip_touch_down_back" site="mf_tip_touch_down_back"/>
+    <touch name="mf_tip_touch_left_down_back" site="mf_tip_touch_left_down_back"/>
+    <touch name="mf_tip_touch_right_down_back" site="mf_tip_touch_right_down_back"/>
+    <touch name="mf_tip_touch_left_up_back" site="mf_tip_touch_left_up_back"/>
+    <touch name="mf_tip_touch_right_up_back" site="mf_tip_touch_right_up_back"/>
+    <touch name="mf_tip_touch_joint_right" site="mf_tip_touch_joint_right"/>
+    <touch name="mf_tip_touch_joint_left" site="mf_tip_touch_joint_left"/>
+
+    <!-- Ring finger touch sensors -->
+    <touch name="rf_px_touch" site="rf_px_touch"/>
+    <touch name="rf_px_touch_left" site="rf_px_touch_left"/>
+    <touch name="rf_px_touch_right" site="rf_px_touch_right"/>
+    <touch name="rf_px_touch_up" site="rf_px_touch_up"/>
+    <touch name="rf_px_touch_down" site="rf_px_touch_down"/>
+    <touch name="rf_px_touch_left_down" site="rf_px_touch_left_down"/>
+    <touch name="rf_px_touch_left_up" site="rf_px_touch_left_up"/>
+    <touch name="rf_px_touch_right_down" site="rf_px_touch_right_down"/>
+    <touch name="rf_px_touch_right_up" site="rf_px_touch_right_up"/>
+    <touch name="rf_md_touch" site="rf_md_touch"/>
+    <touch name="rf_md_touch_left" site="rf_md_touch_left"/>
+    <touch name="rf_md_touch_right" site="rf_md_touch_right"/>
+    <touch name="rf_md_touch_up" site="rf_md_touch_up"/>
+    <touch name="rf_md_touch_down" site="rf_md_touch_down"/>
+    <touch name="rf_md_touch_left_down" site="rf_md_touch_left_down"/>
+    <touch name="rf_md_touch_left_up" site="rf_md_touch_left_up"/>
+    <touch name="rf_md_touch_right_down" site="rf_md_touch_right_down"/>
+    <touch name="rf_md_touch_right_up" site="rf_md_touch_right_up"/>
     <touch name="rf_tip_touch" site="rf_tip_touch"/>
+    <touch name="rf_tip_touch_left" site="rf_tip_touch_left"/>
+    <touch name="rf_tip_touch_right" site="rf_tip_touch_right"/>
+    <touch name="rf_tip_touch_up" site="rf_tip_touch_up"/>
+    <touch name="rf_tip_touch_down" site="rf_tip_touch_down"/>
+    <touch name="rf_tip_touch_left_down" site="rf_tip_touch_left_down"/>
+    <touch name="rf_tip_touch_right_down" site="rf_tip_touch_right_down"/>
+    <touch name="rf_tip_touch_left_up" site="rf_tip_touch_left_up"/>
+    <touch name="rf_tip_touch_right_up" site="rf_tip_touch_right_up"/>
+    <touch name="rf_front_touch" site="rf_front_touch"/>
+    <touch name="rf_front_touch_left" site="rf_front_touch_left"/>
+    <touch name="rf_front_touch_right" site="rf_front_touch_right"/>
+    <touch name="rf_front_right_touch_up" site="rf_front_right_touch_up"/>
+    <touch name="rf_front_right_touch_middle" site="rf_front_right_touch_middle"/>
+    <touch name="rf_front_right_touch_down" site="rf_front_right_touch_down"/>
+    <touch name="rf_front_left_touch_up" site="rf_front_left_touch_up"/>
+    <touch name="rf_front_left_touch_middle" site="rf_front_left_touch_middle"/>
+    <touch name="rf_front_left_touch_down" site="rf_front_left_touch_down"/>
+    <touch name="rf_front_touch_lower" site="rf_front_touch_lower"/>
+    <touch name="rf_front_touch_left_lower" site="rf_front_touch_left_lower"/>
+    <touch name="rf_front_touch_right_lower" site="rf_front_touch_right_lower"/>
+    <touch name="rf_front_right_touch_up_lower" site="rf_front_right_touch_up_lower"/>
+    <touch name="rf_front_right_touch_middle_lower" site="rf_front_right_touch_middle_lower"/>
+    <touch name="rf_front_right_touch_down_lower" site="rf_front_right_touch_down_lower"/>
+    <touch name="rf_front_left_touch_up_lower" site="rf_front_left_touch_up_lower"/>
+    <touch name="rf_front_left_touch_middle_lower" site="rf_front_left_touch_middle_lower"/>
+    <touch name="rf_front_left_touch_down_lower" site="rf_front_left_touch_down_lower"/>
+    <touch name="rf_tip_touch_back" site="rf_tip_touch_back"/>
+    <touch name="rf_tip_touch_left_back" site="rf_tip_touch_left_back"/>
+    <touch name="rf_tip_touch_right_back" site="rf_tip_touch_right_back"/>
+    <touch name="rf_tip_touch_up_back" site="rf_tip_touch_up_back"/>
+    <touch name="rf_tip_touch_down_back" site="rf_tip_touch_down_back"/>
+    <touch name="rf_tip_touch_left_down_back" site="rf_tip_touch_left_down_back"/>
+    <touch name="rf_tip_touch_right_down_back" site="rf_tip_touch_right_down_back"/>
+    <touch name="rf_tip_touch_left_up_back" site="rf_tip_touch_left_up_back"/>
+    <touch name="rf_tip_touch_right_up_back" site="rf_tip_touch_right_up_back"/>
+    <touch name="rf_tip_touch_joint_right" site="rf_tip_touch_joint_right"/>
+    <touch name="rf_tip_touch_joint_left" site="rf_tip_touch_joint_left"/>
+
+    <!-- Thumb touch sensors -->
+    <touch name="th_px_touch" site="th_px_touch"/>
+    <touch name="th_px_touch_up" site="th_px_touch_up"/>
+    <touch name="th_px_touch_down" site="th_px_touch_down"/>
+    <touch name="th_px_touch_right" site="th_px_touch_right"/>
+    <touch name="th_px_touch_left" site="th_px_touch_left"/>
+    <touch name="th_px_touch_left_up" site="th_px_touch_left_up"/>
+    <touch name="th_px_touch_left_down" site="th_px_touch_left_down"/>
+    <touch name="th_px_touch_right_up" site="th_px_touch_right_up"/>
+    <touch name="th_px_touch_right_down" site="th_px_touch_right_down"/>
+    <touch name="th_ds_touch" site="th_ds_touch"/>
+    <touch name="th_ds_touch_up" site="th_ds_touch_up"/>
+    <touch name="th_ds_touch_down" site="th_ds_touch_down"/>
+    <touch name="th_ds_touch_right" site="th_ds_touch_right"/>
+    <touch name="th_ds_touch_left" site="th_ds_touch_left"/>
+    <touch name="th_ds_touch_left_up" site="th_ds_touch_left_up"/>
+    <touch name="th_ds_touch_left_down" site="th_ds_touch_left_down"/>
+    <touch name="th_ds_touch_right_up" site="th_ds_touch_right_up"/>
+    <touch name="th_ds_touch_right_down" site="th_ds_touch_right_down"/>
+    <touch name="th_ds_touch_up_up" site="th_ds_touch_up_up"/>
+    <touch name="th_ds_touch_left_up_up" site="th_ds_touch_left_up_up"/>
+    <touch name="th_ds_touch_right_up_up" site="th_ds_touch_right_up_up"/>
     <touch name="th_tip_touch" site="th_tip_touch"/>
+    <touch name="th_tip_touch_up" site="th_tip_touch_up"/>
+    <touch name="th_tip_touch_down" site="th_tip_touch_down"/>
+    <touch name="th_tip_touch_left" site="th_tip_touch_left"/>
+    <touch name="th_tip_touch_right" site="th_tip_touch_right"/>
+    <touch name="th_tip_touch_left_up" site="th_tip_touch_left_up"/>
+    <touch name="th_tip_touch_left_down" site="th_tip_touch_left_down"/>
+    <touch name="th_tip_touch_right_up" site="th_tip_touch_right_up"/>
+    <touch name="th_tip_touch_right_down" site="th_tip_touch_right_down"/>
+    <touch name="th_front_touch" site="th_front_touch"/>
+    <touch name="th_front_touch_left" site="th_front_touch_left"/>
+    <touch name="th_front_touch_right" site="th_front_touch_right"/>
+    <touch name="th_front_right_touch_up" site="th_front_right_touch_up"/>
+    <touch name="th_front_right_touch_middle" site="th_front_right_touch_middle"/>
+    <touch name="th_front_right_touch_down" site="th_front_right_touch_down"/>
+    <touch name="th_front_left_touch_up" site="th_front_left_touch_up"/>
+    <touch name="th_front_left_touch_middle" site="th_front_left_touch_middle"/>
+    <touch name="th_front_left_touch_down" site="th_front_left_touch_down"/>
+    <touch name="th_front_touch_lower" site="th_front_touch_lower"/>
+    <touch name="th_front_touch_left_lower" site="th_front_touch_left_lower"/>
+    <touch name="th_front_touch_right_lower" site="th_front_touch_right_lower"/>
+    <touch name="th_front_right_touch_up_lower" site="th_front_right_touch_up_lower"/>
+    <touch name="th_front_right_touch_middle_lower" site="th_front_right_touch_middle_lower"/>
+    <touch name="th_front_right_touch_down_lower" site="th_front_right_touch_down_lower"/>
+    <touch name="th_front_left_touch_up_lower" site="th_front_left_touch_up_lower"/>
+    <touch name="th_front_left_touch_middle_lower" site="th_front_left_touch_middle_lower"/>
+    <touch name="th_front_left_touch_down_lower" site="th_front_left_touch_down_lower"/>
+    <touch name="th_tip_touch_back" site="th_tip_touch_back"/>
+    <touch name="th_tip_touch_left_back" site="th_tip_touch_left_back"/>
+    <touch name="th_tip_touch_right_back" site="th_tip_touch_right_back"/>
+    <touch name="th_tip_touch_up_back" site="th_tip_touch_up_back"/>
+    <touch name="th_tip_touch_down_back" site="th_tip_touch_down_back"/>
+    <touch name="th_tip_touch_left_down_back" site="th_tip_touch_left_down_back"/>
+    <touch name="th_tip_touch_right_down_back" site="th_tip_touch_right_down_back"/>
+    <touch name="th_tip_touch_left_up_back" site="th_tip_touch_left_up_back"/>
+    <touch name="th_tip_touch_right_up_back" site="th_tip_touch_right_up_back"/>
+    <touch name="th_tip_touch_joint_right" site="th_tip_touch_joint_right"/>
+    <touch name="th_tip_touch_joint_left" site="th_tip_touch_joint_left"/>
+
+    <!-- Individual palm touch sensors -->
+    <touch name="palm_touch_if" site="palm_touch_if"/>
+    <touch name="palm_touch_if_down" site="palm_touch_if_down"/>
+    <touch name="palm_touch_if_up" site="palm_touch_if_up"/>
+    <touch name="palm_touch_if_left" site="palm_touch_if_left"/>
+    <touch name="palm_touch_if_right" site="palm_touch_if_right"/>
+    <touch name="palm_touch_if_left_up" site="palm_touch_if_left_up"/>
+    <touch name="palm_touch_if_right_up" site="palm_touch_if_right_up"/>
+    <touch name="palm_touch_if_left_down" site="palm_touch_if_left_down"/>
+    <touch name="palm_touch_if_right_down" site="palm_touch_if_right_down"/>
+    <touch name="palm_touch_mf" site="palm_touch_mf"/>
+    <touch name="palm_touch_mf_down" site="palm_touch_mf_down"/>
+    <touch name="palm_touch_mf_up" site="palm_touch_mf_up"/>
+    <touch name="palm_touch_mf_left" site="palm_touch_mf_left"/>
+    <touch name="palm_touch_mf_right" site="palm_touch_mf_right"/>
+    <touch name="palm_touch_mf_left_up" site="palm_touch_mf_left_up"/>
+    <touch name="palm_touch_mf_right_up" site="palm_touch_mf_right_up"/>
+    <touch name="palm_touch_mf_left_down" site="palm_touch_mf_left_down"/>
+    <touch name="palm_touch_mf_right_down" site="palm_touch_mf_right_down"/>
+    <touch name="palm_touch_rf" site="palm_touch_rf"/>
+    <touch name="palm_touch_rf_down" site="palm_touch_rf_down"/>
+    <touch name="palm_touch_rf_up" site="palm_touch_rf_up"/>
+    <touch name="palm_touch_rf_left" site="palm_touch_rf_left"/>
+    <touch name="palm_touch_rf_right" site="palm_touch_rf_right"/>
+    <touch name="palm_touch_rf_left_up" site="palm_touch_rf_left_up"/>
+    <touch name="palm_touch_rf_right_up" site="palm_touch_rf_right_up"/>
+    <touch name="palm_touch_rf_left_down" site="palm_touch_rf_left_down"/>
+    <touch name="palm_touch_rf_right_down" site="palm_touch_rf_right_down"/>
   </sensor>
 </mujocoinclude> 
