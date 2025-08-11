@@ -73,7 +73,7 @@ class DoorOpenRandomTouch(leap_hand_base.LeapHandEnv):
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
     super().__init__(
-        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_door_random_touch.xml",
+        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_door_touch.xml",
         config=config,
         config_overrides=config_overrides,
     )
