@@ -26,6 +26,15 @@ from mujoco_playground._src import mjx_env
 from mujoco_playground._src.manipulation.leap_hand import base as leap_hand_base
 from mujoco_playground._src.manipulation.leap_hand import leap_hand_constants as consts
 
+# Cache for frame body ID (computed once when module is imported)
+_FRAME_BODY_ID = None
+
+def _get_frame_body_id() -> int:
+  """Get frame body ID - hardcoded for now since we can't access mj_model from domain_randomize."""
+  # Frame body ID is 21 (found by testing)
+  # This is hardcoded because domain_randomize only receives mjx_model, not mj_model
+  return 21
+
 
 def default_config() -> config_dict.ConfigDict:
   return config_dict.create(
@@ -92,10 +101,8 @@ class DoorOpenRandomTouch(leap_hand_base.LeapHandEnv):
     # Get actuator limits for hand joints only
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
     
-    # Door frame translation joints (for continuous randomization)
-    self._door_tx_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_tx"])[0]
-    self._door_ty_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_ty"])[0]
-    self._door_tz_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_tz"])[0]
+    # Get frame body ID for door position randomization
+    self._frame_body_id = self._mj_model.body("frame").id
     
     # Precompute touch sensor ids and total size for observation history
     self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_DETAIL
@@ -103,12 +110,6 @@ class DoorOpenRandomTouch(leap_hand_base.LeapHandEnv):
     self._touch_size = int(np.sum(self._mj_model.sensor_dim[self._touch_sensor_ids]))
 
   def reset(self, rng: jax.Array) -> mjx_env.State:
-    # Sample continuous frame offsets within joint ranges and set in qpos
-    rng, kx, ky, kz = jax.random.split(rng, 4)
-    tx = jax.random.uniform(kx, (), minval=-0.15, maxval=0.15)
-    ty = jax.random.uniform(ky, (), minval=-0.2, maxval=0.2)
-    tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.05)
-
     # Use exact XML initial hand pose
     q_hand = self._default_pose
     v_hand = jp.zeros_like(self._default_pose)
@@ -119,10 +120,6 @@ class DoorOpenRandomTouch(leap_hand_base.LeapHandEnv):
     # Set hand joints
     qpos = qpos.at[self._hand_qids].set(q_hand)
     qvel = qvel.at[self._hand_dqids].set(v_hand)
-    # Apply door frame translations via the new joints
-    qpos = qpos.at[self._door_tx_qid].set(tx)
-    qpos = qpos.at[self._door_ty_qid].set(ty)
-    qpos = qpos.at[self._door_tz_qid].set(tz)
     # Explicitly set door and latch closed at start
     qpos = qpos.at[self._door_qid].set(0.0)
     qpos = qpos.at[self._latch_qid].set(0.0)
@@ -300,18 +297,32 @@ class DoorOpenRandomTouch(leap_hand_base.LeapHandEnv):
 
 
 def domain_randomize(model: mjx.Model, rng: jax.Array):
-  """Replicates model across batch without changing physics (fast compile).
+  """Randomizes door position by modifying frame body position."""
 
-  We only replicate body_pos so that rendering sync in the wrapper can index
-  per-env body positions, but we do not alter any model parameters. All other
-  fields are left unbatched/broadcasted.
-  """
+  # Get frame body ID (hardcoded for now)
+  frame_body_id = _get_frame_body_id()
 
   @jax.vmap
-  def replicate_body_pos(_rng):
-    return model.body_pos
+  def randomize_door_pos(rng):
+    # Sample continuous frame offsets within joint ranges
+    rng, kx, ky, kz = jax.random.split(rng, 4)
+    tx = jax.random.uniform(kx, (), minval=-0.15, maxval=0.15)
+    ty = jax.random.uniform(ky, (), minval=-0.15, maxval=0.15)
+    tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.05)
+    # tx = jax.random.uniform(kx, (), minval=-0.01, maxval=0.01)
+    # ty = jax.random.uniform(ky, (), minval=-0.01, maxval=0.01)
+    # tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.01)
 
-  body_pos = replicate_body_pos(rng)
+    # Get the original frame position and add the offset
+    original_pos = model.body_pos[frame_body_id]
+    offset = jp.array([tx, ty, tz])
+    new_pos = original_pos + offset
+
+    # Create new body_pos with randomized frame position
+    new_body_pos = model.body_pos.at[frame_body_id].set(new_pos)
+    return new_body_pos
+
+  body_pos = randomize_door_pos(rng)
 
   in_axes = jax.tree_util.tree_map(lambda _: None, model)
   in_axes = in_axes.tree_replace({
