@@ -265,130 +265,169 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     return jp.sum(jp.square(act - last_act))
 
 
+
 def domain_randomize(model: mjx.Model, rng: jax.Array):
-  mj_model = DoorOpen().mj_model
-  hand_qids = mjx_env.get_qpos_ids(mj_model, ["H_Tx", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES)
-  hand_body_names = [
-      "palm",
-      "if_bs",
-      "if_px",
-      "if_md",
-      "if_ds",
-      "mf_bs",
-      "mf_px",
-      "mf_md",
-      "mf_ds",
-      "rf_bs",
-      "rf_px",
-      "rf_md",
-      "rf_ds",
-      "th_mp",
-      "th_bs",
-      "th_px",
-      "th_ds",
-  ]
-  hand_body_ids = np.array([mj_model.body(n).id for n in hand_body_names])
-  fingertip_geoms = ["th_tip", "if_tip", "mf_tip", "rf_tip"]
-  fingertip_geom_ids = [mj_model.geom(g).id for g in fingertip_geoms]
+  """Randomizes door position by modifying frame body position."""
+
+  # Get frame body ID (hardcoded for now)
+  frame_body_id = _get_frame_body_id()
 
   @jax.vmap
-  def rand(rng):
-    # Fingertip friction: =U(0.5, 1.0).
-    rng, key = jax.random.split(rng)
-    fingertip_friction = jax.random.uniform(key, (1,), minval=0.5, maxval=1.0)
-    geom_friction = model.geom_friction.at[fingertip_geom_ids, 0].set(
-        fingertip_friction
-    )
+  def randomize_door_pos(rng):
+    # Sample continuous frame offsets within joint ranges
+    rng, kx, ky, kz = jax.random.split(rng, 4)
+    tx = jax.random.uniform(kx, (), minval=-0.15, maxval=0.15)
+    ty = jax.random.uniform(ky, (), minval=-0.15, maxval=0.15)
+    tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.05)
+    
+    # Get the original frame position and add the offset
+    original_pos = model.body_pos[frame_body_id]
+    offset = jp.array([tx, ty, tz])
+    new_pos = original_pos + offset
 
-    # Jitter qpos0: +U(-0.05, 0.05).
-    rng, key = jax.random.split(rng)
-    qpos0 = model.qpos0
-    qpos0 = qpos0.at[hand_qids].set(
-        qpos0[hand_qids]
-        + jax.random.uniform(key, shape=(len(hand_qids),), minval=-0.05, maxval=0.05)
-    )
+    # Create new body_pos with randomized frame position
+    new_body_pos = model.body_pos.at[frame_body_id].set(new_pos)
+    return new_body_pos
 
-    # Scale static friction: *U(0.9, 1.1).
-    rng, key = jax.random.split(rng)
-    frictionloss = model.dof_frictionloss[hand_qids] * jax.random.uniform(
-        key, shape=(len(hand_qids),), minval=0.5, maxval=2.0
-    )
-    dof_frictionloss = model.dof_frictionloss.at[hand_qids].set(frictionloss)
+  body_pos = randomize_door_pos(rng)
 
-    # Scale armature: *U(1.0, 1.05).
-    rng, key = jax.random.split(rng)
-    armature = model.dof_armature[hand_qids] * jax.random.uniform(
-        key, shape=(len(hand_qids),), minval=1.0, maxval=1.05
-    )
-    dof_armature = model.dof_armature.at[hand_qids].set(armature)
-
-    # Scale all link masses: *U(0.9, 1.1).
-    rng, key = jax.random.split(rng)
-    dmass = jax.random.uniform(
-        key, shape=(len(hand_body_ids),), minval=0.9, maxval=1.1
-    )
-    body_mass = model.body_mass.at[hand_body_ids].set(
-        model.body_mass[hand_body_ids] * dmass
-    )
-
-    # Joint stiffness: *U(0.8, 1.2).
-    rng, key = jax.random.split(rng)
-    kp = model.actuator_gainprm[:, 0] * jax.random.uniform(
-        key, (model.nu,), minval=0.8, maxval=1.2
-    )
-    actuator_gainprm = model.actuator_gainprm.at[:, 0].set(kp)
-    actuator_biasprm = model.actuator_biasprm.at[:, 1].set(-kp)
-
-    # Joint damping: *U(0.8, 1.2).
-    rng, key = jax.random.split(rng)
-    kd = model.dof_damping[hand_qids] * jax.random.uniform(
-        key, (len(hand_qids),), minval=0.8, maxval=1.2
-    )
-    dof_damping = model.dof_damping.at[hand_qids].set(kd)
-
-    return (
-        geom_friction,
-        body_mass,
-        qpos0,
-        dof_frictionloss,
-        dof_armature,
-        dof_damping,
-        actuator_gainprm,
-        actuator_biasprm,
-    )
-
-  (
-      geom_friction,
-      body_mass,
-      qpos0,
-      dof_frictionloss,
-      dof_armature,
-      dof_damping,
-      actuator_gainprm,
-      actuator_biasprm,
-  ) = rand(rng)
-
-  in_axes = jax.tree_util.tree_map(lambda x: None, model)
+  in_axes = jax.tree_util.tree_map(lambda _: None, model)
   in_axes = in_axes.tree_replace({
-      "geom_friction": 0,
-      "body_mass": 0,
-      "qpos0": 0,
-      "dof_frictionloss": 0,
-      "dof_armature": 0,
-      "dof_damping": 0,
-      "actuator_gainprm": 0,
-      "actuator_biasprm": 0,
+      "body_pos": 0,
   })
 
   model = model.tree_replace({
-      "geom_friction": geom_friction,
-      "body_mass": body_mass,
-      "qpos0": qpos0,
-      "dof_frictionloss": dof_frictionloss,
-      "dof_armature": dof_armature,
-      "dof_damping": dof_damping,
-      "actuator_gainprm": actuator_gainprm,
-      "actuator_biasprm": actuator_biasprm,
+      "body_pos": body_pos,
   })
 
-  return model, in_axes 
+  return model, in_axes
+
+
+
+# def domain_randomize(model: mjx.Model, rng: jax.Array):
+#   mj_model = DoorOpen().mj_model
+#   hand_qids = mjx_env.get_qpos_ids(mj_model, ["H_Tx", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES)
+#   hand_body_names = [
+#       "palm",
+#       "if_bs",
+#       "if_px",
+#       "if_md",
+#       "if_ds",
+#       "mf_bs",
+#       "mf_px",
+#       "mf_md",
+#       "mf_ds",
+#       "rf_bs",
+#       "rf_px",
+#       "rf_md",
+#       "rf_ds",
+#       "th_mp",
+#       "th_bs",
+#       "th_px",
+#       "th_ds",
+#   ]
+#   hand_body_ids = np.array([mj_model.body(n).id for n in hand_body_names])
+#   fingertip_geoms = ["th_tip", "if_tip", "mf_tip", "rf_tip"]
+#   fingertip_geom_ids = [mj_model.geom(g).id for g in fingertip_geoms]
+
+#   @jax.vmap
+#   def rand(rng):
+#     # Fingertip friction: =U(0.5, 1.0).
+#     rng, key = jax.random.split(rng)
+#     fingertip_friction = jax.random.uniform(key, (1,), minval=0.5, maxval=1.0)
+#     geom_friction = model.geom_friction.at[fingertip_geom_ids, 0].set(
+#         fingertip_friction
+#     )
+
+#     # Jitter qpos0: +U(-0.05, 0.05).
+#     rng, key = jax.random.split(rng)
+#     qpos0 = model.qpos0
+#     qpos0 = qpos0.at[hand_qids].set(
+#         qpos0[hand_qids]
+#         + jax.random.uniform(key, shape=(len(hand_qids),), minval=-0.05, maxval=0.05)
+#     )
+
+#     # Scale static friction: *U(0.9, 1.1).
+#     rng, key = jax.random.split(rng)
+#     frictionloss = model.dof_frictionloss[hand_qids] * jax.random.uniform(
+#         key, shape=(len(hand_qids),), minval=0.5, maxval=2.0
+#     )
+#     dof_frictionloss = model.dof_frictionloss.at[hand_qids].set(frictionloss)
+
+#     # Scale armature: *U(1.0, 1.05).
+#     rng, key = jax.random.split(rng)
+#     armature = model.dof_armature[hand_qids] * jax.random.uniform(
+#         key, shape=(len(hand_qids),), minval=1.0, maxval=1.05
+#     )
+#     dof_armature = model.dof_armature.at[hand_qids].set(armature)
+
+#     # Scale all link masses: *U(0.9, 1.1).
+#     rng, key = jax.random.split(rng)
+#     dmass = jax.random.uniform(
+#         key, shape=(len(hand_body_ids),), minval=0.9, maxval=1.1
+#     )
+#     body_mass = model.body_mass.at[hand_body_ids].set(
+#         model.body_mass[hand_body_ids] * dmass
+#     )
+
+#     # Joint stiffness: *U(0.8, 1.2).
+#     rng, key = jax.random.split(rng)
+#     kp = model.actuator_gainprm[:, 0] * jax.random.uniform(
+#         key, (model.nu,), minval=0.8, maxval=1.2
+#     )
+#     actuator_gainprm = model.actuator_gainprm.at[:, 0].set(kp)
+#     actuator_biasprm = model.actuator_biasprm.at[:, 1].set(-kp)
+
+#     # Joint damping: *U(0.8, 1.2).
+#     rng, key = jax.random.split(rng)
+#     kd = model.dof_damping[hand_qids] * jax.random.uniform(
+#         key, (len(hand_qids),), minval=0.8, maxval=1.2
+#     )
+#     dof_damping = model.dof_damping.at[hand_qids].set(kd)
+
+#     return (
+#         geom_friction,
+#         body_mass,
+#         qpos0,
+#         dof_frictionloss,
+#         dof_armature,
+#         dof_damping,
+#         actuator_gainprm,
+#         actuator_biasprm,
+#     )
+
+#   (
+#       geom_friction,
+#       body_mass,
+#       qpos0,
+#       dof_frictionloss,
+#       dof_armature,
+#       dof_damping,
+#       actuator_gainprm,
+#       actuator_biasprm,
+#   ) = rand(rng)
+
+#   in_axes = jax.tree_util.tree_map(lambda x: None, model)
+#   in_axes = in_axes.tree_replace({
+#       "geom_friction": 0,
+#       "body_mass": 0,
+#       "qpos0": 0,
+#       "dof_frictionloss": 0,
+#       "dof_armature": 0,
+#       "dof_damping": 0,
+#       "actuator_gainprm": 0,
+#       "actuator_biasprm": 0,
+#   })
+
+#   model = model.tree_replace({
+#       "geom_friction": geom_friction,
+#       "body_mass": body_mass,
+#       "qpos0": qpos0,
+#       "dof_frictionloss": dof_frictionloss,
+#       "dof_armature": dof_armature,
+#       "dof_damping": dof_damping,
+#       "actuator_gainprm": actuator_gainprm,
+#       "actuator_biasprm": actuator_biasprm,
+#   })
+
+#   return model, in_axes 
