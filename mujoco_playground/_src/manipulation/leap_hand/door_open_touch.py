@@ -26,6 +26,12 @@ from mujoco_playground._src import mjx_env
 from mujoco_playground._src.manipulation.leap_hand import base as leap_hand_base
 from mujoco_playground._src.manipulation.leap_hand import leap_hand_constants as consts
 
+def _get_frame_body_id() -> int:
+  """Get frame body ID - hardcoded for now since we can't access mj_model from domain_randomize."""
+  # Frame body ID is 21 (found by testing)
+  # This is hardcoded because domain_randomize only receives mjx_model, not mj_model
+  return 21
+
 def default_config() -> config_dict.ConfigDict:
   return config_dict.create(
       ctrl_dt=0.05,

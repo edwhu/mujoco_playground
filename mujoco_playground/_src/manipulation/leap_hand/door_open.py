@@ -26,6 +26,12 @@ from mujoco_playground._src import mjx_env
 from mujoco_playground._src.manipulation.leap_hand import base as leap_hand_base
 from mujoco_playground._src.manipulation.leap_hand import leap_hand_constants as consts
 
+def _get_frame_body_id() -> int:
+  """Get frame body ID - hardcoded for now since we can't access mj_model from domain_randomize."""
+  # Frame body ID is 21 (found by testing)
+  # This is hardcoded because domain_randomize only receives mjx_model, not mj_model
+  return 21
+
 
 def default_config() -> config_dict.ConfigDict:
   return config_dict.create(
@@ -227,6 +233,31 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     palm_pos = data.site_xpos[self._palm_site_id]
     handle_pos = data.site_xpos[self._handle_site_id]
     palm_to_handle_dist = jp.linalg.norm(palm_pos - handle_pos)
+    
+    # Alternative: Use latch body position instead of handle site
+    latch_body_id = self._mj_model.body("latch").id
+    latch_pos = data.xpos[latch_body_id]
+    palm_to_latch_dist = jp.linalg.norm(palm_pos - latch_pos)
+    
+    # DEBUG: Print positions every 100 steps
+    if hasattr(info, 'step') and info.get('step', 0) % 100 == 0:
+        print(f"Step {info.get('step', 0)}:")
+        print(f"  Palm position: {palm_pos}")
+        print(f"  Handle site position: {handle_pos}")
+        print(f"  Latch body position: {latch_pos}")
+        print(f"  Distance to handle site: {palm_to_handle_dist}")
+        print(f"  Distance to latch body: {palm_to_latch_dist}")
+        print(f"  Door angle: {data.qpos[self._door_qid]}")
+        
+        # Check frame body position
+        frame_body_id = self._mj_model.body("frame").id
+        frame_pos = data.xpos[frame_body_id]
+        print(f"  Frame body position: {frame_pos}")
+        
+        # Check door body position  
+        door_body_id = self._mj_model.body("door").id
+        door_pos = data.xpos[door_body_id]
+        print(f"  Door body position: {door_pos}")
     
     # Door angle terms
     current_angle = data.qpos[self._door_qid]
