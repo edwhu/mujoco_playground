@@ -86,7 +86,7 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     self._latch_qid = mjx_env.get_qpos_ids(self.mj_model, ["latch"])[0]
     
     # Get site IDs for palm and handle
-    self._palm_site_id = self._mj_model.site("grasp_site").id
+    self._palm_site_id = self._mj_model.site("palm_site").id
     self._handle_site_id = self._mj_model.site("S_handle").id
     
     # Initialize defaults from model qpos0 to match viewer
