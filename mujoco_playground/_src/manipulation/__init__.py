@@ -28,6 +28,7 @@ from mujoco_playground._src.manipulation.franka_emika_panda import pick_cartesia
 from mujoco_playground._src.manipulation.franka_emika_panda_robotiq import push_cube as robotiq_push_cube
 from mujoco_playground._src.manipulation.leap_hand import door_open as leap_door_open
 from mujoco_playground._src.manipulation.leap_hand import door_open_touch as leap_door_open_touch
+from mujoco_playground._src.manipulation.leap_hand import door_open_touch_simple as leap_door_open_touch_simple
 from mujoco_playground._src.manipulation.leap_hand import reorient as leap_cube_reorient
 from mujoco_playground._src.manipulation.leap_hand import reorient_touch as leap_cube_reorient_touch
 from mujoco_playground._src.manipulation.leap_hand import rotate_z as leap_rotate_z
@@ -47,6 +48,7 @@ _envs = {
     "PandaRobotiqPushCube": robotiq_push_cube.PandaRobotiqPushCube,
     "LeapDoorOpen": leap_door_open.DoorOpen,
     "LeapDoorOpenTouch": leap_door_open_touch.DoorOpenTouch,
+    "LeapDoorOpenTouchSimple": leap_door_open_touch_simple.DoorOpenTouchSimple,
     "LeapCubeReorient": leap_cube_reorient.CubeReorient,
     "LeapCubeReorientTouch": leap_cube_reorient_touch.CubeReorient,
     "LeapCubeRotateZAxis": leap_rotate_z.CubeRotateZAxis,
@@ -64,6 +66,7 @@ _cfgs = {
     "PandaRobotiqPushCube": robotiq_push_cube.default_config,
     "LeapDoorOpen": leap_door_open.default_config,
     "LeapDoorOpenTouch": leap_door_open_touch.default_config,
+    "LeapDoorOpenTouchSimple": leap_door_open_touch_simple.default_config,
     "LeapCubeReorient": leap_cube_reorient.default_config,
     "LeapCubeReorientTouch": leap_cube_reorient_touch.default_config,
     "LeapCubeRotateZAxis": leap_rotate_z.default_config,
@@ -74,6 +77,7 @@ _cfgs = {
 _randomizer = {
     "LeapDoorOpen": leap_door_open.domain_randomize,
     "LeapDoorOpenTouch": leap_door_open_touch.domain_randomize,
+    "LeapDoorOpenTouchSimple": leap_door_open_touch_simple.domain_randomize,
     "LeapCubeReorient": leap_cube_reorient.domain_randomize,
     "LeapCubeReorientTouch": leap_cube_reorient_touch.domain_randomize,
     "LeapCubeRotateZAxis": leap_rotate_z.domain_randomize,

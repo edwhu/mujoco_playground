@@ -1,0 +1,59 @@
+<mujocoinclude>
+  <actuator>
+    <!-- Base motion actuators similar to ADROIT forearm joints -->
+    <general name="A_H_Tx" joint="H_Tx" ctrlrange="-0.4 0.9" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
+    <general name="A_H_Ty" joint="H_Ty" ctrlrange="-0.55 0.55" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
+    <general name="A_H_Rx" joint="H_Rx" ctrlrange="-.75 .75" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
+    <general name="A_H_Ry" joint="H_Ry" ctrlrange="-.75 .75" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
+    <general name="A_H_Rz" joint="H_Rz" ctrlrange="-1.0 2.0" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
+
+    <position name="if_mcp_act" joint="if_mcp" class="mcp"/>
+    <position name="if_rot_act" joint="if_rot" class="rot"/>
+    <position name="if_pip_act" joint="if_pip" class="pip"/>
+    <position name="if_dip_act" joint="if_dip" class="dip"/>
+
+    <position name="mf_mcp_act" joint="mf_mcp" class="mcp"/>
+    <position name="mf_rot_act" joint="mf_rot" class="rot"/>
+    <position name="mf_pip_act" joint="mf_pip" class="pip"/>
+    <position name="mf_dip_act" joint="mf_dip" class="dip"/>
+
+    <position name="rf_mcp_act" joint="rf_mcp" class="mcp"/>
+    <position name="rf_rot_act" joint="rf_rot" class="rot"/>
+    <position name="rf_pip_act" joint="rf_pip" class="pip"/>
+    <position name="rf_dip_act" joint="rf_dip" class="dip"/>
+
+    <position name="th_cmc_act" joint="th_cmc" class="thumb_cmc"/>
+    <position name="th_axl_act" joint="th_axl" class="thumb_axl"/>
+    <position name="th_mcp_act" joint="th_mcp" class="thumb_mcp"/>
+    <position name="th_ipl_act" joint="th_ipl" class="thumb_ipl"/>
+  </actuator>
+
+  <sensor>
+    <touch name="palm_touch_center" site="palm_touch_center"/>
+    <touch name="palm_touch_right" site="palm_touch_right"/>
+    <touch name="palm_touch_left" site="palm_touch_left"/>
+    <touch name="palm_touch_back" site="palm_touch_back"/>
+    <touch name="palm_touch_back_left" site="palm_touch_back_left"/>
+
+    <touch name="palm_touch_if" site="palm_touch_if"/>
+    <touch name="palm_touch_mf" site="palm_touch_mf"/>
+    <touch name="palm_touch_rf" site="palm_touch_rf"/>
+
+    <touch name="if_px_touch" site="if_px_touch"/>
+    <touch name="if_md_touch" site="if_md_touch"/>
+    <touch name="if_tip_touch" site="if_tip_touch"/>
+    <touch name="mf_px_touch" site="mf_px_touch"/>
+    <touch name="mf_md_touch" site="mf_md_touch"/>
+    <touch name="mf_tip_touch" site="mf_tip_touch"/>
+    <touch name="rf_px_touch" site="rf_px_touch"/>
+    <touch name="rf_md_touch" site="rf_md_touch"/>
+    <touch name="rf_tip_touch" site="rf_tip_touch"/>
+    <touch name="th_px_touch" site="th_px_touch"/>
+    <touch name="th_ds_touch" site="th_ds_touch"/>
+    <touch name="th_tip_touch" site="th_tip_touch"/>
+    <touch name="if_front_touch" site="if_front_touch"/>
+    <touch name="mf_front_touch" site="mf_front_touch"/>
+    <touch name="rf_front_touch" site="rf_front_touch"/>
+    <touch name="th_front_touch" site="th_front_touch"/>
+  </sensor>
+</mujocoinclude> 
