@@ -98,7 +98,7 @@ class DoorOpenTouchSimple(leap_hand_base.LeapHandEnv):
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
     
     # Precompute touch sensor ids and total size for observation history    
-    self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_DETAIL
+    self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_SIMPLE
     self._touch_sensor_ids = [self._mj_model.sensor(name).id for name in self._touch_sensor_names]
     self._touch_size = int(np.sum(self._mj_model.sensor_dim[self._touch_sensor_ids]))
 
@@ -183,10 +183,10 @@ class DoorOpenTouchSimple(leap_hand_base.LeapHandEnv):
     return angle >= threshold
 
   def get_touch_sensors(self, data: mjx.Data) -> jax.Array:
-    """Get touch sensor data using TOUCH_SENSOR_NAMES_DETAIL."""
+    """Get touch sensor data using TOUCH_SENSOR_NAMES_SIMPLE."""
     touch = jp.concatenate([
         mjx_env.get_sensor_data(self.mj_model, data, name)
-        for name in consts.TOUCH_SENSOR_NAMES_DETAIL
+        for name in consts.TOUCH_SENSOR_NAMES_SIMPLE
     ])
     if getattr(self._config, "binarize_touch_sensors", False):
       touch = touch > 0.0

@@ -773,3 +773,36 @@ TOUCH_SENSOR_NAMES_DETAIL = [
 	"palm_touch_rf_left_down",
 	"palm_touch_rf_right_down",
 ]
+
+TOUCH_SENSOR_NAMES_SIMPLE = [
+    # palm
+    "palm_touch_center",
+    "palm_touch_right",
+    "palm_touch_left",
+    "palm_touch_back",
+    "palm_touch_back_left",
+    "palm_touch_if",
+    "palm_touch_mf",
+    "palm_touch_rf",
+    # index
+    "if_px_touch",
+    "if_md_touch",
+    "if_tip_touch",
+    # middle
+    "mf_px_touch",
+    "mf_md_touch",
+    "mf_tip_touch",
+    # ring
+    "rf_px_touch",
+    "rf_md_touch",
+    "rf_tip_touch",
+    # thumb
+    "th_px_touch",
+    "th_ds_touch",
+    "th_tip_touch",
+    # finger tips
+    "if_front_touch",
+    "mf_front_touch",
+    "rf_front_touch",
+    "th_front_touch",
+]
