@@ -16,10 +16,10 @@
       <flag eulerdamp="enable"/>
     </option>
 
-    <!-- <custom>
-      <numeric data="350" name="max_contact_points"/>
-      <numeric data="1000" name="max_geom_pairs"/>
-    </custom> -->
+    <custom>
+      <numeric data="30" name="max_contact_points"/>
+      <numeric data="12" name="max_geom_pairs"/>
+    </custom>
     
     <!-- Bring in Leap Hand assets/defaults and contacts -->
     <include file="leap_rh_assets_defaults_touch.xml"/>
