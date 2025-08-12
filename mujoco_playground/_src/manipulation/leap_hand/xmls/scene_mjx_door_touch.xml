@@ -104,9 +104,18 @@
         <!-- <body name="frame" pos="-0.107339 0.0435293 0.447376" user="1001 0 2002 -0.4 -0.1 0.252 0 0.3 0.45"> -->
         <body name="frame" pos="-0.28 0.4 0.3" user="1001 0 2002 -0.4 -0.1 0.252 0 0.3 0.45">
             <inertial pos="0.29 0 0" quat="0.5 0.5 0.5 0.5" mass="7.85398" diaginertia="0.923301 0.764585 0.168533" />
-            <geom size="0.05 0.2" pos="0.6 0 0" type="capsule" material="MatWood" rgba="1 0 0 1" />
-            <geom size="0.05 0.2" pos="-0.02 0 0" type="capsule" material="MatWood" rgba="1 0 0 1" />
-            <site name="S_handle_target" pos="0.75 -0.5 -.18" size="0.025" group='3'/>
+            <!-- <geom size="0.05 0.2" pos="0.6 0 0" type="capsule" material="MatWood" rgba="1 0 0 1" />
+            <geom size="0.05 0.2" pos="-0.02 0 0" type="capsule" material="MatWood" rgba="1 0 0 1" /> -->
+            <!-- Left wall -->
+            <geom size="0.50 0.05 0.30" pos="-0.52 0 0.04" type="box" material="MatWoodB" rgba="1 0 0 1" />
+            <!-- Left wall capsule -->
+            <geom size="0.05 0.3" pos="-0.02 0 0.05" type="capsule" material="MatWoodB" rgba="1 0 0 1" />
+            <!-- Right wall capsule -->
+            <geom size="0.05 0.3" pos="0.6 0 0.05" type="capsule" material="MatWoodB" rgba="1 0 0 1" />
+            <!-- Right wall -->
+            <geom size="0.50 0.05 0.30" pos="1.1 0 0.04" type="box" material="MatWoodB" rgba="1 0 0 1" />
+            <!-- Top wall -->
+            <geom size="1.31 0.05 0.10" pos="0.29 0 0.38" type="box" material="MatWoodB" rgba="1 0 0 1" />            <site name="S_handle_target" pos="0.75 -0.5 -.18" size="0.025" group='3'/>
             
             <!-- ======= DOOR ======= -->
             <body name="door" pos="0.29 0 0">
