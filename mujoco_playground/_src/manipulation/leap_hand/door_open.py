@@ -77,7 +77,7 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
 
   def _post_init(self) -> None:
     # Get hand joint IDs (including base motion joints) - only hand joints are controllable
-    hand_joint_names = ["H_Tx", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES
+    hand_joint_names = ["H_Tx", "H_Ty", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES
     self._hand_qids = mjx_env.get_qpos_ids(self.mj_model, hand_joint_names)
     self._hand_dqids = mjx_env.get_qvel_ids(self.mj_model, hand_joint_names)
     
@@ -132,7 +132,7 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    # State size is 20 hand joints + 20 previous actions = 40
+    # State size is 21 hand joints + 21 previous actions = 42
     state_size = len(self._hand_qids) + self.mjx_model.nu
     obs_history = jp.zeros(self._config.history_len * state_size)
     obs = self._get_obs(data, info, obs_history)
@@ -185,8 +185,8 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     )
 
     state = jp.concatenate([
-        noisy_joint_angles,  # Hand joints
-        info["last_act"],  # Previous actions
+        noisy_joint_angles,  # Hand joints (21 values: 5 base motion + 16 finger joints)
+        info["last_act"],  # Previous actions (21 values)
     ])
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
@@ -234,30 +234,7 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     handle_pos = data.site_xpos[self._handle_site_id]
     palm_to_handle_dist = jp.linalg.norm(palm_pos - handle_pos)
     
-    # Alternative: Use latch body position instead of handle site
-    latch_body_id = self._mj_model.body("latch").id
-    latch_pos = data.xpos[latch_body_id]
-    palm_to_latch_dist = jp.linalg.norm(palm_pos - latch_pos)
-    
-    # DEBUG: Print positions every 100 steps
-    if hasattr(info, 'step') and info.get('step', 0) % 100 == 0:
-        print(f"Step {info.get('step', 0)}:")
-        print(f"  Palm position: {palm_pos}")
-        print(f"  Handle site position: {handle_pos}")
-        print(f"  Latch body position: {latch_pos}")
-        print(f"  Distance to handle site: {palm_to_handle_dist}")
-        print(f"  Distance to latch body: {palm_to_latch_dist}")
-        print(f"  Door angle: {data.qpos[self._door_qid]}")
-        
-        # Check frame body position
-        frame_body_id = self._mj_model.body("frame").id
-        frame_pos = data.xpos[frame_body_id]
-        print(f"  Frame body position: {frame_pos}")
-        
-        # Check door body position  
-        door_body_id = self._mj_model.body("door").id
-        door_pos = data.xpos[door_body_id]
-        print(f"  Door body position: {door_pos}")
+    # jax.debug.print("Palm={p}, Handle={h}, Dist={d}", p=palm_pos, h=handle_pos, d=palm_to_handle_dist)
     
     # Door angle terms
     current_angle = data.qpos[self._door_qid]
@@ -307,8 +284,8 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
   def randomize_door_pos(rng):
     # Sample continuous frame offsets within joint ranges
     rng, kx, ky, kz = jax.random.split(rng, 4)
-    tx = jax.random.uniform(kx, (), minval=-0.15, maxval=0.15)
-    ty = jax.random.uniform(ky, (), minval=-0.15, maxval=0.15)
+    tx = jax.random.uniform(kx, (), minval=-0.5, maxval=0.5)
+    ty = jax.random.uniform(ky, (), minval=-0.5, maxval=0.5)
     tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.05)
     
     # Get the original frame position and add the offset

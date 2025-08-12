@@ -77,7 +77,7 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
 
   def _post_init(self) -> None:
     # Get hand joint IDs (including base motion joints) - only hand joints are controllable
-    hand_joint_names = ["H_Tx", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES
+    hand_joint_names = ["H_Tx", "H_Ty", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES
     self._hand_qids = mjx_env.get_qpos_ids(self.mj_model, hand_joint_names)
     self._hand_dqids = mjx_env.get_qvel_ids(self.mj_model, hand_joint_names)
     
@@ -201,9 +201,9 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
     touch = self.get_touch_sensors(data)
 
     state = jp.concatenate([
-        noisy_joint_angles,  # Hand joints
-        touch,               # Touch sensors
-        info["last_act"],   # Previous actions
+        noisy_joint_angles,  # Hand joints (21 values: 5 base motion + 16 finger joints)
+        touch,               # Touch sensors (~327 values)
+        info["last_act"],   # Previous actions (21 values)
     ])
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
@@ -299,8 +299,8 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
   def randomize_door_pos(rng):
     # Sample continuous frame offsets within joint ranges
     rng, kx, ky, kz = jax.random.split(rng, 4)
-    tx = jax.random.uniform(kx, (), minval=-0.15, maxval=0.15)
-    ty = jax.random.uniform(ky, (), minval=-0.15, maxval=0.15)
+    tx = jax.random.uniform(kx, (), minval=-0.5, maxval=0.5)
+    ty = jax.random.uniform(ky, (), minval=-0.5, maxval=0.5)
     tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.05)
 
     # Get the original frame position and add the offset
