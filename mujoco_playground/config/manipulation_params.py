@@ -206,7 +206,7 @@ def brax_ppo_config(env_name: str) -> config_dict.ConfigDict:
     )
     rl_config.num_resets_per_eval = 1
   elif env_name == "LeapDoorOpen":
-    rl_config.num_timesteps = 50_000_000
+    rl_config.num_timesteps = 80_000_000
     rl_config.num_evals = 10
     rl_config.num_minibatches = 32
     rl_config.unroll_length = 40
@@ -224,7 +224,7 @@ def brax_ppo_config(env_name: str) -> config_dict.ConfigDict:
         value_obs_key="privileged_state",
     )
   elif env_name == "LeapDoorOpenTouch":
-    rl_config.num_timesteps = 50_000_000
+    rl_config.num_timesteps = 80_000_000
     rl_config.num_evals = 10
     rl_config.num_minibatches = 32
     rl_config.unroll_length = 40
@@ -242,7 +242,7 @@ def brax_ppo_config(env_name: str) -> config_dict.ConfigDict:
         value_obs_key="privileged_state",
     )
   elif env_name == "LeapDoorOpenTouchSimple":
-    rl_config.num_timesteps = 50_000_000
+    rl_config.num_timesteps = 80_000_000
     rl_config.num_evals = 10
     rl_config.num_minibatches = 32
     rl_config.unroll_length = 40

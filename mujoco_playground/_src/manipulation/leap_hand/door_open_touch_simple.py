@@ -161,6 +161,11 @@ class DoorOpenTouchSimple(leap_hand_base.LeapHandEnv):
     }
     reward = sum(rewards.values()) * self.dt  # pylint: disable=redefined-outer-name
 
+    # Check for NaN in final reward and end episode if detected
+    has_nan_reward = jp.isnan(reward)
+    reward = jp.where(has_nan_reward, jp.zeros(()), reward)
+    done = jp.where(has_nan_reward, jp.ones(()), done)
+
     state.info["last_last_act"] = state.info["last_act"]
     state.info["last_act"] = action
     state.info["last_door_angle"] = data.qpos[self._door_qid:self._door_qid+1]
