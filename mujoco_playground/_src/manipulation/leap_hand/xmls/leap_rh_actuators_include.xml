@@ -1,8 +1,8 @@
 <mujocoinclude>
   <actuator>
     <!-- Base motion actuators similar to ADROIT forearm joints -->
-    <general name="A_H_Tx" joint="H_Tx" ctrlrange="-0.3 0.5" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
-    <general name="A_H_Ty" joint="H_Ty" ctrlrange="-0.5 0.5" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
+    <general name="A_H_Tx" joint="H_Tx" ctrlrange="-0.4 0.9" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
+    <general name="A_H_Ty" joint="H_Ty" ctrlrange="-0.55 0.55" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
     <general name="A_H_Rx" joint="H_Rx" ctrlrange="-.75 .75" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
     <general name="A_H_Ry" joint="H_Ry" ctrlrange="-.75 .75" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
     <general name="A_H_Rz" joint="H_Rz" ctrlrange="-1.0 2.0" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
