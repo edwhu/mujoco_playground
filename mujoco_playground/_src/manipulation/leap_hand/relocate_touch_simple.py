@@ -102,7 +102,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
   def reset(self, rng: jax.Array) -> mjx_env.State:
     # Randomize object position like in pick_cartesian.py
     rng, rng_obj_x, rng_obj_y = jax.random.split(rng, 3)
-    obj_range = 0.5  # Similar to box_init_range in pick_cartesian.py
+    obj_range = 0.3  # Similar to box_init_range in pick_cartesian.py
     obj_pos = jp.array([
         jax.random.uniform(rng_obj_x, (), minval=-obj_range, maxval=obj_range),  # Randomize X position
         jax.random.uniform(rng_obj_y, (), minval=-obj_range, maxval=obj_range),  # Randomize Y position
