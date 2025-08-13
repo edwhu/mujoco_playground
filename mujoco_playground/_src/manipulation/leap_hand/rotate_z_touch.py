@@ -377,6 +377,12 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
     )
     dof_damping = model.dof_damping.at[hand_qids].set(kd)
 
+    # cube geom size: *U(0.025, 0.055)
+    rng, key = jax.random.split(rng)
+    geom_size = model.geom_size.at[cube_geom_id, :].set(
+        jax.random.uniform(key, (1,), minval=0.025, maxval=0.055)
+    )
+
     return (
         geom_friction,
         body_mass,
@@ -388,6 +394,7 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
         dof_damping,
         actuator_gainprm,
         actuator_biasprm,
+        geom_size,
     )
 
   (
@@ -401,6 +408,7 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
       dof_damping,
       actuator_gainprm,
       actuator_biasprm,
+      geom_size,
   ) = rand(rng)
 
   in_axes = jax.tree_util.tree_map(lambda x: None, model)
@@ -415,6 +423,7 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
       "dof_damping": 0,
       "actuator_gainprm": 0,
       "actuator_biasprm": 0,
+      "geom_size": 0,
   })
 
   model = model.tree_replace({
@@ -428,6 +437,7 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
       "dof_damping": dof_damping,
       "actuator_gainprm": actuator_gainprm,
       "actuator_biasprm": actuator_biasprm,
+      "geom_size": geom_size,
   })
 
   return model, in_axes
