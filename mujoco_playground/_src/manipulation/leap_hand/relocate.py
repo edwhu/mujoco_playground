@@ -45,13 +45,11 @@ def default_config() -> config_dict.ConfigDict:
       reward_config=config_dict.create(
           scales=config_dict.create(
               get_to_ball=0.1,
-              ball_on_table=0.1,
+              ball_off_table=1.0,
               make_hand_go_to_target=0.5,
               make_ball_go_to_target=0.5,
-              ball_close_to_target=20.0,
-              ball_fell_off=10.0,
-              velocity_penalty=1e-5,
-              action_rate=0.0,
+              ball_close_to_target=10.0,
+              ball_very_close_to_target=20.0,
           ),
       ),
   )
@@ -178,20 +176,12 @@ class Relocate(leap_hand_base.LeapHandEnv):
     return state
 
   def _get_termination(self, data: mjx.Data) -> jax.Array:
-    # Episode ends when object falls off table (z < -0.05) or when object is very close to target
-    # Use body position directly like in panda environments
+    # Episode ends only when object falls off table (z < -0.05)
+    # No early termination when close to target - let it run full episode
     obj_pos = data.xpos[self._obj_body]
-    target_pos = data.site_xpos[self._target_site_id]
-    
-    obj_to_target_dist = jp.linalg.norm(obj_pos - target_pos)
     obj_fell_off = obj_pos[2] < -0.05
-    obj_reached_target = obj_to_target_dist < 0.05
     
-    # For debugging: print the distances to see what's happening
-    # jax.debug.print("obj_body_id: {body_id}, obj_pos: {obj}, target_pos: {target}, dist: {dist}", 
-    #                body_id=self._obj_body, obj=obj_pos, target=target_pos, dist=obj_to_target_dist)
-    
-    return obj_fell_off | obj_reached_target
+    return obj_fell_off
 
   def _get_obs(
       self, data: mjx.Data, info: dict[str, Any], obs_history: jax.Array
@@ -265,32 +255,21 @@ class Relocate(leap_hand_base.LeapHandEnv):
     palm_to_target_dist = jp.linalg.norm(palm_pos - target_pos)
     obj_to_target_dist = jp.linalg.norm(obj_pos - target_pos)
     
-    # Check if object is off table
-    # Table surface is at z = 0.0, object radius is 0.04
-    # Object is off table when z > table_surface + radius = 0.0 + 0.04 = 0.04
-    obj_on_table = obj_pos[2] <= 0.04
-    
-    # Check if object fell off table (for negative reward)
-    obj_fell_off = obj_pos[2] < -0.05
+    # Check if object is off table (lifted)
+    obj_off_table = obj_pos[2] > 0.04
     
     # Check if object is close to target
-    # obj_close_to_target = obj_to_target_dist < 0.1
-    obj_close_to_target = obj_to_target_dist < 0.05
+    obj_close_to_target = obj_to_target_dist < 0.1
+    obj_very_close_to_target = obj_to_target_dist < 0.05
     
-    # Get velocities for penalty
-    qvel = data.qvel
-    
+    # Follow Adroit reward structure as dictionary components
     rewards = {
-        "get_to_ball": -palm_to_obj_dist,  # Take hand to object
-        "ball_on_table": jp.where(obj_on_table, -1.0, 0.0),  # Penalty for every second the object is not lifted
-        "make_hand_go_to_target": jp.where(1 - obj_on_table, -palm_to_target_dist, 0.0),  # Make hand go to target when object is lifted
-        "make_ball_go_to_target": jp.where(1 - obj_on_table, -obj_to_target_dist, 0.0),  # Make object go to target when lifted
-        "ball_close_to_target": jp.where(obj_close_to_target, 1.0, 0.0),  # Bonus for object very close to target
-        "ball_fell_off": jp.where(obj_fell_off, -1.0, 0.0),  # Negative reward for falling off table
-        "velocity_penalty": -jp.sum(jp.square(qvel)),  # Penalty for high velocities
-        "action_rate": -self._cost_action_rate(
-            action, info["last_act"], info["last_last_act"]
-        ),
+        "get_to_ball": -palm_to_obj_dist,  # Take hand to object (negative distance)
+        "ball_off_table": jp.where(obj_off_table, 1.0, 0.0),  # Bonus for lifting the object
+        "make_hand_go_to_target": jp.where(obj_off_table, -palm_to_target_dist, 0.0),  # Make hand go to target when lifted
+        "make_ball_go_to_target": jp.where(obj_off_table, -obj_to_target_dist, 0.0),  # Make object go to target when lifted
+        "ball_close_to_target": jp.where(obj_close_to_target, 1.0, 0.0),  # Bonus for object close to target
+        "ball_very_close_to_target": jp.where(obj_very_close_to_target, 1.0, 0.0),  # Bonus for object very close to target
     }
     
     return rewards

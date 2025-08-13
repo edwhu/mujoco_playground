@@ -36,6 +36,13 @@
     <framepos name="mf_tip_position" objtype="site" objname="mf_tip" reftype="site" refname="grasp_site"/>
     <framepos name="rf_tip_position" objtype="site" objname="rf_tip" reftype="site" refname="grasp_site"/>
 
+    <framepos name="object_position" objtype="body" objname="Object"/>
+    <framequat name="object_orientation" objtype="body" objname="Object"/>
+    <framelinvel name="object_linvel" objtype="body" objname="Object"/>
+    <frameangvel name="object_angvel" objtype="body" objname="Object"/>
+    <frameangacc name="object_angacc" objtype="body" objname="Object"/>
+    <framezaxis name="object_upvector" objtype="body" objname="Object"/>
+
     <touch name="palm_touch_center" site="palm_touch_center"/>
     <touch name="palm_touch_right" site="palm_touch_right"/>
     <touch name="palm_touch_left" site="palm_touch_left"/>
