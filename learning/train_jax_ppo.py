@@ -484,7 +484,7 @@ def main(argv):
     )
     rollout.append(state0)
     ep_reward += state0.reward
-    print(f'step {t}, reward {ep_reward}')
+    print(f'step {t}, reward {state0.reward}')
     # if state0.done:
     #   break
 
@@ -503,8 +503,8 @@ def main(argv):
   frames = eval_env.render(
       traj, height=480, width=640, scene_option=scene_option
   )
-  media.write_video("rollout.mp4", frames, fps=fps)
-  print("Rollout video saved as 'rollout.mp4'.")
+  media.write_video(f"rollout_{ep_reward:.3f}.mp4", frames, fps=fps)
+  print(f"Rollout video saved as 'rollout_{ep_reward:.3f}.mp4'.")
 
 
 if __name__ == "__main__":
