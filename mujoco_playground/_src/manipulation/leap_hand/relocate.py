@@ -83,7 +83,7 @@ class Relocate(leap_hand_base.LeapHandEnv):
     self._obj_qids = mjx_env.get_qpos_ids(self.mj_model, ["OBJTx", "OBJTy", "OBJTz", "OBJRx", "OBJRy", "OBJRz"])
     
     # Get site IDs for palm and target
-    self._palm_site_id = self._mj_model.site("S_grasp").id
+    self._palm_site_id = self._mj_model.site("grasp_site").id
     self._target_site_id = self._mj_model.site("target").id
     
     # Get object body ID
@@ -128,8 +128,8 @@ class Relocate(leap_hand_base.LeapHandEnv):
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    # State size = hand joints + previous actions
-    state_size = len(self._hand_qids) + self.mjx_model.nu
+    # State size = hand joints + previous actions + target position (x, y only)
+    state_size = len(self._hand_qids) + self.mjx_model.nu + 2
     obs_history = jp.zeros(self._config.history_len * state_size)
     obs = self._get_obs(data, info, obs_history)
     reward, done = jp.zeros(2)  # pylint: disable=redefined-outer-name
@@ -189,22 +189,29 @@ class Relocate(leap_hand_base.LeapHandEnv):
         * self._config.noise_config.scales.joint_pos
     )
 
+    # Get target position for the policy to know where to move the object
+    target_pos = data.site_xpos[self._target_site_id]
+    target_xy = target_pos[:2]  # Only x and y coordinates since z is constant
+    
     state = jp.concatenate([
         noisy_joint_angles,  # Hand joints (27 values: 6 base motion + 21 finger joints)
         info["last_act"],  # Previous actions (27 values)
+        target_xy,  # Target position (2 values: x, y)
     ])
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
 
-    # Get palm, object, and target positions
+    # Get palm and target positions
     palm_pos = data.site_xpos[self._palm_site_id]
-    obj_pos = data.xpos[self._obj_body_id]
     target_pos = data.site_xpos[self._target_site_id]
     
-    # Get object orientation and velocities
-    obj_quat = data.xquat[self._obj_body_id]
-    obj_linvel = data.qvel[self._obj_qids[3:6]]  # Linear velocity
-    obj_angvel = data.qvel[self._obj_qids[6:9]]  # Angular velocity
+    # Get object data using sensors (like rotate_z.py)
+    obj_pos = self.get_object_position(data)
+    obj_quat = self.get_object_orientation(data)
+    obj_linvel = self.get_object_linvel(data)
+    obj_angvel = self.get_object_angvel(data)
+    obj_angacc = self.get_object_angacc(data)
+    obj_upvector = self.get_object_upvector(data)
     
     # Get fingertip positions
     fingertip_positions = self.get_fingertip_positions(data)
@@ -224,6 +231,8 @@ class Relocate(leap_hand_base.LeapHandEnv):
         obj_quat,
         obj_linvel,
         obj_angvel,
+        obj_angacc,
+        obj_upvector,
     ])
 
     return {
@@ -239,9 +248,9 @@ class Relocate(leap_hand_base.LeapHandEnv):
       metrics: dict[str, Any],
       done: jax.Array,
   ) -> dict[str, jax.Array]:
-    # Get positions
+    # Get positions using sensors
     palm_pos = data.site_xpos[self._palm_site_id]
-    obj_pos = data.xpos[self._obj_body_id]
+    obj_pos = self.get_object_position(data)
     target_pos = data.site_xpos[self._target_site_id]
     
     # Calculate distances
@@ -286,28 +295,56 @@ class Relocate(leap_hand_base.LeapHandEnv):
     del last_last_act  # Unused.
     return jp.sum(jp.square(act - last_act))
 
+  # Object sensor methods (similar to cube sensors in base class)
+  def get_object_position(self, data: mjx.Data) -> jax.Array:
+    return mjx_env.get_sensor_data(self.mj_model, data, "object_position")
+
+  def get_object_orientation(self, data: mjx.Data) -> jax.Array:
+    return mjx_env.get_sensor_data(self.mj_model, data, "object_orientation")
+
+  def get_object_linvel(self, data: mjx.Data) -> jax.Array:
+    return mjx_env.get_sensor_data(self.mj_model, data, "object_linvel")
+
+  def get_object_angvel(self, data: mjx.Data) -> jax.Array:
+    return mjx_env.get_sensor_data(self.mj_model, data, "object_angvel")
+
+  def get_object_angacc(self, data: mjx.Data) -> jax.Array:
+    return mjx_env.get_sensor_data(self.mj_model, data, "object_angacc")
+
+  def get_object_upvector(self, data: mjx.Data) -> jax.Array:
+    return mjx_env.get_sensor_data(self.mj_model, data, "object_upvector")
+
 
 def domain_randomize(model: mjx.Model, rng: jax.Array):
   """Domain randomization for relocate environment."""
-  # Randomize object and target positions by ±0.5
-  rng, obj_rng, target_rng = jax.random.split(rng, 3)
-  
-  # Randomize object X and Y positions
-  obj_x = jax.random.uniform(obj_rng, (), minval=-0.5, maxval=0.5)
-  obj_y = jax.random.uniform(obj_rng, (), minval=-0.5, maxval=0.5)
-  
-  # Randomize target X and Y positions  
-  target_x = jax.random.uniform(target_rng, (), minval=-0.5, maxval=0.5)
-  target_y = jax.random.uniform(target_rng, (), minval=-0.5, maxval=0.5)
-  
-  # Update object initial position
-  obj_qids = mjx_env.get_qpos_ids(model, ["OBJTx", "OBJTy"])
-  qpos0 = model.qpos0.at[obj_qids[0]].set(obj_x)
-  qpos0 = qpos0.at[obj_qids[1]].set(obj_y)
-  
-  # Update target site position
-  target_site_id = model.site("target").id
-  site_pos = model.site_pos.at[target_site_id].set(jp.array([target_x, target_y, 0.2]))
+  # Create a temporary instance to get the joint IDs
+  mj_model = Relocate().mj_model
+  obj_qids = mjx_env.get_qpos_ids(mj_model, ["OBJTx", "OBJTy"])
+  target_site_id = mj_model.site("target").id
+
+  @jax.vmap
+  def rand(rng):
+    # Randomize object and target positions by ±0.5
+    rng, obj_rng, target_rng = jax.random.split(rng, 3)
+    
+    # Randomize object X and Y positions
+    obj_x = jax.random.uniform(obj_rng, (), minval=-0.5, maxval=0.5)
+    obj_y = jax.random.uniform(obj_rng, (), minval=-0.5, maxval=0.5)
+    
+    # Randomize target X and Y positions  
+    target_x = jax.random.uniform(target_rng, (), minval=-0.5, maxval=0.5)
+    target_y = jax.random.uniform(target_rng, (), minval=-0.5, maxval=0.5)
+    
+    # Update object initial position
+    qpos0 = model.qpos0.at[obj_qids[0]].set(obj_x)
+    qpos0 = qpos0.at[obj_qids[1]].set(obj_y)
+    
+    # Update target site position
+    site_pos = model.site_pos.at[target_site_id].set(jp.array([target_x, target_y, 0.2]))
+    
+    return qpos0, site_pos
+
+  qpos0, site_pos = rand(rng)
   
   in_axes = jax.tree_util.tree_map(lambda _: None, model)
   in_axes = in_axes.tree_replace({

@@ -8,7 +8,7 @@
     Purpose     :: Object relocation task with floating Leap hand
 ====================================================== -->
 
-<mujoco model='ADROIT-relocate-Leap(v1.5)'>
+<mujoco model='Relocate-Leap'>
 
     <!-- ======= COMPILER & OPTIONS ======= -->
     <compiler angle="radian" meshdir='.' />
@@ -82,6 +82,7 @@
         <!-- Cameras -->
         <camera name="fixed" pos="0 -0.7 0.7" quat="0.92388 0.382683 0 0" />
         <camera name="vil_camera" pos="0 -1.2 1.2" quat="0.92388 0.382683 0 0" />
+        <camera name="hand_close" pos="0.1 -0.4 0.35" quat="0.92388 0.382683 0 0" />
 
         <!-- ======= TABLE ======= -->
         <body name="table">

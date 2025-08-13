@@ -207,11 +207,15 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     
     # Door open indicator
     door_open = jp.where(door_angle > 1.0, 1.0, -1.0)
+    
+    # Fingertip positions
+    fingertip_positions = self.get_fingertip_positions(data)
 
     privileged_state = jp.concatenate([
         state,
         joint_angles,
         data.qvel[self._hand_dqids],
+        fingertip_positions,
         data.actuator_force,
         palm_pos,
         handle_pos,
