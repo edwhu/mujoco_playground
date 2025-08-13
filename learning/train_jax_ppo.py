@@ -447,11 +447,16 @@ def main(argv):
   jit_inference_fn = jax.jit(inference_fn)
 
   # Prepare for evaluation: reuse the training env (keeps randomization)
-  eval_env = env
-  num_envs = 1
-  if _VISION.value:
-    eval_env = env
-    num_envs = env_cfg.vision_config.render_batch_size
+  # eval_env = env
+  # num_envs = 1
+  # if _VISION.value:
+  #   eval_env = env
+  #   num_envs = env_cfg.vision_config.render_batch_size
+
+  # Prepare for evaluation
+  eval_env = (
+    None if _VISION.value else registry.load(_ENV_NAME.value, config=env_cfg)
+  )
 
   jit_reset = jax.jit(eval_env.reset)
   jit_step = jax.jit(eval_env.step)
@@ -467,7 +472,8 @@ def main(argv):
   rollout = [state0]
 
   # Run evaluation rollout
-  for _ in range(env_cfg.episode_length):
+  ep_reward = 0
+  for t in range(env_cfg.episode_length):
     act_rng, rng = jax.random.split(rng)
     ctrl, _ = jit_inference_fn(state.obs, act_rng)
     state = jit_step(state, ctrl)
@@ -477,8 +483,10 @@ def main(argv):
         else state
     )
     rollout.append(state0)
-    if state0.done:
-      break
+    ep_reward += state0.reward
+    print(f'step {t}, reward {ep_reward}')
+    # if state0.done:
+    #   break
 
   # Render and save the rollout
   render_every = 2
