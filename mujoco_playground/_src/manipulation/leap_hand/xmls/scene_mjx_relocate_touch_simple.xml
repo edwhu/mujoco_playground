@@ -85,7 +85,7 @@
 
         <!-- ======= TABLE ======= -->
         <body name="table">
-            <geom size="0.6 0.6 0.5" pos="0 0 -0.5" type="box" material="tablecube" />
+            <geom size="0.6 0.6 0.494" pos="0 0 -0.506" type="box" material="tablecube" />
         </body>
 
         <!-- ======= MOCAP ======= -->
@@ -110,7 +110,7 @@
         <site name="target" pos="-0.007 0.0 0.2" size="0.07" rgba="0 1 0 0.125" />
 
         <!-- ======= OBJECT ======= -->
-        <body name="Object" pos="-0.00 0.0 0.04" user="1001 0 2003 27 0 0 0.06 0 0">
+        <body name="Object" pos="-0.00 0.0 0.035" user="1001 0 2003 27 0 0 0.06 0 0">
             <inertial pos="0 0 0" mass="0.179594" diaginertia="8.80012e-05 8.80012e-05 8.80012e-05" />
             <joint name="OBJTx" pos="0 0 0" axis="1 0 0" type="slide" limited="false" damping="0" />
             <joint name="OBJTy" pos="0 0 0" axis="0 1 0" type="slide" limited="false" damping="0" />
@@ -118,11 +118,11 @@
             <joint name="OBJRx" pos="0 0 0" axis="1 0 0" limited="false" damping="0" />
             <joint name="OBJRy" pos="0 0 0" axis="0 1 0" limited="false" damping="0" />
             <joint name="OBJRz" pos="0 0 0" axis="0 0 1" limited="false" damping="0" />
-            <geom name="sphere" size="0.04" condim="4" material="MatWoodB" />
+            <geom name="sphere" size="0.035" condim="4" material="MatWoodB" />
         </body>
     </worldbody>
 
     <!-- Bring in Leap Hand actuators -->
-    <include file="leap_rh_actuators_include_relocate.xml"/>
+    <include file="leap_rh_actuators_include_relocate_touch_simple.xml"/>
 
 </mujoco>
