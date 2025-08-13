@@ -334,9 +334,10 @@ def main(argv):
   else:
     network_factory = network_fn
 
-  rand_fn = registry.get_domain_randomizer(_ENV_NAME.value)
-  if rand_fn is not None and (_DOMAIN_RANDOMIZATION.value or _ENV_NAME.value.endswith("Random")):
-    training_params["randomization_fn"] = rand_fn
+  if _DOMAIN_RANDOMIZATION.value:
+    training_params["randomization_fn"] = registry.get_domain_randomizer(
+        _ENV_NAME.value
+    )
 
   if _VISION.value:
     env = wrapper.wrap_for_brax_training(
@@ -446,8 +447,10 @@ def main(argv):
   inference_fn = make_inference_fn(params, deterministic=True)
   jit_inference_fn = jax.jit(inference_fn)
 
-  # Prepare for evaluation: reuse the training env (keeps randomization)
-  eval_env = env
+  # Prepare for evaluation
+  eval_env = (
+      None if _VISION.value else registry.load(_ENV_NAME.value, config=env_cfg)
+  )
   num_envs = 1
   if _VISION.value:
     eval_env = env

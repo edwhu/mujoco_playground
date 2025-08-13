@@ -259,8 +259,8 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     
     return {
         "get_to_handle": -palm_to_handle_dist,  # Closer to current handle is better
-        "velocity_penalty": jp.sum(jp.square(qvel)),  # Penalty for high velocities
-        "action_rate": self._cost_action_rate(
+        "velocity_penalty": -jp.sum(jp.square(qvel)),  # Penalty for high velocities
+        "action_rate": -self._cost_action_rate(
             action, info["last_act"], info["last_last_act"]
         ),
         "door_angle": delta_angle,  # Positive if opening further this step
