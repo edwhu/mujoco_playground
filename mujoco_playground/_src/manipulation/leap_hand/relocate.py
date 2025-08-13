@@ -283,9 +283,9 @@ class Relocate(leap_hand_base.LeapHandEnv):
     rewards = {
         "get_to_ball": -palm_to_obj_dist,  # Take hand to object
         "ball_on_table": jp.where(obj_on_table, -1.0, 0.0),  # Penalty for every second the object is not lifted
-        "make_hand_go_to_target": jp.where(obj_off_table, -palm_to_target_dist, 0.0),  # Make hand go to target when object is lifted
-        "make_ball_go_to_target": jp.where(obj_off_table, -obj_to_target_dist, 0.0),  # Make object go to target when lifted
-        "ball_close_to_target": jp.where(obj_very_close_to_target, 1.0, 0.0),  # Bonus for object very close to target
+        "make_hand_go_to_target": jp.where(1 - obj_on_table, -palm_to_target_dist, 0.0),  # Make hand go to target when object is lifted
+        "make_ball_go_to_target": jp.where(1 - obj_on_table, -obj_to_target_dist, 0.0),  # Make object go to target when lifted
+        "ball_close_to_target": jp.where(obj_close_to_target, 1.0, 0.0),  # Bonus for object very close to target
         "ball_fell_off": jp.where(obj_fell_off, -1.0, 0.0),  # Negative reward for falling off table
         "velocity_penalty": -jp.sum(jp.square(qvel)),  # Penalty for high velocities
         "action_rate": -self._cost_action_rate(
