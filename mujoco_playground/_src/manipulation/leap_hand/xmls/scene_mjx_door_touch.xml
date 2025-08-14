@@ -90,7 +90,7 @@
             <joint name="H_Ty" pos="0 0 0" axis="0 1 0" type="slide" range="-0.55 0.55" damping="50" armature="0.1"/>
             <joint name="H_Rx" pos="0 0 0" axis="1 0 0" range="-1 2" damping="50" armature="0.1"/>
             <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-0.75 0.75" damping="50" armature="0.1"/>
-            <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-0.75 0.75" damping="50" armature="0.1"/>
+            <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-0.75 1.57" damping="50" armature="0.1"/>
             <!-- include the hand kinematic subtree -->
             <include file="leap_rh_body_include_touch.xml"/>
         </body>
@@ -119,14 +119,14 @@
             
             <!-- ======= DOOR ======= -->
             <body name="door" pos="0.29 0 0">
-                <inertial pos="0.0296816 -0.00152345 0" quat="0.701072 0 0 0.713091" mass="2.43455" diaginertia="0.0913751 0.0521615 0.043714" />
-                <joint name="door_hinge" pos="0.31 0 0" axis="0 0 1" range="0 1.57" damping="1" frictionloss="2" />
-                <geom size="0.25 0.05 0.25" type="box" friction="1 1 1" material="MatWood" />
+                <inertial pos="0.0296816 -0.00152345 0" quat="0.701072 0 0 0.713091" mass="0.1" diaginertia="0.001 0.001 0.001" />
+                <joint name="door_hinge" pos="0.31 0 0" axis="0 0 1" range="0 1.57" damping="0.1" frictionloss="0.1" />
+                <geom size="0.25 0.05 0.25" type="box" friction="0.1 0.1 0.1" material="MatWood" />
                 
                 <!-- ======= LATCH ======= -->
                 <body name="latch" pos="-0.15 0 -0.025">
-                    <inertial pos="-0.017762 0.0138544 0" quat="0.365653 0.605347 -0.36522 0.605365" mass="3.53743" diaginertia="0.0483771 0.0410001 0.0111013" />
-                    <joint name="latch" pos="0 0 0" axis="0 1 0" range="0 1.8" frictionloss="5" />
+                    <inertial pos="-0.017762 0.0138544 0" quat="0.365653 0.605347 -0.36522 0.605365" mass="0.05" diaginertia="0.001 0.001 0.001" />
+                    <joint name="latch" pos="0 0 0" axis="0 1 0" range="0 1.8" frictionloss="0.1" />
                     <geom name="handle_geom" size="0.05 0.15" quat="0.707388 0.706825 0 0" type="capsule" material="MatFoil" />
                     <geom size="0.02 0.1" pos="0.1 -0.15 0" quat="0.707388 0 0.706825 0" type="capsule" material="MatFoil" friction="0 0 0" />
                     <geom size="0.04 0.07" pos="-0.1 0.1 0" quat="0.707388 0 0.706825 0" type="capsule" material="MatFoil" friction="0 0 0" />
