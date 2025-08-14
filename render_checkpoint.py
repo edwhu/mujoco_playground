@@ -329,7 +329,7 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
             mj_model = env.mj_model
             
             # Sync all randomized model parameters
-            randomized_fields = get_randomized_fields(env_name)
+            randomized_fields = get_randomized_fields(_ENV_NAME.value)
             sync_model_for_episode(mj_model, episode_model, episode_in_axes, episode_num, randomized_fields)
             
             try:
