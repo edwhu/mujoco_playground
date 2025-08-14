@@ -266,7 +266,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     obj_to_target_dist = jp.linalg.norm(obj_pos - target_pos)
     
     # Check if object is off table (lifted)
-    obj_off_table = obj_pos[2] > 0.04
+    obj_off_table = obj_pos[2] > 0.05
     
     # Check if object is close to target
     obj_close_to_target = obj_to_target_dist < 0.1
