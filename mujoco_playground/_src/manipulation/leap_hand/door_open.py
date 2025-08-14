@@ -140,7 +140,7 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     return mjx_env.State(data, obs, reward, done, metrics, info)
 
   def step(self, state: mjx_env.State, action: jax.Array) -> mjx_env.State:
-    motor_targets = self._default_pose + action * self._config.action_scale
+    motor_targets = self._default_pose + action
     # NOTE: no clipping.
     data = mjx_env.step(
         self.mjx_model, state.data, motor_targets, self.n_substeps

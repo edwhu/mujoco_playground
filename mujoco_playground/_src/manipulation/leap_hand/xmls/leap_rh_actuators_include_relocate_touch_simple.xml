@@ -1,12 +1,12 @@
 <mujocoinclude>
   <actuator>
     <!-- Base motion actuators similar to ADROIT forearm joints -->
-    <general name="A_H_Tx" joint="H_Tx" ctrlrange="-0.6 0.6" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
-    <general name="A_H_Ty" joint="H_Ty" ctrlrange="-0.6 0.6" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
-    <general name="A_H_Tz" joint="H_Tz" ctrlrange="-0.2 0.2" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
-    <general name="A_H_Rx" joint="H_Rx" ctrlrange="-1.57 1.57" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
-    <general name="A_H_Ry" joint="H_Ry" ctrlrange="-1.57 1.57" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
-    <general name="A_H_Rz" joint="H_Rz" ctrlrange="-1.57 1.57" biastype="affine" gainprm="500 0 0" biasprm="0 -200 0" />
+    <general name="A_H_Tx" joint="H_Tx" ctrlrange="-0.6 0.6" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
+    <general name="A_H_Ty" joint="H_Ty" ctrlrange="-0.6 0.6" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
+    <general name="A_H_Tz" joint="H_Tz" ctrlrange="-0.3 0.4" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
+    <general name="A_H_Rx" joint="H_Rx" ctrlrange="-1.57 1.57" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
+    <general name="A_H_Ry" joint="H_Ry" ctrlrange="-1.57 1.57" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
+    <general name="A_H_Rz" joint="H_Rz" ctrlrange="-1.57 1.57" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
 
     <position name="if_mcp_act" joint="if_mcp" class="mcp"/>
     <position name="if_rot_act" joint="if_rot" class="rot"/>

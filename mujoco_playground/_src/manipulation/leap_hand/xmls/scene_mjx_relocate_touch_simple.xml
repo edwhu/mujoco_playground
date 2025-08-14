@@ -99,7 +99,7 @@
         <body name="hand_base" pos="0 -0.2 0.3" euler="3.14 0 -1.57">
             <joint name="H_Tx" pos="0 0 0" axis="1 0 0" type="slide" range="-0.6 0.6" damping="50" armature="0.1"/>
             <joint name="H_Ty" pos="0 0 0" axis="0 1 0" type="slide" range="-0.6 0.6" damping="50" armature="0.1"/>
-            <joint name="H_Tz" pos="0 0 0" axis="0 0 1" type="slide" range="-0.3 0.2" damping="50" armature="0.1"/>
+            <joint name="H_Tz" pos="0 0 0" axis="0 0 1" type="slide" range="-0.3 0.4" damping="50" armature="0.1"/>
             <joint name="H_Rx" pos="0 0 0" axis="1 0 0" range="-1.57 1.57" damping="50" armature="0.1"/>
             <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-1.57 1.57" damping="50" armature="0.1"/>
             <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-1.57 1.57" damping="50" armature="0.1"/>
