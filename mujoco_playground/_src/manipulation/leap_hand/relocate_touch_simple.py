@@ -50,6 +50,7 @@ def default_config() -> config_dict.ConfigDict:
               make_ball_go_to_target=0.5,
               ball_close_to_target=10.0,
               ball_very_close_to_target=20.0,
+              ball_fell_off=10.0,
           ),
       ),
   )
@@ -98,6 +99,9 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_SIMPLE
     self._touch_sensor_ids = [self._mj_model.sensor(name).id for name in self._touch_sensor_names]
     self._touch_size = int(np.sum(self._mj_model.sensor_dim[self._touch_sensor_ids]))
+    
+    # Precompute hand body IDs for contact detection
+    self._hand_body_ids = self._get_hand_body_ids()
 
   def reset(self, rng: jax.Array) -> mjx_env.State:
     # Randomize object position like in pick_cartesian.py
@@ -268,21 +272,53 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     # Check if object is off table (lifted)
     obj_off_table = obj_pos[2] > 0.05
     
+    # Check if hand is in contact with object
+    hand_obj_contact = self._check_hand_object_contact(data)
+    
+    # Only reward obj_off_table if hand is in contact with object
+    obj_off_table_with_contact = obj_off_table & hand_obj_contact
+    
     # Check if object is close to target
     obj_close_to_target = obj_to_target_dist < 0.1
     obj_very_close_to_target = obj_to_target_dist < 0.05
     
+    # Check if object fell off table (for penalty)
+    obj_fell_off = obj_pos[2] < -0.05
+    
     # Follow Adroit reward structure as dictionary components
     rewards = {
         "get_to_ball": -palm_to_obj_dist,  # Take hand to object (negative distance)
-        "ball_off_table": jp.where(obj_off_table, 1.0, 0.0),  # Bonus for lifting the object
-        "make_hand_go_to_target": jp.where(obj_off_table, -palm_to_target_dist, 0.0),  # Make hand go to target when lifted
-        "make_ball_go_to_target": jp.where(obj_off_table, -obj_to_target_dist, 0.0),  # Make object go to target when lifted
+        "ball_off_table": jp.where(obj_off_table_with_contact, 1.0, 0.0),  # Bonus for lifting the object (only if in contact)
+        "make_hand_go_to_target": jp.where(obj_off_table_with_contact, -palm_to_target_dist, 0.0),  # Make hand go to target when lifted
+        "make_ball_go_to_target": jp.where(obj_off_table_with_contact, -obj_to_target_dist, 0.0),  # Make object go to target when lifted
         "ball_close_to_target": jp.where(obj_close_to_target, 1.0, 0.0),  # Bonus for object close to target
         "ball_very_close_to_target": jp.where(obj_very_close_to_target, 1.0, 0.0),  # Bonus for object very close to target
+        "ball_fell_off": jp.where(obj_fell_off, -1.0, 0.0),  # Penalty for object falling off table
     }
     
     return rewards
+
+  def _get_hand_body_ids(self) -> list[int]:
+    """Get hand body IDs for contact detection."""
+    hand_body_ids = []
+    for body_name in ["palm", "if_bs", "if_px", "if_md", "if_ds", "mf_bs", "mf_px", "mf_md", "mf_ds", "rf_bs", "rf_px", "rf_md", "rf_ds", "th_mp", "th_bs", "th_px", "th_ds"]:
+      try:
+        hand_body_ids.append(self._mj_model.body(body_name).id)
+      except:
+        print(f"Body {body_name} not found")  # Skip if body doesn't exist
+    return hand_body_ids
+
+  def _check_hand_object_contact(self, data: mjx.Data) -> jax.Array:
+    """Check if hand is in contact with the object using MuJoCo contact detection."""
+    # Check if any hand body is in contact with object
+    has_contact = jp.array(False)
+    for hand_body_id in self._hand_body_ids:
+      # Check if this hand body is in contact with object
+      contact = jp.any(data.contact.geom1 == hand_body_id) & jp.any(data.contact.geom2 == self._obj_body)
+      contact |= jp.any(data.contact.geom1 == self._obj_body) & jp.any(data.contact.geom2 == hand_body_id)
+      has_contact |= contact
+    
+    return has_contact
 
   def get_touch_sensors(self, data: mjx.Data) -> jax.Array:
     """Get touch sensor data using TOUCH_SENSOR_NAMES_SIMPLE."""
