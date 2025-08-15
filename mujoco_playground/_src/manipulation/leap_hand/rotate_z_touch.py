@@ -165,7 +165,7 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
     """Get touch sensor data."""
     touch = jp.concatenate([
         mjx_env.get_sensor_data(self.mj_model, data, name)
-        for name in consts.TOUCH_SENSOR_NAMES_SIMPLE
+        for name in consts.TOUCH_SENSOR_NAMES
     ])
     if self._config.binarize_touch_sensors:
       touch = touch > 0.0
