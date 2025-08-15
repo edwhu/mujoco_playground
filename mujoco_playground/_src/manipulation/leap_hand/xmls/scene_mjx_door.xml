@@ -87,7 +87,7 @@
         <!-- ======= LEAP HAND BASE (floating) ======= -->
         <body name="hand_base" pos="0 -0.4 0.2" euler="3.14 0 -1.57">
             <joint name="H_Tx" pos="0 0 0" axis="1 0 0" type="slide" range="-0.4 0.9" damping="50" armature="0.1"/>
-            <joint name="H_Ty" pos="0 0 0" axis="0 1 0" type="slide" range="-0.55 0.55" damping="50" armature="0.1"/>
+            <joint name="H_Ty" pos="0 0 0" axis="0 1 0" type="slide" range="-0.25 0.25" damping="50" armature="0.1"/>
             <joint name="H_Rx" pos="0 0 0" axis="1 0 0" range="-2 2" damping="50" armature="0.1"/>
             <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-2 2" damping="50" armature="0.1"/>
             <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-2 2" damping="50" armature="0.1"/>

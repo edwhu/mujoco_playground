@@ -296,12 +296,12 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
     # Sample continuous frame offsets within joint ranges
     rng, kx, ky, kz = jax.random.split(rng, 4)
     tx = jax.random.uniform(kx, (), minval=-0.5, maxval=0.5)
-    ty = jax.random.uniform(ky, (), minval=-0.3, maxval=0.3)
-    tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.05)
+    ty = jax.random.uniform(ky, (), minval=-0.2, maxval=0.)
+    # tz = jax.random.uniform(kz, (), minval=-0.00, maxval=0.00)
     
     # Get the original frame position and add the offset
     original_pos = model.body_pos[frame_body_id]
-    offset = jp.array([tx, ty, tz])
+    offset = jp.array([tx, ty, 0.0])
     new_pos = original_pos + offset
 
     # Create new body_pos with randomized frame position
