@@ -51,7 +51,7 @@ def default_config() -> config_dict.ConfigDict:
       reward_config=config_dict.create(
           scales=config_dict.create(
               get_to_handle=0.1,
-              velocity_penalty=1e-5,
+              velocity_penalty=1e-3,
               action_rate=0.0,
               door_angle=1.0,
               door_open=100.0,
