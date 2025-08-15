@@ -43,13 +43,24 @@ def default_config() -> config_dict.ConfigDict:
           ),
       ),
       reward_config=config_dict.create(
+          # scales=config_dict.create(
+          #     get_to_ball=0.1,
+          #     fingertips_to_object=0.5,  # Reward for finger tips getting close to object
+          #     ball_off_table=1.0,
+          #     make_hand_go_to_target=0.5,
+          #     make_ball_go_to_target=0.5,
+          #     ball_close_to_target=10.0,
+          #     ball_very_close_to_target=20.0,
+          #     ball_fell_off=10.0,
+          # ),
           scales=config_dict.create(
-              get_to_ball=0.1,
-              ball_off_table=1.0,
-              make_hand_go_to_target=0.5,
-              make_ball_go_to_target=0.5,
-              ball_close_to_target=10.0,
-              ball_very_close_to_target=20.0,
+              get_to_ball=1.0,
+              fingertips_to_object=0.5,  # Reward for finger tips getting close to object
+              ball_off_table=0.0,
+              make_hand_go_to_target=0.0,
+              make_ball_go_to_target=0.0,
+              ball_close_to_target=0.0,
+              ball_very_close_to_target=0.0,
               ball_fell_off=10.0,
           ),
       ),
@@ -106,7 +117,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
   def reset(self, rng: jax.Array) -> mjx_env.State:
     # Randomize object position like in pick_cartesian.py
     rng, rng_obj_x, rng_obj_y = jax.random.split(rng, 3)
-    obj_range = 0.3  # Similar to box_init_range in pick_cartesian.py
+    obj_range = 0.0  # Similar to box_init_range in pick_cartesian.py
     obj_pos = jp.array([
         jax.random.uniform(rng_obj_x, (), minval=-obj_range, maxval=obj_range),  # Randomize X position
         jax.random.uniform(rng_obj_y, (), minval=-obj_range, maxval=obj_range),  # Randomize Y position
@@ -269,14 +280,26 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     palm_to_target_dist = jp.linalg.norm(palm_pos - target_pos)
     obj_to_target_dist = jp.linalg.norm(obj_pos - target_pos)
     
+    # Calculate distance from finger tips to object
+    fingertip_positions = self.get_fingertip_positions(data)
+    # Calculate average distance from all finger tips to object
+    fingertip_to_obj_dists = jp.array([
+        jp.linalg.norm(tip_pos - obj_pos) for tip_pos in fingertip_positions
+    ])
+    avg_fingertip_to_obj_dist = jp.mean(fingertip_to_obj_dists)
+    
+    # jax.debug.print("palm_pos: {}", palm_pos)
+    # jax.debug.print("obj_pos: {}", obj_pos)
+    # jax.debug.print("palm_to_obj_dist: {}", palm_to_obj_dist)
+    
     # Check if object is off table (lifted)
     obj_off_table = obj_pos[2] > 0.05
     
     # Check if hand is in contact with object
-    hand_obj_contact = self._check_hand_object_contact(data)
+    # hand_obj_contact = self._check_hand_object_contact(data)
     
     # Only reward obj_off_table if hand is in contact with object
-    obj_off_table_with_contact = obj_off_table & hand_obj_contact
+    # obj_off_table_with_contact = obj_off_table & hand_obj_contact
     
     # Check if object is close to target
     obj_close_to_target = obj_to_target_dist < 0.1
@@ -288,9 +311,11 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     # Follow Adroit reward structure as dictionary components
     rewards = {
         "get_to_ball": -palm_to_obj_dist,  # Take hand to object (negative distance)
-        "ball_off_table": jp.where(obj_off_table_with_contact, 1.0, 0.0),  # Bonus for lifting the object (only if in contact)
-        "make_hand_go_to_target": jp.where(obj_off_table_with_contact, -palm_to_target_dist, 0.0),  # Make hand go to target when lifted
-        "make_ball_go_to_target": jp.where(obj_off_table_with_contact, -obj_to_target_dist, 0.0),  # Make object go to target when lifted
+        # "hand_object_contact": jp.where(hand_obj_contact, 1.0, 0.0),  # Bonus for hand-object contact
+        "fingertips_to_object": -avg_fingertip_to_obj_dist,  # Reward for finger tips getting close to object (negative distance)
+        "ball_off_table": jp.where(obj_off_table, 1.0, 0.0),  # Bonus for lifting the object (only if in contact)
+        "make_hand_go_to_target": jp.where(obj_off_table, -palm_to_target_dist, 0.0),  # Make hand go to target when lifted
+        "make_ball_go_to_target": jp.where(obj_off_table, -obj_to_target_dist, 0.0),  # Make object go to target when lifted
         "ball_close_to_target": jp.where(obj_close_to_target, 1.0, 0.0),  # Bonus for object close to target
         "ball_very_close_to_target": jp.where(obj_very_close_to_target, 1.0, 0.0),  # Bonus for object very close to target
         "ball_fell_off": jp.where(obj_fell_off, -1.0, 0.0),  # Penalty for object falling off table
@@ -310,15 +335,18 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
 
   def _check_hand_object_contact(self, data: mjx.Data) -> jax.Array:
     """Check if hand is in contact with the object using MuJoCo contact detection."""
-    # Check if any hand body is in contact with object
-    has_contact = jp.array(False)
-    for hand_body_id in self._hand_body_ids:
-      # Check if this hand body is in contact with object
-      contact = jp.any(data.contact.geom1 == hand_body_id) & jp.any(data.contact.geom2 == self._obj_body)
-      contact |= jp.any(data.contact.geom1 == self._obj_body) & jp.any(data.contact.geom2 == hand_body_id)
-      has_contact |= contact
+    # Most efficient vectorized approach
+    hand_geoms = jp.array(self._hand_body_ids)
+    obj_geom = self._obj_body
     
-    return has_contact
+    # Create a single boolean array for all contacts
+    # Check if any contact involves both hand and object
+    hand_obj_contacts = (
+        (jp.isin(data.contact.geom1, hand_geoms) & (data.contact.geom2 == obj_geom)) |
+        (jp.isin(data.contact.geom2, hand_geoms) & (data.contact.geom1 == obj_geom))
+    )
+    
+    return jp.any(hand_obj_contacts)
 
   def get_touch_sensors(self, data: mjx.Data) -> jax.Array:
     """Get touch sensor data using TOUCH_SENSOR_NAMES_SIMPLE."""

@@ -46,7 +46,8 @@ import wandb
 
 import mujoco_playground
 from mujoco_playground import registry
-from mujoco_playground import wrapper
+from mujoco_playground._src import wrapper
+from learning import wandb_utils
 from mujoco_playground.config import dm_control_suite_params
 from mujoco_playground.config import locomotion_params
 from mujoco_playground.config import manipulation_params
@@ -283,7 +284,7 @@ def main(argv):
 
   # Initialize Weights & Biases if required
   if _USE_WANDB.value and not _PLAY_ONLY.value:
-    wandb.init(project="mjxrl4", entity="fionalluo", name=exp_name)
+    wandb.init(project="mjxrl5", entity="fionalluo", name=exp_name)
     wandb.config.update(env_cfg.to_dict())
     wandb.config.update({"env_name": _ENV_NAME.value})
 
@@ -375,11 +376,11 @@ def main(argv):
   def progress(num_steps, metrics):
     times.append(time.monotonic())
 
-    # Log to Weights & Biases
+    # Log to Weights & Biases with organized std metrics
     if _USE_WANDB.value and not _PLAY_ONLY.value:
-      wandb.log(metrics, step=num_steps)
+      wandb_utils.log_metrics_to_wandb(metrics, num_steps, wandb)
 
-    # Log to TensorBoard
+    # Log to TensorBoard (keep original organization for TensorBoard)
     if _USE_TB.value and not _PLAY_ONLY.value:
       for key, value in metrics.items():
         writer.add_scalar(key, value, num_steps)

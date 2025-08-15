@@ -261,7 +261,7 @@ def brax_ppo_config(env_name: str) -> config_dict.ConfigDict:
     )
   elif env_name == "LeapRelocate":
     rl_config.num_timesteps = 100_000_000
-    rl_config.num_evals = 10
+    rl_config.num_evals = 30
     rl_config.num_minibatches = 32
     rl_config.unroll_length = 40
     rl_config.num_updates_per_batch = 4
@@ -279,7 +279,7 @@ def brax_ppo_config(env_name: str) -> config_dict.ConfigDict:
     )
   elif env_name == "LeapRelocateTouchSimple":
     rl_config.num_timesteps = 100_000_000
-    rl_config.num_evals = 10
+    rl_config.num_evals = 30
     rl_config.num_minibatches = 32
     rl_config.unroll_length = 40
     rl_config.num_updates_per_batch = 4
