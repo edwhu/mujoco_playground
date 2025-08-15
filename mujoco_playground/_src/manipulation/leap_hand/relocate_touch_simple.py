@@ -293,7 +293,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     # jax.debug.print("palm_to_obj_dist: {}", palm_to_obj_dist)
     
     # Check if object is off table (lifted)
-    obj_off_table = obj_pos[2] > 0.05
+    obj_off_table = obj_pos[2] > 0.06
     
     # Check if hand is in contact with object
     # hand_obj_contact = self._check_hand_object_contact(data)
