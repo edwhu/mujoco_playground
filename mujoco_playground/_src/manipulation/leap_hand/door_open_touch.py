@@ -51,6 +51,7 @@ def default_config() -> config_dict.ConfigDict:
           scales=config_dict.create(
               get_to_handle=0.1,
               velocity_penalty=1e-5,
+              translation_velocity_penalty=1e-2,  # Additional penalty for translation joints
               action_rate=0.0,
               door_angle=1.0,
               door_open=100.0,
@@ -276,6 +277,7 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
     return {
         "get_to_handle": -palm_to_handle_dist,  # Closer to current handle is better
         "velocity_penalty": -jp.sum(jp.square(qvel)),  # Penalty for high velocities
+        "translation_velocity_penalty": -jp.sum(jp.square(qvel[0:2])), # Penalty for translation joints
         "action_rate": -self._cost_action_rate(
             action, info["last_act"], info["last_last_act"]
         ),
