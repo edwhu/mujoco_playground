@@ -145,7 +145,7 @@ class DoorOpenTouchSimple(leap_hand_base.LeapHandEnv):
     return mjx_env.State(data, obs, reward, done, metrics, info)
 
   def step(self, state: mjx_env.State, action: jax.Array) -> mjx_env.State:
-    motor_targets = self._default_pose + action
+    motor_targets = self._default_pose + action * self._config.action_scale
     # NOTE: no clipping.
     data = mjx_env.step(
         self.mjx_model, state.data, motor_targets, self.n_substeps
@@ -308,13 +308,13 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
   def randomize_door_pos(rng):
     # Sample continuous frame offsets within joint ranges
     rng, kx, ky, kz = jax.random.split(rng, 4)
-    tx = jax.random.uniform(kx, (), minval=-0.3, maxval=0.3)
+    tx = jax.random.uniform(kx, (), minval=-0.5, maxval=0.5)
     ty = jax.random.uniform(ky, (), minval=-0.3, maxval=0.3)
-    # tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.05)
+    tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.05)
 
     # Get the original frame position and add the offset
     original_pos = model.body_pos[frame_body_id]
-    offset = jp.array([tx, ty, 0.0])
+    offset = jp.array([tx, ty, tz])
     new_pos = original_pos + offset
 
     # Create new body_pos with randomized frame position
