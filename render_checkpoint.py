@@ -272,8 +272,7 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
     
     print(f"Parallel rollout completed. Episode lengths: {episode_lengths}")
     print(f"Returns per episode : {episode_returns}")
-    print(f"Average return: {jp.mean(episode_returns)}")
-    
+    print(f"Average return: {jp.mean(episode_returns)}")    
     # Convert parallel trajectories to sequential for rendering
     print("Converting parallel trajectories to sequential for rendering...")
     # sequential_trajectory = []
@@ -294,8 +293,7 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
     print(f"Parallel rollout completed. Episode lengths: {episode_lengths}")
 
     total_frames = sum([len(t) for t in episode_trajectories.values()])
-    print(f"All trajectories have {total_frames} total states")
-    
+    print(f"All trajectories have {total_frames} total states")    
     # Render the rollout
     print("Rendering video...")
     fps = 1.0 / env.dt / render_every

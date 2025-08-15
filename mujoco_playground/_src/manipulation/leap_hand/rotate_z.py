@@ -363,7 +363,7 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
     # )
     # dof_damping = model.dof_damping.at[hand_qids].set(kd)
 
-    # cube geom size: *U(0.025, 0.055)
+    # cube geom size: *U(0.03, 0.055)
     rng, key = jax.random.split(rng)
     geom_size = model.geom_size.at[cube_geom_id, :].set(
         jax.random.uniform(key, (1,), minval=0.03, maxval=0.055)
