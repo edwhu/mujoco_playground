@@ -228,6 +228,7 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
     parallel_trajectories = [[] for _ in range(num_episodes)]
     episode_terminated = [False] * num_episodes
     episode_lengths = [0] * num_episodes
+    episode_returns = jp.zeros(num_episodes)
     
     # Add initial states
     for i in range(num_episodes):
@@ -238,6 +239,7 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
         act_rng, rng = jax.random.split(rng)
         ctrl, _ = jit_inference_fn(state.obs, act_rng)
         state = jit_step(state, ctrl)
+        episode_returns += state.reward
         
         # Add states to trajectories and check termination
         for i in range(num_episodes):
@@ -269,6 +271,8 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
             break
     
     print(f"Parallel rollout completed. Episode lengths: {episode_lengths}")
+    print(f"Returns per episode : {episode_returns}")
+    print(f"Average return: {jp.mean(episode_returns)}")
     
     # Convert parallel trajectories to sequential for rendering
     print("Converting parallel trajectories to sequential for rendering...")
