@@ -211,7 +211,7 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
         cube_quat,
         cube_angvel,
         cube_linvel,
-        touch,
+        # touch, # redundant since it's in state.
     ])
 
     return {
