@@ -4,7 +4,7 @@
 import os
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any, List
 
 # Set environment variables for headless rendering
 os.environ["MUJOCO_GL"] = "egl"
@@ -66,6 +66,31 @@ def get_rl_config(env_name: str) -> config_dict.ConfigDict:
         return dm_control_suite_params.brax_ppo_config(env_name)
 
     raise ValueError(f"Env {env_name} not found in {registry.ALL_ENVS}.")
+
+def get_randomized_fields(env_name: str) -> List[str]:
+    # the fields defined in domain_randomize function for the envs
+    # used to specify which attributes of the render env's model are changed. 
+    if env_name == "LeapCubeRotateZAxisTouch" or env_name == "LeapCubeRotateZAxis":
+      randomized_fields = [
+            "geom_friction",
+            "body_mass",
+            "body_inertia", 
+            "body_ipos",
+            "qpos0",
+            "dof_frictionloss",
+            "dof_armature",
+            "dof_damping",
+            "actuator_gainprm",
+            "actuator_biasprm",
+            "geom_size"
+        ]
+    elif env_name == "LeapDoorOpenRandom":
+        randomized_fields = [
+            "body_pos",
+        ]
+    else:
+        raise ValueError(f"Env {env_name}'s domain randomized fields not defined. Please define them in get_randomized_fields function.")
+    return randomized_fields
 
 
 def get_latest_checkpoint_path(checkpoint_dir: str):
@@ -203,6 +228,7 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
     parallel_trajectories = [[] for _ in range(num_episodes)]
     episode_terminated = [False] * num_episodes
     episode_lengths = [0] * num_episodes
+    episode_returns = jp.zeros(num_episodes)
     
     # Add initial states
     for i in range(num_episodes):
@@ -213,6 +239,7 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
         act_rng, rng = jax.random.split(rng)
         ctrl, _ = jit_inference_fn(state.obs, act_rng)
         state = jit_step(state, ctrl)
+        episode_returns += state.reward
         
         # Add states to trajectories and check termination
         for i in range(num_episodes):
@@ -244,7 +271,8 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
             break
     
     print(f"Parallel rollout completed. Episode lengths: {episode_lengths}")
-    
+    print(f"Returns per episode : {episode_returns}")
+    print(f"Average return: {jp.mean(episode_returns)}")    
     # Convert parallel trajectories to sequential for rendering
     print("Converting parallel trajectories to sequential for rendering...")
     # sequential_trajectory = []
@@ -265,8 +293,7 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
     print(f"Parallel rollout completed. Episode lengths: {episode_lengths}")
 
     total_frames = sum([len(t) for t in episode_trajectories.values()])
-    print(f"All trajectories have {total_frames} total states")
-    
+    print(f"All trajectories have {total_frames} total states")    
     # Render the rollout
     print("Rendering video...")
     fps = 1.0 / env.dt / render_every
@@ -295,41 +322,26 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
 
         # Sync model for this episode if domain randomization is enabled
         if hasattr(env, '_mjx_model_v') and hasattr(env, '_in_axes'):
-            print(f"Syncing model for episode {episode_num+1} with randomized body positions")
-            
+            print(f"Syncing model for episode {episode_num+1} with domain randomized parameters")
             # Get the randomized model for this episode
             episode_model = env._mjx_model_v
             episode_in_axes = env._in_axes
             
-            # Update the rendering model with all randomized body positions for this episode
+            # Update the rendering model with all randomized parameters for this episode
             mj_model = env.mj_model
             
-            # Store original positions for all bodies that might be randomized
-            original_positions = {}
+            # Sync all randomized model parameters
+            randomized_fields = get_randomized_fields(_ENV_NAME.value)
+            sync_model_for_episode(mj_model, episode_model, episode_in_axes, episode_num, randomized_fields)
             
-            # Check which body positions are randomized (have in_axes != None)
-            if hasattr(episode_in_axes, 'body_pos') and episode_in_axes.body_pos is not None:
-                # Get all randomized body positions for this episode
-                episode_body_pos = episode_model.body_pos[episode_num]
-                original_body_pos = np.array(mj_model.body_pos)
-                
-                # Update the rendering model with this episode's body positions
-                mj_model.body_pos[:] = episode_body_pos
-                
-                try:
-                    episode_frames = env.render(
-                        traj, height=480, width=640, scene_option=scene_option
-                    )
-                    frames.extend(episode_frames)
-                finally:
-                    # Restore original body positions
-                    mj_model.body_pos[:] = original_body_pos
-            else:
-                # No body position randomization, render normally
+            try:
                 episode_frames = env.render(
                     traj, height=480, width=640, scene_option=scene_option
                 )
                 frames.extend(episode_frames)
+            finally:
+                # Restore original model parameters
+                restore_original_model_params(mj_model)
         else:
             print("Using standard render (no domain randomization)")
             episode_frames = env.render(
@@ -338,6 +350,86 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
             frames.extend(episode_frames)
     
     return frames, fps
+
+
+# Global storage for original model parameters during rendering
+_original_model_params: Dict[str, Any] = {}
+
+
+def sync_model_for_episode(mj_model, episode_model, episode_in_axes, episode_num, randomized_fields):
+    """
+    Sync domain randomized model parameters for a specific episode.
+    
+    Only syncs the fields that are explicitly modified by domain randomization functions,
+    based on the fields that have non-None values in the in_axes structure.
+    
+    Args:
+        mj_model: The MuJoCo model used for rendering
+        episode_model: The vectorized model containing randomized parameters 
+        episode_in_axes: The in_axes structure indicating which parameters are randomized
+        episode_num: The episode index to extract parameters for
+    """
+    global _original_model_params
+    _original_model_params.clear()  # Clear any previous state
+    
+    # Only sync fields that are explicitly randomized (have non-None in_axes values)
+    # Based on the rotate_z_touch domain randomization function
+  
+    
+    synced_count = 0
+    
+    for field_name in randomized_fields:
+        try:
+            # Check if this field is randomized (has in_axes != None)
+            if hasattr(episode_in_axes, field_name):
+                in_axes_value = getattr(episode_in_axes, field_name)
+                
+                if in_axes_value is not None:
+                    # Verify that both models have this attribute
+                    if not (hasattr(mj_model, field_name) and hasattr(episode_model, field_name)):
+                        continue
+                        
+                    # Store original value for restoration
+                    original_value = np.array(getattr(mj_model, field_name))
+                    _original_model_params[field_name] = original_value
+                    
+                    # Get the randomized value for this episode
+                    episode_value = getattr(episode_model, field_name)[episode_num]
+                    
+                    # Convert from JAX array to numpy if needed
+                    if hasattr(episode_value, 'shape'):
+                        episode_value = np.array(episode_value)
+                    
+                    # Update the rendering model with this episode's parameters
+                    getattr(mj_model, field_name)[:] = episode_value
+                    
+                    print(f"  - Synced {field_name} (shape: {episode_value.shape})")
+                    synced_count += 1
+                    
+        except (AttributeError, TypeError, IndexError) as e:
+            print(f"  - Warning: Could not sync {field_name}: {e}")
+            continue
+    
+    if synced_count == 0:
+        print("  - No randomized parameters detected to sync")
+    else:
+        print(f"  - Successfully synced {synced_count} randomized parameters")
+
+
+def restore_original_model_params(mj_model):
+    """
+    Restore original model parameters after rendering.
+    
+    Args:
+        mj_model: The MuJoCo model to restore
+    """
+    global _original_model_params
+    
+    for field, original_value in _original_model_params.items():
+        getattr(mj_model, field)[:] = original_value
+        
+    _original_model_params.clear()
+
 
 def main(argv):
     """Main function."""

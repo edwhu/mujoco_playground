@@ -448,6 +448,7 @@ def main(argv):
   inference_fn = make_inference_fn(params, deterministic=True)
   jit_inference_fn = jax.jit(inference_fn)
 
+
   # Prepare for evaluation
   eval_env = (
       None if _VISION.value else registry.load(_ENV_NAME.value, config=env_cfg)
@@ -471,7 +472,8 @@ def main(argv):
   rollout = [state0]
 
   # Run evaluation rollout
-  for _ in range(env_cfg.episode_length):
+  ep_reward = 0
+  for t in range(env_cfg.episode_length):
     act_rng, rng = jax.random.split(rng)
     ctrl, _ = jit_inference_fn(state.obs, act_rng)
     state = jit_step(state, ctrl)
@@ -481,8 +483,10 @@ def main(argv):
         else state
     )
     rollout.append(state0)
-    if state0.done:
-      break
+    ep_reward += state0.reward
+    print(f'step {t}, reward {state0.reward}')
+    # if state0.done:
+    #   break
 
   # Render and save the rollout
   render_every = 2
@@ -499,8 +503,8 @@ def main(argv):
   frames = eval_env.render(
       traj, height=480, width=640, scene_option=scene_option
   )
-  media.write_video("rollout.mp4", frames, fps=fps)
-  print("Rollout video saved as 'rollout.mp4'.")
+  media.write_video(f"rollout_{ep_reward:.3f}.mp4", frames, fps=fps)
+  print(f"Rollout video saved as 'rollout_{ep_reward:.3f}.mp4'.")
 
 
 if __name__ == "__main__":
