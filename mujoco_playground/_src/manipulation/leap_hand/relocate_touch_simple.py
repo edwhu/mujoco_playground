@@ -45,14 +45,13 @@ def default_config() -> config_dict.ConfigDict:
       reward_config=config_dict.create(
           scales=config_dict.create(
               get_to_ball=0.1,
+              fingertips_to_object=0.5,  # Reward for finger tips getting close to object
               ball_off_table=1.0,
               make_hand_go_to_target=0.5,
               make_ball_go_to_target=0.5,
               ball_close_to_target=10.0,
               ball_very_close_to_target=20.0,
-              ball_fell_off=1.0,
-              velocity_penalty=1e-5,
-              action_rate=0.0,
+              ball_fell_off=10.0,
           ),
       ),
   )
@@ -67,7 +66,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
     super().__init__(
-        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_relocate.xml",
+        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_relocate_touch_simple.xml",
         config=config,
         config_overrides=config_overrides,
     )
@@ -79,15 +78,15 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     self._hand_qids = mjx_env.get_qpos_ids(self.mj_model, hand_joint_names)
     self._hand_dqids = mjx_env.get_qvel_ids(self.mj_model, hand_joint_names)
     
-    # Get object joint IDs (these are not controllable)
-    self._obj_qids = mjx_env.get_qpos_ids(self.mj_model, ["OBJTx", "OBJTy", "OBJTz", "OBJRx", "OBJRy", "OBJRz"])
+    # Get object body ID and qpos address (following the pattern from pick_cartesian.py)
+    self._obj_body = self._mj_model.body("Object").id
+    self._obj_qposadr = self._mj_model.jnt_qposadr[
+        self._mj_model.body("Object").jntadr[0]
+    ]
     
     # Get site IDs for palm and target
-    self._palm_site_id = self._mj_model.site("S_grasp").id
+    self._palm_site_id = self._mj_model.site("palm_site").id
     self._target_site_id = self._mj_model.site("target").id
-    
-    # Get object body ID
-    self._obj_body_id = self._mj_model.body("Object").id
     
     # Initialize defaults from model qpos0 to match viewer
     self._qpos0 = jp.array(self._mj_model.qpos0)
@@ -96,15 +95,36 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     
     # Get actuator limits for hand joints only
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
+    
+    # Precompute touch sensor ids and total size for observation history    
+    self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_SIMPLE
+    self._touch_sensor_ids = [self._mj_model.sensor(name).id for name in self._touch_sensor_names]
+    self._touch_size = int(np.sum(self._mj_model.sensor_dim[self._touch_sensor_ids]))
+    
+    # Precompute hand body IDs for contact detection
+    self._hand_body_ids = self._get_hand_body_ids()
 
   def reset(self, rng: jax.Array) -> mjx_env.State:
-    # Use exact XML initial pose (no randomization)
+    # Randomize object position like in pick_cartesian.py
+    rng, rng_obj_x, rng_obj_y = jax.random.split(rng, 3)
+    obj_range = 0.0  # Similar to box_init_range in pick_cartesian.py
+    obj_pos = jp.array([
+        jax.random.uniform(rng_obj_x, (), minval=-obj_range, maxval=obj_range),  # Randomize X position
+        jax.random.uniform(rng_obj_y, (), minval=-obj_range, maxval=obj_range),  # Randomize Y position
+        0.04,  # Fixed Z position on table
+    ])
+
+    # Use exact XML initial pose for hand (no randomization)
     q_hand = self._default_pose
     v_hand = jp.zeros_like(self._default_pose)
 
     # Start from model qpos0 so all non-hand joints match viewer exactly
     qpos = jp.array(self._mj_model.qpos0)
-    qvel = jp.zeros_like(qpos)
+    qvel = jp.zeros(self._mj_model.nv)  # Use correct velocity size
+    
+    # Set object position (following pick_cartesian.py pattern)
+    qpos = qpos.at[self._obj_qposadr:self._obj_qposadr + 3].set(obj_pos)
+    
     # Set hand joints
     qpos = qpos.at[self._hand_qids].set(q_hand)
     qvel = qvel.at[self._hand_dqids].set(v_hand)
@@ -128,15 +148,15 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    # State size = hand joints + previous actions
-    state_size = len(self._hand_qids) + self.mjx_model.nu
+    # State size = hand joints + touch sensors + previous actions + target position (x, y only)
+    state_size = len(self._hand_qids) + self._touch_size + self.mjx_model.nu + 2
     obs_history = jp.zeros(self._config.history_len * state_size)
     obs = self._get_obs(data, info, obs_history)
     reward, done = jp.zeros(2)  # pylint: disable=redefined-outer-name
     return mjx_env.State(data, obs, reward, done, metrics, info)
 
   def step(self, state: mjx_env.State, action: jax.Array) -> mjx_env.State:
-    motor_targets = self._default_pose + action * self._config.action_scale
+    motor_targets = self._default_pose + action
     # NOTE: no clipping.
     data = mjx_env.step(
         self.mjx_model, state.data, motor_targets, self.n_substeps
@@ -167,15 +187,12 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     return state
 
   def _get_termination(self, data: mjx.Data) -> jax.Array:
-    # Episode ends when object falls off table (z < -0.05) or when object is very close to target
-    obj_pos = data.xpos[self._obj_body_id]
-    target_pos = data.site_xpos[self._target_site_id]
-    
-    obj_to_target_dist = jp.linalg.norm(obj_pos - target_pos)
+    # Episode ends only when object falls off table (z < -0.05)
+    # No early termination when close to target - let it run full episode
+    obj_pos = data.xpos[self._obj_body]
     obj_fell_off = obj_pos[2] < -0.05
-    obj_reached_target = obj_to_target_dist < 0.05
     
-    return obj_fell_off | obj_reached_target
+    return obj_fell_off
 
   def _get_obs(
       self, data: mjx.Data, info: dict[str, Any], obs_history: jax.Array
@@ -189,41 +206,45 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
         * self._config.noise_config.scales.joint_pos
     )
 
+    # Get touch sensors
+    touch = self.get_touch_sensors(data)
+
+    # Get target position for the policy to know where to move the object
+    target_pos = data.site_xpos[self._target_site_id]
+    target_xy = target_pos[:2]  # Only x and y coordinates since z is constant
+    
     state = jp.concatenate([
         noisy_joint_angles,  # Hand joints (27 values: 6 base motion + 21 finger joints)
+        touch,               # Touch sensors
         info["last_act"],  # Previous actions (27 values)
+        target_xy,  # Target position (2 values: x, y)
     ])
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
 
-    # Get palm, object, and target positions
+    # Get palm and target positions
     palm_pos = data.site_xpos[self._palm_site_id]
-    obj_pos = data.xpos[self._obj_body_id]
     target_pos = data.site_xpos[self._target_site_id]
     
-    # Get object orientation and velocities
-    obj_quat = data.xquat[self._obj_body_id]
-    obj_linvel = data.qvel[self._obj_qids[3:6]]  # Linear velocity
-    obj_angvel = data.qvel[self._obj_qids[6:9]]  # Angular velocity
+    # Get object data using sensors (only what's needed for reward and future state prediction)
+    obj_pos = data.xpos[self._obj_body]  # Use body position directly
+    obj_linvel = data.qvel[self._obj_qposadr:self._obj_qposadr+3]  # Linear velocity (x,y,z)
+    obj_angvel = data.qvel[self._obj_qposadr+3:self._obj_qposadr+6]  # Angular velocity (rx,ry,rz)
     
-    # Get fingertip positions
+    # Get fingertip positions (useful for understanding hand configuration)
     fingertip_positions = self.get_fingertip_positions(data)
-    
-    # Get joint torques
-    joint_torques = data.actuator_force
 
     privileged_state = jp.concatenate([
         state,
-        joint_angles,
-        data.qvel[self._hand_dqids],
-        joint_torques,
-        fingertip_positions,
+        joint_angles,  # Hand pose affects future actions
+        data.qvel[self._hand_dqids],  # Hand velocities affect future positions
+        fingertip_positions,  # Hand configuration affects grasping
         palm_pos,
         obj_pos,
         target_pos,
-        obj_quat,
-        obj_linvel,
-        obj_angvel,
+        obj_linvel,  # Object velocity helps predict future position
+        obj_angvel,  # Object angular velocity affects future orientation
+        data.qvel,  # For velocity penalty
     ])
 
     return {
@@ -239,9 +260,9 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
       metrics: dict[str, Any],
       done: jax.Array,
   ) -> dict[str, jax.Array]:
-    # Get positions
+    # Get positions using sensors
     palm_pos = data.site_xpos[self._palm_site_id]
-    obj_pos = data.xpos[self._obj_body_id]
+    obj_pos = data.xpos[self._obj_body]  # Use body position directly
     target_pos = data.site_xpos[self._target_site_id]
     
     # Calculate distances
@@ -249,36 +270,61 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     palm_to_target_dist = jp.linalg.norm(palm_pos - target_pos)
     obj_to_target_dist = jp.linalg.norm(obj_pos - target_pos)
     
-    # Check if object is off table
-    # Table surface is at z = 0.0, object radius is 0.04
-    # Object is off table when z > table_surface + radius = 0.0 + 0.04 = 0.04
-    obj_off_table = obj_pos[2] > 0.04
-    
-    # Check if object fell off table (for negative reward)
-    obj_fell_off = obj_pos[2] < -0.05
+    # Check if object is off table (lifted)
+    obj_off_table = obj_pos[2] > 0.06
     
     # Check if object is close to target
-    # obj_close_to_target = obj_to_target_dist < 0.1
+    obj_close_to_target = obj_to_target_dist < 0.1
     obj_very_close_to_target = obj_to_target_dist < 0.05
     
-    # Get velocities for penalty
-    qvel = data.qvel
+    # Check if object fell off table (for penalty)
+    obj_fell_off = obj_pos[2] < -0.05
     
+    # Follow Adroit reward structure as dictionary components
     rewards = {
-        "get_to_ball": -palm_to_obj_dist,  # Take hand to object
-        "ball_off_table": jp.where(obj_off_table, 1.0, 0.0),  # Bonus for lifting object
-        "make_hand_go_to_target": jp.where(obj_off_table, -palm_to_target_dist, 0.0),  # Make hand go to target when object is lifted
+        "get_to_ball": -palm_to_obj_dist,  # Take hand to object (negative distance)
+        "ball_off_table": jp.where(obj_off_table, 1.0, 0.0),  # Bonus for lifting the object (only if in contact)
+        "make_hand_go_to_target": jp.where(obj_off_table, -palm_to_target_dist, 0.0),  # Make hand go to target when lifted
         "make_ball_go_to_target": jp.where(obj_off_table, -obj_to_target_dist, 0.0),  # Make object go to target when lifted
-        # "ball_close_to_target": jp.where(obj_close_to_target, 1.0, 0.0),  # Bonus for object close to target
+        "ball_close_to_target": jp.where(obj_close_to_target, 1.0, 0.0),  # Bonus for object close to target
         "ball_very_close_to_target": jp.where(obj_very_close_to_target, 1.0, 0.0),  # Bonus for object very close to target
-        "ball_fell_off": jp.where(obj_fell_off, -10.0, 0.0),  # Negative reward for falling off table
-        "velocity_penalty": jp.sum(jp.square(qvel)),  # Penalty for high velocities
-        "action_rate": self._cost_action_rate(
-            action, info["last_act"], info["last_last_act"]
-        ),
+        "ball_fell_off": jp.where(obj_fell_off, -1.0, 0.0),  # Penalty for object falling off table
     }
     
     return rewards
+
+  def _get_hand_body_ids(self) -> list[int]:
+    """Get hand body IDs for contact detection."""
+    hand_body_ids = []
+    for body_name in ["palm", "if_bs", "if_px", "if_md", "if_ds", "mf_bs", "mf_px", "mf_md", "mf_ds", "rf_bs", "rf_px", "rf_md", "rf_ds", "th_mp", "th_bs", "th_px", "th_ds"]:
+      try:
+        hand_body_ids.append(self._mj_model.body(body_name).id)
+      except:
+        print(f"Body {body_name} not found")  # Skip if body doesn't exist
+    return hand_body_ids
+
+  def _check_hand_object_contact(self, data: mjx.Data) -> jax.Array:
+    """Check if hand is in contact with the object using MuJoCo contact detection."""
+    # Most efficient vectorized approach
+    hand_geoms = jp.array(self._hand_body_ids)
+    obj_geom = self._obj_body
+    
+    # Create a single boolean array for all contacts
+    # Check if any contact involves both hand and object
+    hand_obj_contacts = (
+        (jp.isin(data.contact.geom1, hand_geoms) & (data.contact.geom2 == obj_geom)) |
+        (jp.isin(data.contact.geom2, hand_geoms) & (data.contact.geom1 == obj_geom))
+    )
+    
+    return jp.any(hand_obj_contacts)
+
+  def get_touch_sensors(self, data: mjx.Data) -> jax.Array:
+    """Get touch sensor data using TOUCH_SENSOR_NAMES_SIMPLE."""
+    touch = jp.concatenate([
+        mjx_env.get_sensor_data(self.mj_model, data, name)
+        for name in consts.TOUCH_SENSOR_NAMES_SIMPLE
+    ])
+    return touch
 
   def _cost_action_rate(
       self, act: jax.Array, last_act: jax.Array, last_last_act: jax.Array
@@ -289,35 +335,5 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
 
 def domain_randomize(model: mjx.Model, rng: jax.Array):
   """Domain randomization for relocate environment."""
-  # Randomize object and target positions by ±0.5
-  rng, obj_rng, target_rng = jax.random.split(rng, 3)
-  
-  # Randomize object X and Y positions
-  obj_x = jax.random.uniform(obj_rng, (), minval=-0.5, maxval=0.5)
-  obj_y = jax.random.uniform(obj_rng, (), minval=-0.5, maxval=0.5)
-  
-  # Randomize target X and Y positions  
-  target_x = jax.random.uniform(target_rng, (), minval=-0.5, maxval=0.5)
-  target_y = jax.random.uniform(target_rng, (), minval=-0.5, maxval=0.5)
-  
-  # Update object initial position
-  obj_qids = mjx_env.get_qpos_ids(model, ["OBJTx", "OBJTy"])
-  qpos0 = model.qpos0.at[obj_qids[0]].set(obj_x)
-  qpos0 = qpos0.at[obj_qids[1]].set(obj_y)
-  
-  # Update target site position
-  target_site_id = model.site("target").id
-  site_pos = model.site_pos.at[target_site_id].set(jp.array([target_x, target_y, 0.2]))
-  
-  in_axes = jax.tree_util.tree_map(lambda _: None, model)
-  in_axes = in_axes.tree_replace({
-      "qpos0": 0,
-      "site_pos": 0,
-  })
-
-  model = model.tree_replace({
-      "qpos0": qpos0,
-      "site_pos": site_pos,
-  })
-
-  return model, in_axes
+  # No domain randomization - object randomization happens in reset()
+  return model, None

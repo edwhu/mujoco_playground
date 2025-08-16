@@ -46,7 +46,8 @@ import wandb
 
 import mujoco_playground
 from mujoco_playground import registry
-from mujoco_playground import wrapper
+from mujoco_playground._src import wrapper
+from learning import wandb_utils
 from mujoco_playground.config import dm_control_suite_params
 from mujoco_playground.config import locomotion_params
 from mujoco_playground.config import manipulation_params
@@ -283,7 +284,7 @@ def main(argv):
 
   # Initialize Weights & Biases if required
   if _USE_WANDB.value and not _PLAY_ONLY.value:
-    wandb.init(project="mjxrl3", entity="edhu", name=exp_name)
+    wandb.init(project="mjxrl6", entity="fionalluo", name=exp_name)
     wandb.config.update(env_cfg.to_dict())
     wandb.config.update({"env_name": _ENV_NAME.value})
 
@@ -334,9 +335,10 @@ def main(argv):
   else:
     network_factory = network_fn
 
-  rand_fn = registry.get_domain_randomizer(_ENV_NAME.value)
-  if rand_fn is not None and (_DOMAIN_RANDOMIZATION.value or _ENV_NAME.value.endswith("Random")):
-    training_params["randomization_fn"] = rand_fn
+  if _DOMAIN_RANDOMIZATION.value:
+    training_params["randomization_fn"] = registry.get_domain_randomizer(
+        _ENV_NAME.value
+    )
 
   if _VISION.value:
     env = wrapper.wrap_for_brax_training(
@@ -374,11 +376,11 @@ def main(argv):
   def progress(num_steps, metrics):
     times.append(time.monotonic())
 
-    # Log to Weights & Biases
+    # Log to Weights & Biases with organized std metrics
     if _USE_WANDB.value and not _PLAY_ONLY.value:
-      wandb.log(metrics, step=num_steps)
+      wandb_utils.log_metrics_to_wandb(metrics, num_steps, wandb)
 
-    # Log to TensorBoard
+    # Log to TensorBoard (keep original organization for TensorBoard)
     if _USE_TB.value and not _PLAY_ONLY.value:
       for key, value in metrics.items():
         writer.add_scalar(key, value, num_steps)
@@ -446,17 +448,15 @@ def main(argv):
   inference_fn = make_inference_fn(params, deterministic=True)
   jit_inference_fn = jax.jit(inference_fn)
 
-  # Prepare for evaluation: reuse the training env (keeps randomization)
-  # eval_env = env
-  # num_envs = 1
-  # if _VISION.value:
-  #   eval_env = env
-  #   num_envs = env_cfg.vision_config.render_batch_size
 
   # Prepare for evaluation
   eval_env = (
-    None if _VISION.value else registry.load(_ENV_NAME.value, config=env_cfg)
+      None if _VISION.value else registry.load(_ENV_NAME.value, config=env_cfg)
   )
+  num_envs = 1
+  if _VISION.value:
+    eval_env = env
+    num_envs = env_cfg.vision_config.render_batch_size
 
   jit_reset = jax.jit(eval_env.reset)
   jit_step = jax.jit(eval_env.step)
