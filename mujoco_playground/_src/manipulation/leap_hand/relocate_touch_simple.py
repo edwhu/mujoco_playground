@@ -33,7 +33,7 @@ def default_config() -> config_dict.ConfigDict:
       sim_dt=0.01,
       action_scale=0.6,
       action_repeat=1,
-      episode_length=500,
+      episode_length=100,
       early_termination=True,
       history_len=1,
       noise_config=config_dict.create(
@@ -44,14 +44,14 @@ def default_config() -> config_dict.ConfigDict:
       ),
       reward_config=config_dict.create(
           scales=config_dict.create(
-              get_to_ball=0.1,
-              fingertips_to_object=0.5,  # Reward for finger tips getting close to object
-              ball_off_table=1.0,
-              make_hand_go_to_target=0.5,
-              make_ball_go_to_target=0.5,
-              ball_close_to_target=10.0,
-              ball_very_close_to_target=20.0,
-              ball_fell_off=10.0,
+              get_to_ball=1.0,
+              fingertips_to_object=0,  # Reward for finger tips getting close to object
+              ball_off_table=0,
+              make_hand_go_to_target=0,
+              make_ball_go_to_target=0,
+              ball_close_to_target=0,
+              ball_very_close_to_target=0,
+              ball_fell_off=0,
           ),
       ),
   )
@@ -74,7 +74,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
 
   def _post_init(self) -> None:
     # Get hand joint IDs (including base motion joints) - only hand joints are controllable
-    hand_joint_names = ["H_Tx", "H_Ty", "H_Tz", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES
+    hand_joint_names = ["H_Tx", "H_Ty", "H_Tz"] + consts.JOINT_NAMES
     self._hand_qids = mjx_env.get_qpos_ids(self.mj_model, hand_joint_names)
     self._hand_dqids = mjx_env.get_qvel_ids(self.mj_model, hand_joint_names)
     
@@ -217,7 +217,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
         noisy_joint_angles,  # Hand joints (27 values: 6 base motion + 21 finger joints)
         touch,               # Touch sensors
         info["last_act"],  # Previous actions (27 values)
-        target_xy,  # Target position (2 values: x, y)
+        # target_xy,  # Target position (2 values: x, y)
     ])
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
@@ -241,7 +241,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
         fingertip_positions,  # Hand configuration affects grasping
         palm_pos,
         obj_pos,
-        target_pos,
+        # target_pos,
         obj_linvel,  # Object velocity helps predict future position
         obj_angvel,  # Object angular velocity affects future orientation
         data.qvel,  # For velocity penalty
@@ -280,9 +280,10 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     # Check if object fell off table (for penalty)
     obj_fell_off = obj_pos[2] < -0.05
     
+    reaching_reward = 1 - np.tanh(10.0 * palm_to_obj_dist)
     # Follow Adroit reward structure as dictionary components
     rewards = {
-        "get_to_ball": -palm_to_obj_dist,  # Take hand to object (negative distance)
+        "get_to_ball": reaching_reward,  # Take hand to object
         "ball_off_table": jp.where(obj_off_table, 1.0, 0.0),  # Bonus for lifting the object (only if in contact)
         "make_hand_go_to_target": jp.where(obj_off_table, -palm_to_target_dist, 0.0),  # Make hand go to target when lifted
         "make_ball_go_to_target": jp.where(obj_off_table, -obj_to_target_dist, 0.0),  # Make object go to target when lifted

@@ -4,7 +4,7 @@
     <general name="A_H_Tx" joint="H_Tx" ctrlrange="-0.6 0.6" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
     <general name="A_H_Ty" joint="H_Ty" ctrlrange="-0.6 0.6" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
     <general name="A_H_Tz" joint="H_Tz" ctrlrange="-0.3 0.4" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
-    <general name="A_H_Rx" joint="H_Rx" ctrlrange="-1.57 1.57" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
+    <!-- <general name="A_H_Rx" joint="H_Rx" ctrlrange="-1.57 1.57" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
     <general name="A_H_Ry" joint="H_Ry" ctrlrange="-1.57 1.57" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
     <general name="A_H_Rz" joint="H_Rz" ctrlrange="-1.57 1.57" biastype="affine" gainprm="75 0 0" biasprm="0 -100 0" />
 
@@ -26,7 +26,7 @@
     <position name="th_cmc_act" joint="th_cmc" class="thumb_cmc"/>
     <position name="th_axl_act" joint="th_axl" class="thumb_axl"/>
     <position name="th_mcp_act" joint="th_mcp" class="thumb_mcp"/>
-    <position name="th_ipl_act" joint="th_ipl" class="thumb_ipl"/>
+    <position name="th_ipl_act" joint="th_ipl" class="thumb_ipl"/> -->
   </actuator>
   <sensor>
     <!-- hand. -->
