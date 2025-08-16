@@ -74,7 +74,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
 
   def _post_init(self) -> None:
     # Get hand joint IDs (including base motion joints) - only hand joints are controllable
-    hand_joint_names = ["H_Tx", "H_Ty", "H_Tz"] + consts.JOINT_NAMES
+    hand_joint_names = ["H_Tx", "H_Ty", "H_Tz"]
     self._hand_qids = mjx_env.get_qpos_ids(self.mj_model, hand_joint_names)
     self._hand_dqids = mjx_env.get_qvel_ids(self.mj_model, hand_joint_names)
     
@@ -280,7 +280,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     # Check if object fell off table (for penalty)
     obj_fell_off = obj_pos[2] < -0.05
     
-    reaching_reward = 1 - np.tanh(10.0 * palm_to_obj_dist)
+    reaching_reward = 1 - jp.tanh(10.0 * palm_to_obj_dist)
     # Follow Adroit reward structure as dictionary components
     rewards = {
         "get_to_ball": reaching_reward,  # Take hand to object
