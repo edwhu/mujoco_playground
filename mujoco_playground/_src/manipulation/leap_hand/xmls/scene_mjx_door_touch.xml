@@ -17,8 +17,8 @@
     </option>
 
     <custom>
-      <numeric data="30" name="max_contact_points"/>
-      <numeric data="12" name="max_geom_pairs"/>
+      <numeric data="100" name="max_contact_points"/>
+      <numeric data="50" name="max_geom_pairs"/>
     </custom>
     
     <!-- Bring in Leap Hand assets/defaults and contacts -->
