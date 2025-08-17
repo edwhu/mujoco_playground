@@ -146,8 +146,9 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
     return mjx_env.State(data, obs, reward, done, metrics, info)
 
   def step(self, state: mjx_env.State, action: jax.Array) -> mjx_env.State:
-    motor_targets = self._default_pose + action * self._config.action_scale
-    # NOTE: no clipping.
+    # Clip actions to actuator control ranges before scaling
+    action = jp.clip(action, self._lowers, self._uppers)
+    motor_targets = self._default_pose + action
     data = mjx_env.step(
         self.mjx_model, state.data, motor_targets, self.n_substeps
     )

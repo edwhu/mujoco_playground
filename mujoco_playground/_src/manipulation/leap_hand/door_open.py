@@ -141,8 +141,16 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     return mjx_env.State(data, obs, reward, done, metrics, info)
 
   def step(self, state: mjx_env.State, action: jax.Array) -> mjx_env.State:
-    motor_targets = self._default_pose + action * self._config.action_scale
-    # NOTE: no clipping.
+    # Clip actions to actuator control ranges before scaling
+    motor_targets = self._default_pose + action
+    motor_targets = jp.clip(motor_targets, self._lowers, self._uppers)
+    
+    jax.debug.print("Action: {}", action[0])
+    jax.debug.print("Default pose: {}", self._default_pose[0])
+    jax.debug.print("Motor targets clipped: {}", motor_targets[0])
+    jax.debug.print("Lowers: {}", self._lowers[0])
+    jax.debug.print("Uppers: {}", self._uppers[0])
+    
     data = mjx_env.step(
         self.mjx_model, state.data, motor_targets, self.n_substeps
     )
@@ -161,6 +169,8 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     has_nan_reward = jp.isnan(reward)
     reward = jp.where(has_nan_reward, jp.zeros(()), reward)
     done = jp.where(has_nan_reward, jp.ones(()), done)
+    
+    jax.debug.print("Hand position: {}", data.qpos[self._hand_qids])
 
     state.info["last_last_act"] = state.info["last_act"]
     state.info["last_act"] = action
