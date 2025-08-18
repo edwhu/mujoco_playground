@@ -1,0 +1,124 @@
+<!-- ======================================================
+    Model       :: ADROIT Relocate Object (Leap Hand)
+
+    Based on    :: ADROIT Relocate Environment
+    Modified for:: Leap Hand manipulation
+
+    Author      :: Adapted from Vikash Kumar's ADROIT relocate
+    Purpose     :: Object relocation task with floating Leap hand
+====================================================== -->
+
+<mujoco model='Relocate-Leap'>
+
+    <!-- ======= COMPILER & OPTIONS ======= -->
+    <compiler angle="radian" meshdir='.' />
+    <option timestep="0.01" integrator="Euler" iterations="5" ls_iterations="8">
+      <flag eulerdamp="enable"/>
+    </option>
+
+    <custom>
+      <numeric data="30" name="max_contact_points"/>
+      <numeric data="12" name="max_geom_pairs"/>
+    </custom>
+    
+    <!-- Bring in Leap Hand assets/defaults and contacts -->
+    <include file="leap_rh_assets_defaults_touch_simple.xml"/>
+
+    <!-- ======= VISUAL SETTINGS ======= -->
+    <visual>
+        <global offwidth="3024" offheight="1680" />
+        <quality shadowsize="4096" offsamples="8" />
+        <map force="0.1" fogend="5" />
+    </visual>
+
+    <!-- ======= DEFAULTS ======= -->
+    <default class="main">
+        <mesh scale="0.001 0.001 0.001" />
+        <joint limited="true" margin="0.01" armature="0.001" damping="0.05" frictionloss="0.001" />
+        <geom friction="1 0.5 0.01" margin="0.0005" />
+        <site size="0.005 0 0" rgba="0.4 0.9 0.4 1" />
+        <tendon limited="true" />
+        <general ctrllimited="true" ctrlrange="-1 1" user="0 1 0.03 0.0939711 0.513477 0.0358776 1.23598 8.40409 0.485031 6.04244 1.02187 0.175297 0.121642 0 0 0" />
+    </default>
+
+    <!-- ======= ASSETS ======= -->
+    <asset>
+        <!-- Textures -->
+        <texture type="cube" name="texgeom" builtin="flat" mark="cross" rgb1="0.3 0.6 0.5" rgb2="0.3 0.6 0.5" width="127" height="762" />
+        <texture type="cube" name="wood" file="resources/textures/wood.png" />
+        <texture type="2d" name="wood2d" file="resources/textures/wood.png" />
+        <texture type="cube" name="square" file="resources/textures/square.png" />
+        <texture type="cube" name="foil" file="resources/textures/silverRaw.png" />
+        <texture type="cube" name="woodb" file="resources/textures/woodb.png" />
+        <texture type="2d" name="groundplane" builtin="checker" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" width="100" height="100" />
+        <texture type="2d" name="marble2d" file="resources/textures/marble.png" />
+        <texture type="cube" name="marblecube" file="resources/textures/marble.png" />
+        
+        <!-- Materials -->
+        <material name="MatColl" specular="1" shininess="0.3" reflectance="0.5" rgba="0.4 0.5 0.6 1" />
+        <material name="MatViz" specular="0.75" shininess="0.1" reflectance="0.5" rgba="0.9 0.7 0.5 1" />
+        <material name="MatGnd" specular="0.3" shininess="0.3" reflectance="0.3" rgba="0.5 0.55 0.5 1" />
+        <material name="object" texture="texgeom" />
+        <material name="groundplane" texture="groundplane" texrepeat="10 10" />
+        <material name="table2d" texture="marble2d" reflectance="0.3" rgba="0.8 0.8 0.8 1" />
+        <material name="tablecube" texture="marblecube" rgba="0.8 0.8 0.8 1" />
+        <material name="MatFoil" texture="foil" specular="1" shininess="0.3" rgba="0.9 0.9 0.9 1" />
+        <material name="MatPlane" specular="0.3" shininess="0.3" rgba="0.3 0.3 0.2 1" />
+        <material name="MatWood" texture="wood" texrepeat="3 3" specular="0.4" shininess="0.1" />
+        <material name="MatSquare" texture="square" specular="1" shininess="0.6" rgba="0.8 0.8 0.8 1" />
+        <material name="MatWoodR" texture="wood" specular="1" shininess="0.3" rgba="1 0.5 0.5 1" />
+        <material name="MatWoodG" texture="wood" specular="1" shininess="0.3" rgba="0.2 1 0.2 1" />
+        <material name="MatWoodB" texture="woodb" specular="1" shininess="0.3" />
+    </asset>
+
+    <!-- ======= WORLD ======= -->
+    <worldbody>
+        <!-- Lighting -->
+        <light directional='false' diffuse='.7 .7 .7' specular='0.03 0.03 0.03' pos='-1 -1.0 4.0' dir='1 1.0 -4'/>
+        
+        <!-- Ground -->
+        <geom name='ground' size="1.5 1.5 0.25" pos="0 0 -1" type="plane" contype="1" conaffinity="0" material="groundplane" />
+        
+        <!-- Cameras -->
+        <camera name="fixed" pos="0 -0.7 0.7" quat="0.92388 0.382683 0 0" />
+        <camera name="vil_camera" pos="0 -1.2 1.2" quat="0.92388 0.382683 0 0" />
+        <camera name="hand_close" pos="0.1 -0.4 0.35" quat="0.92388 0.382683 0 0" />
+
+        <!-- ======= TABLE ======= -->
+        <body name="table">
+            <geom size="0.6 0.6 0.5" pos="0 0 -0.5" type="box" material="tablecube" />
+        </body>
+
+        <!-- ======= MOCAP ======= -->
+        <body name="vive_tracker" pos="0 -0.35 0.25" mocap="true">
+            <inertial pos="0 0 0" mass="0.064" diaginertia="1.70667e-05 1.70667e-05 1.70667e-05" />
+            <geom size="0.03 0.01" type="cylinder" contype="0" conaffinity="0" group="3" rgba="0.3 0.3 0.3 0.3" />
+        </body>
+
+        <!-- ======= LEAP HAND BASE (floating) ======= -->
+        <body name="hand_base" pos="0 -0.2 0.3" euler="3.14 0 -1.57">
+            <joint name="H_Tx" pos="0 0 0" axis="1 0 0" type="slide" range="-0.6 0.6" damping="50" armature="0.1"/>
+            <joint name="H_Ty" pos="0 0 0" axis="0 1 0" type="slide" range="-0.6 0.6" damping="50" armature="0.1"/>
+            <joint name="H_Tz" pos="0 0 0" axis="0 0 1" type="slide" range="-0.3 0.4" damping="50" armature="0.1"/>
+            <joint name="H_Rx" pos="0 0 0" axis="1 0 0" range="-1.57 1.57" damping="50" armature="0.1"/>
+            <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-1.57 1.57" damping="50" armature="0.1"/>
+            <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-1.57 1.57" damping="50" armature="0.1"/>
+            <!-- include the hand kinematic subtree -->
+            <include file="leap_rh_body_include_touch_simple.xml"/>
+        </body>
+
+        <!-- ======= DESTINATION ======= -->
+        <site name="target" pos="-0.007 0.0 0.3" size="0.07" rgba="0 1 0 0.125" />
+
+        <!-- ======= OBJECT ======= -->
+        <body name="Object" pos="-0.00 0.0 0.00" user="1001 0 2003 27 0 0 0.06 0 0">
+            <inertial pos="0 0 0" mass="0.5" diaginertia="0.001 0.001 0.001" />
+            <freejoint/>
+            <geom name="object" type="box" size="0.05 0.05 0.05" condim="6" material="MatWoodB" friction="0.7 0.3 0.01" solref="0.02 1" solimp="0.9 0.95 0.001"/>
+        </body>
+    </worldbody>
+
+    <!-- Bring in Leap Hand actuators -->
+    <include file="leap_rh_actuators_include_relocate_touch_simple.xml"/>
+
+</mujoco>
