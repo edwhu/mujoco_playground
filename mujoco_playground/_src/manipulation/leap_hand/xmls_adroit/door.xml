@@ -1,0 +1,63 @@
+<mujoco>
+  <default>
+    <default class="cube">
+      <geom friction=".3 0.05" conaffinity="2" condim="3"/>
+    </default>
+  </default>
+
+  <asset>
+    <texture name="cube" type="cube" fileup="reorientation_cube_textures/fileup.png"
+      fileback="reorientation_cube_textures/fileback.png" filedown="reorientation_cube_textures/filedown.png"
+      filefront="reorientation_cube_textures/filefront.png" fileleft="reorientation_cube_textures/fileleft.png"
+      fileright="reorientation_cube_textures/fileright.png"/>
+    <material name="cube" texture="cube"/>
+    <texture name="graycube" type="cube" fileup="reorientation_cube_textures/grayup.png"
+      fileback="reorientation_cube_textures/grayback.png" filedown="reorientation_cube_textures/graydown.png"
+      filefront="reorientation_cube_textures/grayfront.png" fileleft="reorientation_cube_textures/grayleft.png"
+      fileright="reorientation_cube_textures/grayright.png"/>
+    <material name="graycube" texture="graycube"/>
+    <texture name="dexcube" type="2d" file="reorientation_cube_textures/dex_cube.png"/>
+    <material name="dexcube" texture="dexcube"/>
+    <mesh name="cube_mesh" file="meshes/dex_cube.obj" scale="0.035 0.035 0.035"/>
+
+    <!-- Door textures -->
+    <texture type="cube" name="wood" file="resources/textures/wood.png" />
+    <texture type="cube" name="foil" file="resources/textures/silverRaw.png" />
+    <texture type="cube" name="woodb" file="resources/textures/woodb.png" />
+
+    <!-- Materials for door -->
+    <material name="MatFoil" texture="foil" specular="1" shininess="0.3" rgba="0.9 0.9 0.9 1"/>
+    <material name="MatWood" texture="wood" texrepeat="3 3" specular="0.4" shininess="0.1" rgba="0.75 0.6 0.4 1"/>
+    <material name="MatWoodB" texture="woodb" specular="1" shininess="0.3" rgba="0.65 0.5 0.35 1"/>
+  </asset>
+
+  <worldbody>
+    <!-- Door frame and door (no table) -->
+    <body name="frame" pos="-0.28 0.95 0.1" user="1001 0 2002 -0.4 -0.1 0.252 0 0.3 0.45">
+      <inertial pos="0.29 0 0" quat="0.5 0.5 0.5 0.5" mass="7.85398" diaginertia="0.923301 0.764585 0.168533" />
+      <geom size="0.50 0.05 0.30" pos="-0.52 0 0.04" type="box" material="MatWoodB"/>
+      <geom size="0.05 0.3" pos="-0.02 0 0.05" type="capsule" material="MatWoodB"/>
+      <geom size="0.05 0.3" pos="0.6 0 0.05" type="capsule" material="MatWoodB"/>
+      <geom size="0.50 0.05 0.30" pos="1.1 0 0.04" type="box" material="MatWoodB"/>
+      <geom size="1.31 0.05 0.10" pos="0.29 0 0.38" type="box" material="MatWoodB"/>
+      <site name="S_handle_target" pos="0.75 -0.5 -.18" size="0.025" group='3'/>
+
+      <!-- Hinged door leaf -->
+      <body name="door" pos="0.29 0 0">
+        <inertial pos="0.0296816 -0.00152345 0" quat="0.701072 0 0 0.713091" mass="2.43455" diaginertia="0.0913751 0.0521615 0.043714" />
+        <joint name="door_hinge" pos="0.31 0 0" axis="0 0 1" range="0 1.57" damping="1" frictionloss="2" />
+        <geom size="0.25 0.05 0.25" type="box" friction="1 1 1" material="MatWood" contype="1" conaffinity="1" />
+        
+        <!-- Door handle latch assembly -->
+        <body name="latch" pos="-0.15 0 -0.025">
+          <inertial pos="-0.017762 0.0138544 0" quat="0.365653 0.605347 -0.36522 0.605365" mass="3.53743" diaginertia="0.0483771 0.0410001 0.0111013" />
+          <joint name="latch" pos="0 0 0" axis="0 1 0" range="0 1.8" frictionloss="5" />
+          <geom size="0.05 0.15" quat="0.707388 0.706825 0 0" type="capsule" material="MatFoil" />
+          <geom size="0.02 0.1" pos="0.1 -0.15 0" quat="0.707388 0 0.706825 0" type="capsule" material="MatFoil" />
+          <geom size="0.04 0.07" pos="-0.1 0.1 0" quat="0.707388 0 0.706825 0" type="capsule" material="MatFoil" />
+          <site name="S_handle" pos="0.15 -0.15 0" size="0.025" group='3'/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

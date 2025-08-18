@@ -1,6 +1,9 @@
 <mujoco model="leap_scene">
+  <option>
+    <flag gravity="disable"/>
+  </option>
   <include file="leap_rh_mjx.xml"/>
-  <include file="reorientation_cube.xml"/>
+  <include file="door.xml"/>
 
   <statistic center="0.15 0 0" extent="0.4" meansize="0.01"/>
 
@@ -23,22 +26,9 @@
   <worldbody>
     <camera name="side" pos="-0.183 0.396 0.296" xyaxes="-0.783 -0.622 -0.000 0.332 -0.419 0.845"/>
     <geom name="floor" pos="0 0 -0.25" size="0 0 0.01" type="plane" material="groundplane" contype="2" conaffinity="2"/>
-    <body name="goal" mocap="true" pos="0.325 0.17 0.0475">
-      <!-- <geom type="mesh" mesh="cube_mesh" material="dexcube" contype="0" conaffinity="0" density="0" group="2"/> -->
-      <geom type="mesh" mesh="cube_mesh" material="dexcube" contype="0" conaffinity="0" density="0" group="2"/>
-      <geom type="box" size=".035 .035 .035" mass=".108" group="3"/>
-    </body>
   </worldbody>
 
   <sensor>
-    <!-- cube. -->
-    <framepos name="cube_position" objtype="body" objname="cube"/>
-    <framequat name="cube_orientation" objtype="body" objname="cube"/>
-    <framelinvel name="cube_linvel" objtype="body" objname="cube"/>
-    <frameangvel name="cube_angvel" objtype="body" objname="cube"/>
-    <frameangacc name="cube_angacc" objtype="body" objname="cube"/>
-    <framezaxis name="cube_upvector" objtype="body" objname="cube"/>
-
     <!-- hand. -->
     <framepos name="palm_position" objtype="site" objname="grasp_site"/>
     <framepos name="th_tip_position" objtype="site" objname="th_tip" reftype="site" refname="grasp_site"/>
@@ -46,24 +36,23 @@
     <framepos name="mf_tip_position" objtype="site" objname="mf_tip" reftype="site" refname="grasp_site"/>
     <framepos name="rf_tip_position" objtype="site" objname="rf_tip" reftype="site" refname="grasp_site"/>
 
-    <!-- goal. -->
-    <framequat name="cube_goal_orientation" objtype="body" objname="goal"/>
-    <framezaxis name="cube_goal_upvector" objtype="body" objname="goal"/>
+
   </sensor>
 
   <keyframe>
     <key name="home"
       qpos="
+      0.0 0.0 0.0 0.0 0.0
       0.8 0 0.8 0.8
       0.8 0 0.8 0.8
       0.8 0 0.8 0.8
       0.8 0.8 0.8 0
-      0.1 0.0 0.05 0.810967 -0.00262895 -0.585086 -0.000254303"
+      0.0 0.0"
       ctrl="
+      0.0 0.0 0.0 0.0 0.0
       0.8 0 0.8 0.8
       0.8 0 0.8 0.8
       0.8 0 0.8 0.8
-      0.8 0.8 0.8 0" mpos="0.25 0.16 0"
-      mquat="1 0 0 0"/>
+      0.8 0.8 0.8 0"/>
   </keyframe>
 </mujoco>
