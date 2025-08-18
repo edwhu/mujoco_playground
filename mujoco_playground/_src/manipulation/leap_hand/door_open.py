@@ -30,7 +30,7 @@ def _get_frame_body_id() -> int:
   """Get frame body ID - hardcoded for now since we can't access mj_model from domain_randomize."""
   # Frame body ID is 21 (found by testing)
   # This is hardcoded because domain_randomize only receives mjx_model, not mj_model
-  return 21
+  return 19
 
 
 def default_config() -> config_dict.ConfigDict:
@@ -70,7 +70,7 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
     super().__init__(
-        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_door.xml",
+        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/door_scene.xml",
         config=config,
         config_overrides=config_overrides,
     )
@@ -145,12 +145,6 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     motor_targets = self._default_pose + action
     motor_targets = jp.clip(motor_targets, self._lowers, self._uppers)
     
-    jax.debug.print("Action: {}", action[0])
-    jax.debug.print("Default pose: {}", self._default_pose[0])
-    jax.debug.print("Motor targets clipped: {}", motor_targets[0])
-    jax.debug.print("Lowers: {}", self._lowers[0])
-    jax.debug.print("Uppers: {}", self._uppers[0])
-    
     data = mjx_env.step(
         self.mjx_model, state.data, motor_targets, self.n_substeps
     )
@@ -170,8 +164,6 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     reward = jp.where(has_nan_reward, jp.zeros(()), reward)
     done = jp.where(has_nan_reward, jp.ones(()), done)
     
-    jax.debug.print("Hand position: {}", data.qpos[self._hand_qids])
-
     state.info["last_last_act"] = state.info["last_act"]
     state.info["last_act"] = action
     state.info["last_door_angle"] = data.qpos[self._door_qid:self._door_qid+1]
@@ -253,9 +245,7 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     palm_pos = data.site_xpos[self._palm_site_id]
     handle_pos = data.site_xpos[self._handle_site_id]
     palm_to_handle_dist = jp.linalg.norm(palm_pos - handle_pos)
-    
-    # jax.debug.print("Palm={p}, Handle={h}, Dist={d}", p=palm_pos, h=handle_pos, d=palm_to_handle_dist)
-    
+        
     # Door angle terms
     current_angle = data.qpos[self._door_qid]
     last_angle = jp.squeeze(info["last_door_angle"])  # shape () from (1,)
