@@ -27,7 +27,7 @@ _OUTPUT_PATH = flags.DEFINE_string(
     "output_path", "collision_test.mp4", "Output video path"
 )
 _EPISODE_LENGTH = flags.DEFINE_integer(
-    "episode_length", 20, "Episode length for rendering"
+    "episode_length", 30, "Episode length for rendering"
 )
 _RENDER_EVERY = flags.DEFINE_integer(
     "render_every", 1, "Render every N steps"

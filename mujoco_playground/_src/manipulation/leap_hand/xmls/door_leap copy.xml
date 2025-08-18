@@ -123,8 +123,8 @@
   <worldbody>
     <light name="spotlight" mode="targetbodycom" target="palm" pos="3 0 4"/>
     <body name="leap_mount" pos="0 0 0.2" quat="0 0.707 0.707 0" childclass="leap_rh">
-      <joint name="H_Tx" pos="0 0 0" axis="1 0 0" type="slide" range="-0.4 0.9" damping="8" armature="0.5" frictionloss="0.5"/>
-      <joint name="H_Ty" pos="0 0 0" axis="0 1 0" type="slide" range="-0.25 0.25" damping="8" armature="0.5" frictionloss="0.5"/>
+      <joint name="H_Tx" pos="0 0 0" axis="1 0 0" type="slide" range="-0.4 0.9" damping="5" armature="0.1" actuatorfrcrange="-100.0 100.0"/>
+      <joint name="H_Ty" pos="0 0 0" axis="0 1 0" type="slide" range="-0.25 0.25" damping="5" armature="0.1" actuatorfrcrange="-100.0 100.0"/>
       <joint name="H_Rx" pos="0 0 0" axis="1 0 0" range="-2 2" damping="5" armature="0.1" actuatorfrcrange="-50.0 50.0"/>
       <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-2 2" damping="5" armature="0.1" actuatorfrcrange="-50.0 50.0"/>
       <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-2 2" damping="5" armature="0.1" actuatorfrcrange="-50.0 50.0"/>
@@ -289,8 +289,8 @@
   </worldbody>
 
   <actuator>
-    <motor name="A_H_Tx" joint="H_Tx" ctrllimited="true" ctrlrange="-30 30" gear="0.5"/>
-    <motor name="A_H_Ty" joint="H_Ty" ctrllimited="true" ctrlrange="-30 30" gear="0.5"/>
+    <position name="A_H_Tx" joint="H_Tx" ctrllimited="true" ctrlrange="-0.4 0.9"  kp="300" kv="30"/>
+    <position name="A_H_Ty" joint="H_Ty" ctrllimited="true" ctrlrange="-0.25 0.25" kp="300" kv="30"/>
     <position name="A_H_Rx" joint="H_Rx" ctrllimited="true" ctrlrange="-2 2" kp="150" kv="15"/>
     <position name="A_H_Ry" joint="H_Ry" ctrllimited="true" ctrlrange="-2 2" kp="150" kv="15"/>
     <position name="A_H_Rz" joint="H_Rz" ctrllimited="true" ctrlrange="-2 2" kp="150" kv="15"/>
