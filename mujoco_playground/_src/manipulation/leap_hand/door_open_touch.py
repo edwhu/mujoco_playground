@@ -39,6 +39,7 @@ def default_config() -> config_dict.ConfigDict:
               velocity_penalty=1e-5,
               translation_velocity_penalty=1e-2,  # Additional penalty for translation joints
               action_rate=0.0,
+              handle_angle=1.0,
               door_angle=1.0,
               door_open=100.0,
           ),
@@ -118,6 +119,7 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
         "last_last_act": jp.zeros(self.mjx_model.nu),
         "motor_targets": data.ctrl,
         "last_door_angle": jp.zeros(1),
+        "last_handle_angle": qpos[self._latch_qid:self._latch_qid+1],
     }
 
     metrics = {}
@@ -157,6 +159,7 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
     state.info["last_last_act"] = state.info["last_act"]
     state.info["last_act"] = action
     state.info["last_door_angle"] = data.qpos[self._door_qid:self._door_qid+1]
+    state.info["last_handle_angle"] = data.qpos[self._latch_qid:self._latch_qid+1]
     for k, v in rewards.items():
       state.metrics[f"reward/{k}"] = v
 
@@ -261,6 +264,11 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
     # Get velocities for penalty
     qvel = data.qvel
     
+    curr_handle_angle = data.qpos[self._latch_qid]
+    last_handle_angle = jp.squeeze(info["last_handle_angle"])  # shape () from (1,)
+    handle_angle_reward = curr_handle_angle - last_handle_angle
+    handle_angle_reward = jp.where(current_angle > 0.1, 0.0, handle_angle_reward)
+    
     return {
         "get_to_handle": -palm_to_handle_dist,  # Closer to current handle is better
         "velocity_penalty": -jp.sum(jp.square(qvel)),  # Penalty for high velocities
@@ -270,6 +278,7 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
         ),
         "door_angle": delta_angle,  # Positive if opening further this step
         "door_open": door_open_event,  # Big bonus when near 90 deg
+        "handle_angle": handle_angle_reward,
     }
 
   def _cost_action_rate(
