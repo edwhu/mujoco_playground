@@ -27,8 +27,8 @@ from mujoco_playground._src.manipulation.franka_emika_panda import pick as panda
 from mujoco_playground._src.manipulation.franka_emika_panda import pick_cartesian as panda_pick_cartesian
 from mujoco_playground._src.manipulation.franka_emika_panda_robotiq import push_cube as robotiq_push_cube
 from mujoco_playground._src.manipulation.leap_hand import door_open as leap_door_open
+from mujoco_playground._src.manipulation.leap_hand import door_open_touch_complex as leap_door_open_touch_complex
 from mujoco_playground._src.manipulation.leap_hand import door_open_touch as leap_door_open_touch
-from mujoco_playground._src.manipulation.leap_hand import door_open_touch_simple as leap_door_open_touch_simple
 from mujoco_playground._src.manipulation.leap_hand import relocate as leap_relocate
 from mujoco_playground._src.manipulation.leap_hand import relocate_touch_simple as leap_relocate_touch_simple
 from mujoco_playground._src.manipulation.leap_hand import reorient as leap_cube_reorient
@@ -49,8 +49,8 @@ _envs = {
     "PandaOpenCabinet": panda_open_cabinet.PandaOpenCabinet,
     "PandaRobotiqPushCube": robotiq_push_cube.PandaRobotiqPushCube,
     "LeapDoorOpen": leap_door_open.DoorOpen,
+    "LeapDoorOpenTouchComplex": leap_door_open_touch_complex.DoorOpenTouchComplex,
     "LeapDoorOpenTouch": leap_door_open_touch.DoorOpenTouch,
-    "LeapDoorOpenTouchSimple": leap_door_open_touch_simple.DoorOpenTouchSimple,
     "LeapRelocate": leap_relocate.Relocate,
     "LeapRelocateTouchSimple": leap_relocate_touch_simple.RelocateTouchSimple,
     "LeapCubeReorient": leap_cube_reorient.CubeReorient,
@@ -70,7 +70,7 @@ _cfgs = {
     "PandaRobotiqPushCube": robotiq_push_cube.default_config,
     "LeapDoorOpen": leap_door_open.default_config,
     "LeapDoorOpenTouch": leap_door_open_touch.default_config,
-    "LeapDoorOpenTouchSimple": leap_door_open_touch_simple.default_config,
+    "LeapDoorOpenTouchComplex": leap_door_open_touch_complex.default_config,
     "LeapRelocate": leap_relocate.default_config,
     "LeapRelocateTouchSimple": leap_relocate_touch_simple.default_config,
     "LeapCubeReorient": leap_cube_reorient.default_config,
@@ -83,7 +83,7 @@ _cfgs = {
 _randomizer = {
     "LeapDoorOpen": leap_door_open.domain_randomize,
     "LeapDoorOpenTouch": leap_door_open_touch.domain_randomize,
-    "LeapDoorOpenTouchSimple": leap_door_open_touch_simple.domain_randomize,
+    "LeapDoorOpenTouchComplex": leap_door_open_touch_complex.domain_randomize,
     "LeapRelocate": leap_relocate.domain_randomize,
     "LeapRelocateTouchSimple": leap_relocate_touch_simple.domain_randomize,
     "LeapCubeReorient": leap_cube_reorient.domain_randomize,

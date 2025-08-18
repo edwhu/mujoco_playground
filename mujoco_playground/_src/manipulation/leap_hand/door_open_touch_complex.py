@@ -61,7 +61,7 @@ def default_config() -> config_dict.ConfigDict:
   )
 
 
-class DoorOpenTouchSimple(leap_hand_base.LeapHandEnv):
+class DoorOpenTouchComplex(leap_hand_base.LeapHandEnv):
   """Open a door using the Leap Hand."""
 
   def __init__(
@@ -70,7 +70,7 @@ class DoorOpenTouchSimple(leap_hand_base.LeapHandEnv):
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
     super().__init__(
-        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_door_touch_simple.xml",
+        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_door_touch.xml",
         config=config,
         config_overrides=config_overrides,
     )
@@ -99,7 +99,7 @@ class DoorOpenTouchSimple(leap_hand_base.LeapHandEnv):
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
     
     # Precompute touch sensor ids and total size for observation history    
-    self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_SIMPLE
+    self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_DETAIL
     self._touch_sensor_ids = [self._mj_model.sensor(name).id for name in self._touch_sensor_names]
     self._touch_size = int(np.sum(self._mj_model.sensor_dim[self._touch_sensor_ids]))
 
@@ -185,10 +185,10 @@ class DoorOpenTouchSimple(leap_hand_base.LeapHandEnv):
     return angle >= threshold
 
   def get_touch_sensors(self, data: mjx.Data) -> jax.Array:
-    """Get touch sensor data using TOUCH_SENSOR_NAMES_SIMPLE."""
+    """Get touch sensor data using TOUCH_SENSOR_NAMES_DETAIL."""
     touch = jp.concatenate([
         mjx_env.get_sensor_data(self.mj_model, data, name)
-        for name in consts.TOUCH_SENSOR_NAMES_SIMPLE
+        for name in consts.TOUCH_SENSOR_NAMES_DETAIL
     ])
     if getattr(self._config, "binarize_touch_sensors", False):
       touch = touch > 0.0

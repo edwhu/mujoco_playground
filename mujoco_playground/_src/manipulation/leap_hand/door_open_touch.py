@@ -1,17 +1,3 @@
-# Copyright 2025 DeepMind Technologies Limited
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
 """Door opening with leap hand."""
 
 from typing import Any, Dict, Optional, Union
@@ -30,7 +16,7 @@ def _get_frame_body_id() -> int:
   """Get frame body ID - hardcoded for now since we can't access mj_model from domain_randomize."""
   # Frame body ID is 21 (found by testing)
   # This is hardcoded because domain_randomize only receives mjx_model, not mj_model
-  return 21
+  return 19
 
 def default_config() -> config_dict.ConfigDict:
   return config_dict.create(
@@ -70,7 +56,7 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
     super().__init__(
-        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_door_touch.xml",
+        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/door_scene.xml",
         config=config,
         config_overrides=config_overrides,
     )
@@ -99,7 +85,7 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
     
     # Precompute touch sensor ids and total size for observation history    
-    self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_DETAIL
+    self._touch_sensor_names = consts.TOUCH_SENSOR_NAMES_SIMPLE
     self._touch_sensor_ids = [self._mj_model.sensor(name).id for name in self._touch_sensor_names]
     self._touch_size = int(np.sum(self._mj_model.sensor_dim[self._touch_sensor_ids]))
 
@@ -147,8 +133,8 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
 
   def step(self, state: mjx_env.State, action: jax.Array) -> mjx_env.State:
     # Clip actions to actuator control ranges before scaling
-    action = jp.clip(action, self._lowers, self._uppers)
     motor_targets = self._default_pose + action
+    motor_targets = jp.clip(motor_targets, self._lowers, self._uppers)
     data = mjx_env.step(
         self.mjx_model, state.data, motor_targets, self.n_substeps
     )
@@ -185,10 +171,10 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
     return angle >= threshold
 
   def get_touch_sensors(self, data: mjx.Data) -> jax.Array:
-    """Get touch sensor data using TOUCH_SENSOR_NAMES_DETAIL."""
+    """Get touch sensor data using TOUCH_SENSOR_NAMES_SIMPLE."""
     touch = jp.concatenate([
         mjx_env.get_sensor_data(self.mj_model, data, name)
-        for name in consts.TOUCH_SENSOR_NAMES_DETAIL
+        for name in consts.TOUCH_SENSOR_NAMES_SIMPLE
     ])
     if getattr(self._config, "binarize_touch_sensors", False):
       touch = touch > 0.0
@@ -234,6 +220,7 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
         state,
         joint_angles,
         data.qvel[self._hand_dqids],
+        fingertip_positions,
         data.actuator_force,
         palm_pos,
         handle_pos,
@@ -242,7 +229,6 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
         latch_angle,
         door_open,
         touch,
-        fingertip_positions,
     ])
 
     return {
@@ -285,14 +271,6 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
         "door_angle": delta_angle,  # Positive if opening further this step
         "door_open": door_open_event,  # Big bonus when near 90 deg
     }
-
-  def _get_door_bonus(self, door_angle: jax.Array) -> jax.Array:
-    """Get bonus reward for door opening milestones."""
-    bonus = jp.zeros(())
-    bonus = jp.where(door_angle > 0.2, bonus + 2.0, bonus)
-    bonus = jp.where(door_angle > 1.0, bonus + 8.0, bonus)
-    bonus = jp.where(door_angle > 1.35, bonus + 10.0, bonus)
-    return bonus
 
   def _cost_action_rate(
       self, act: jax.Array, last_act: jax.Array, last_last_act: jax.Array
@@ -337,131 +315,3 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
 
   return model, in_axes
 
-
-# def domain_randomize(model: mjx.Model, rng: jax.Array):
-#   mj_model = DoorOpenTouch().mj_model
-#   hand_qids = mjx_env.get_qpos_ids(mj_model, ["H_Tx", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES)
-#   hand_body_names = [
-#       "palm",
-#       "if_bs",
-#       "if_px",
-#       "if_md",
-#       "if_ds",
-#       "mf_bs",
-#       "mf_px",
-#       "mf_md",
-#       "mf_ds",
-#       "rf_bs",
-#       "rf_px",
-#       "rf_md",
-#       "rf_ds",
-#       "th_mp",
-#       "th_bs",
-#       "th_px",
-#       "th_ds",
-#   ]
-#   hand_body_ids = np.array([mj_model.body(n).id for n in hand_body_names])
-#   fingertip_geoms = ["th_tip", "if_tip", "mf_tip", "rf_tip"]
-#   fingertip_geom_ids = [mj_model.geom(g).id for g in fingertip_geoms]
-
-#   @jax.vmap
-#   def rand(rng):
-#     # Fingertip friction: =U(0.5, 1.0).
-#     rng, key = jax.random.split(rng)
-#     fingertip_friction = jax.random.uniform(key, (1,), minval=0.5, maxval=1.0)
-#     geom_friction = model.geom_friction.at[fingertip_geom_ids, 0].set(
-#         fingertip_friction
-#     )
-
-#     # Jitter qpos0: +U(-0.05, 0.05).
-#     rng, key = jax.random.split(rng)
-#     qpos0 = model.qpos0
-#     qpos0 = qpos0.at[hand_qids].set(
-#         qpos0[hand_qids]
-#         + jax.random.uniform(key, shape=(len(hand_qids),), minval=-0.05, maxval=0.05)
-#     )
-
-#     # Scale static friction: *U(0.9, 1.1).
-#     rng, key = jax.random.split(rng)
-#     frictionloss = model.dof_frictionloss[hand_qids] * jax.random.uniform(
-#         key, shape=(len(hand_qids),), minval=0.5, maxval=2.0
-#     )
-#     dof_frictionloss = model.dof_frictionloss.at[hand_qids].set(frictionloss)
-
-#     # Scale armature: *U(1.0, 1.05).
-#     rng, key = jax.random.split(rng)
-#     armature = model.dof_armature[hand_qids] * jax.random.uniform(
-#         key, shape=(len(hand_qids),), minval=1.0, maxval=1.05
-#     )
-#     dof_armature = model.dof_armature.at[hand_qids].set(armature)
-
-#     # Scale all link masses: *U(0.9, 1.1).
-#     rng, key = jax.random.split(rng)
-#     dmass = jax.random.uniform(
-#         key, shape=(len(hand_body_ids),), minval=0.9, maxval=1.1
-#     )
-#     body_mass = model.body_mass.at[hand_body_ids].set(
-#         model.body_mass[hand_body_ids] * dmass
-#     )
-
-#     # Joint stiffness: *U(0.8, 1.2).
-#     rng, key = jax.random.split(rng)
-#     kp = model.actuator_gainprm[:, 0] * jax.random.uniform(
-#         key, (model.nu,), minval=0.8, maxval=1.2
-#     )
-#     actuator_gainprm = model.actuator_gainprm.at[:, 0].set(kp)
-#     actuator_biasprm = model.actuator_biasprm.at[:, 1].set(-kp)
-
-#     # Joint damping: *U(0.8, 1.2).
-#     rng, key = jax.random.split(rng)
-#     kd = model.dof_damping[hand_qids] * jax.random.uniform(
-#         key, (len(hand_qids),), minval=0.8, maxval=1.2
-#     )
-#     dof_damping = model.dof_damping.at[hand_qids].set(kd)
-
-#     return (
-#         geom_friction,
-#         body_mass,
-#         qpos0,
-#         dof_frictionloss,
-#         dof_armature,
-#         dof_damping,
-#         actuator_gainprm,
-#         actuator_biasprm,
-#     )
-
-#   (
-#       geom_friction,
-#       body_mass,
-#       qpos0,
-#       dof_frictionloss,
-#       dof_armature,
-#       dof_damping,
-#       actuator_gainprm,
-#       actuator_biasprm,
-#   ) = rand(rng)
-
-#   in_axes = jax.tree_util.tree_map(lambda x: None, model)
-#   in_axes = in_axes.tree_replace({
-#       "geom_friction": 0,
-#       "body_mass": 0,
-#       "qpos0": 0,
-#       "dof_frictionloss": 0,
-#       "dof_armature": 0,
-#       "dof_damping": 0,
-#       "actuator_gainprm": 0,
-#       "actuator_biasprm": 0,
-#   })
-
-#   model = model.tree_replace({
-#       "geom_friction": geom_friction,
-#       "body_mass": body_mass,
-#       "qpos0": qpos0,
-#       "dof_frictionloss": dof_frictionloss,
-#       "dof_armature": dof_armature,
-#       "dof_damping": dof_damping,
-#       "actuator_gainprm": actuator_gainprm,
-#       "actuator_biasprm": actuator_biasprm,
-#   })
-
-#   return model, in_axes 
