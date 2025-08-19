@@ -149,7 +149,10 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
       metrics[f"reward/{k}"] = jp.zeros(())
 
     # State size = hand joints + touch sensors + previous actions + target position (x, y only)
-    state_size = len(self._hand_qids) + self._touch_size + self.mjx_model.nu + 2
+    # state_size = len(self._hand_qids) + self._touch_size + self.mjx_model.nu + 2
+
+    # debug, state_size is 30
+    state_size = 30
     obs_history = jp.zeros(self._config.history_len * state_size)
     obs = self._get_obs(data, info, obs_history)
     reward, done = jp.zeros(2)  # pylint: disable=redefined-outer-name
@@ -219,7 +222,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
         info["last_act"],  # Previous actions (27 values)
         # target_xy,  # Target position (2 values: x, y)
     ])
-    obs_history = jp.roll(obs_history, state.size)
+    obs_history = jp.roll(obs_history, state.size) # currently 30 dim
     obs_history = obs_history.at[: state.size].set(state)
 
     # Get palm and target positions
