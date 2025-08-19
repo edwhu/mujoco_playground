@@ -30,7 +30,7 @@
 
   <worldbody>
     <!-- <geom type="sphere" pos="0 0.5 0.3" size=".1 .1 .1" mass="100" group="0" contype="1" conaffinity="1"/> -->
-    <geom type="box" pos="0 0.5 0.3" size=".1 .1 .1" mass="100" group="0" contype="1" conaffinity="1"/>
+    <!-- <geom type="box" pos="0 0.5 0.3" size=".1 .1 .1" mass="100" group="0" contype="1" conaffinity="1"/> -->
     <!-- Door frame and door (no table) -->
     <!-- <body name="cube" pos="0.11 0.0 0.1" quat="1 0 0 0" childclass="cube">
     <geom name="cube" type="box" size=".035 .035 .035" mass=".108" group="3"/>
@@ -48,7 +48,7 @@
       <body name="door" pos="0.29 0 0">
         <inertial pos="0.0296816 -0.00152345 0" quat="0.701072 0 0 0.713091" mass="2.43455" diaginertia="0.0913751 0.0521615 0.043714" />
         <joint name="door_hinge" pos="0.31 0 0" axis="0 0 1" range="0 1.57" damping="1" frictionloss="2" />
-        <geom size="0.25 0.25 0.25" type="box" friction="1 1 1" material="MatWood" contype="1" conaffinity="1" />
+        <geom size="0.25 0.05 0.25" type="box" friction="1 1 1" material="MatWood" contype="1" conaffinity="1" />
         
         <!-- Door handle latch assembly -->
         <body name="latch" pos="-0.15 0 -0.025">
