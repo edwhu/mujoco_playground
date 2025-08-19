@@ -22,13 +22,14 @@ def _get_frame_body_id() -> int:
 
 def default_config() -> config_dict.ConfigDict:
   return config_dict.create(
-      ctrl_dt=0.05,
-      sim_dt=0.01,
+      ctrl_dt=0.05,  # Keep at 0.05
+      sim_dt=0.001,   # Reduced from 0.01 (10x more simulation steps)
       action_scale=0.6,
       action_repeat=1,
       episode_length=500,
       early_termination=True,
       history_len=1,
+      use_mj_step=False,  # debug: step with mujoco.mj_step instead of MJX
       noise_config=config_dict.create(
           level=1.0,
           scales=config_dict.create(

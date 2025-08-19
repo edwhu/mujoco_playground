@@ -24,30 +24,36 @@ from mujoco_playground import wrapper
 
 # Define flags
 _OUTPUT_PATH = flags.DEFINE_string(
-    "output_path", "collision_test16.mp4", "Output video path"
+    "output_path", "collision_rotate.mp4", "Output video path"
 )
 _EPISODE_LENGTH = flags.DEFINE_integer(
-    "episode_length", 50, "Episode length for rendering"
+    "episode_length", 30, "Episode length for rendering"
 )
 _RENDER_EVERY = flags.DEFINE_integer(
     "render_every", 1, "Render every N steps"
 )
 _ACTION_MAGNITUDE = flags.DEFINE_float(
-    "action_magnitude", 5.0, "Magnitude of forward movement action (will be clipped to control ranges)"
+    "action_magnitude", 0.0, "Magnitude of forward movement action (will be clipped to control ranges)"
 )
 
 
 def create_forward_action_sequence(env, num_actions: int, magnitude: float):
-    """Create a sequence of actions that move the hand forward along H_Tx joint."""
+    """Create a sequence of actions that move the MCP joints to their maximum values."""
     # Get the action space size from the environment's MJX model
     action_size = env.mjx_model.nu
     
-    # Create a fixed action that moves forward along H_Tx (first joint)
+    # Create a fixed action that moves MCP joints to their maximum values
     # The action should be in the range [-1, 1] and will be scaled by action_scale
     # With action_scale=0.6, a magnitude of 1.0 results in a motor target offset of 0.6
     # Recommended magnitude: 0.1-0.5 for gentle movement, 0.5-1.0 for faster movement
     forward_action = jp.zeros(action_size)
-    forward_action = forward_action.at[0].set(magnitude)  # H_Tx joint
+    
+    # Set MCP joints to maximum values (positive magnitude)
+    # These are the MCP (metacarpophalangeal) joints for index, middle, and ring fingers
+    # In rotate_z environment, there are only 16 finger joints (no base motion joints)
+    forward_action = forward_action.at[0].set(magnitude)   # if_mcp_act (index finger MCP)
+    forward_action = forward_action.at[4].set(magnitude)   # mf_mcp_act (middle finger MCP) 
+    forward_action = forward_action.at[8].set(magnitude)   # rf_mcp_act (ring finger MCP)
     
     # Repeat this action for the sequence
     actions = jp.tile(forward_action, (num_actions, 1))
@@ -55,7 +61,7 @@ def create_forward_action_sequence(env, num_actions: int, magnitude: float):
     return actions
 
 
-def render_collision_test(env, action_sequence, episode_length: int, render_every: int = 1):
+def render_collision_test(env, action_sequence, episode_length: int, render_every: int = 1, camera: str = "side"):
     """Render a collision test using fixed actions.
 
     Args:
@@ -63,6 +69,7 @@ def render_collision_test(env, action_sequence, episode_length: int, render_ever
       action_sequence: sequence of actions to apply.
       episode_length: max steps per episode.
       render_every: subsample cadence for rendering.
+      camera: name of the camera to use for rendering.
     Returns:
       frames: list of RGB frames.
       fps: frames per second used for the video.
@@ -140,9 +147,9 @@ def render_collision_test(env, action_sequence, episode_length: int, render_ever
     scene_option.flags[mujoco.mjtVisFlag.mjVIS_PERTFORCE] = False
     scene_option.flags[mujoco.mjtVisFlag.mjVIS_CONTACTFORCE] = False
     
-    # Render frames
+    # Render frames with specified camera
     frames = env.render(
-        traj, height=480, width=640, scene_option=scene_option, camera="fixed"
+        traj, height=480, width=640, scene_option=scene_option, camera=camera
     )
     
     return frames, fps
@@ -152,7 +159,7 @@ def main(argv):
     """Main function."""
     del argv  # Unused
     
-    env_name = "LeapDoorOpen"
+    env_name = "LeapCubeRotateZAxis"
     output_path = _OUTPUT_PATH.value
     episode_length = _EPISODE_LENGTH.value
     render_every = _RENDER_EVERY.value
@@ -174,7 +181,7 @@ def main(argv):
         action_sequence = create_forward_action_sequence(env, episode_length, action_magnitude)
         print(f"Created action sequence with {len(action_sequence)} actions")
         
-        # Render collision test
+        # Render collision test with "fixed" camera
         frames, fps = render_collision_test(env, action_sequence, episode_length, render_every)
         
         # Save video
