@@ -354,7 +354,6 @@ def main(argv):
     print(f"Loading checkpoint from: {checkpoint_dir}")
     print(f"Environment: {env_name}")
     print(f"Output path: {output_path}")
-    print(f"Episode length: {episode_length}")
     print(f"Render every: {render_every} steps")
     print(f"Num episodes: {num_episodes}")
     print(f"Domain randomization: {enable_domain_randomization}")
@@ -363,8 +362,11 @@ def main(argv):
         # Load environment
         env_cfg = registry.get_default_config(env_name)
         env = registry.load(env_name, config=env_cfg)
+        episode_length = env_cfg.episode_length
         print(f"Environment loaded successfully")
-        
+        if _EPISODE_LENGTH.present:
+            episode_length = _EPISODE_LENGTH.value
+        print(f"Episode length: {episode_length}")
         # Get checkpoint path
         checkpoint_path = get_latest_checkpoint_path(checkpoint_dir)
         print(f"Checkpoint path: {checkpoint_path}")

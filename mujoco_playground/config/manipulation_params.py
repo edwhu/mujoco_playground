@@ -285,7 +285,7 @@ def brax_ppo_config(env_name: str) -> config_dict.ConfigDict:
     rl_config.num_updates_per_batch = 4
     rl_config.discounting = 0.97
     rl_config.learning_rate = 3e-4
-    rl_config.entropy_cost = 1e-2
+    rl_config.entropy_cost = 1e-1
     rl_config.num_envs = 8192
     rl_config.batch_size = 256
     rl_config.num_resets_per_eval = 1

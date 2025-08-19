@@ -35,11 +35,11 @@ def default_config() -> config_dict.ConfigDict:
       action_repeat=1,
       episode_length=100,
       early_termination=True,
-      history_len=1,
+      history_len=2,
       noise_config=config_dict.create(
           level=1.0,
           scales=config_dict.create(
-              joint_pos=0.05,
+              joint_pos=0.001,
           ),
       ),
       reward_config=config_dict.create(
@@ -92,6 +92,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     self._qpos0 = jp.array(self._mj_model.qpos0)
     default_hand_pose = self._qpos0[self._hand_qids]
     self._default_pose = default_hand_pose
+
     
     # Get actuator limits for hand joints only
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
@@ -107,7 +108,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
   def reset(self, rng: jax.Array) -> mjx_env.State:
     # Randomize object position like in pick_cartesian.py
     rng, rng_obj_x, rng_obj_y = jax.random.split(rng, 3)
-    obj_range = 0.0  # Similar to box_init_range in pick_cartesian.py
+    obj_range = 0.2  # Similar to box_init_range in pick_cartesian.py
     obj_pos = jp.array([
         jax.random.uniform(rng_obj_x, (), minval=-obj_range, maxval=obj_range),  # Randomize X position
         jax.random.uniform(rng_obj_y, (), minval=-obj_range, maxval=obj_range),  # Randomize Y position
@@ -335,9 +336,3 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
   ) -> jax.Array:
     del last_last_act  # Unused.
     return jp.sum(jp.square(act - last_act))
-
-
-def domain_randomize(model: mjx.Model, rng: jax.Array):
-  """Domain randomization for relocate environment."""
-  # No domain randomization - object randomization happens in reset()
-  return model, None

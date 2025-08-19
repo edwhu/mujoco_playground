@@ -315,9 +315,3 @@ class Relocate(leap_hand_base.LeapHandEnv):
   ) -> jax.Array:
     del last_last_act  # Unused.
     return jp.sum(jp.square(act - last_act))
-
-
-def domain_randomize(model: mjx.Model, rng: jax.Array):
-  """Domain randomization for relocate environment."""
-  # No domain randomization - object randomization happens in reset()
-  return model, None

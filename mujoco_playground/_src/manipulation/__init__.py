@@ -84,8 +84,6 @@ _randomizer = {
     "LeapDoorOpen": leap_door_open.domain_randomize,
     "LeapDoorOpenTouch": leap_door_open_touch.domain_randomize,
     "LeapDoorOpenTouchSimple": leap_door_open_touch_simple.domain_randomize,
-    "LeapRelocate": leap_relocate.domain_randomize,
-    "LeapRelocateTouchSimple": leap_relocate_touch_simple.domain_randomize,
     "LeapCubeReorient": leap_cube_reorient.domain_randomize,
     "LeapCubeReorientTouch": leap_cube_reorient_touch.domain_randomize,
     "LeapCubeRotateZAxis": leap_rotate_z.domain_randomize,
