@@ -36,6 +36,7 @@ from brax.training.agents.ppo import train as ppo
 from etils import epath
 from flax.training import orbax_utils
 import jax
+assert jax.default_backend() == "gpu", f"Default backend is {jax.default_backend()}. Must use GPU"
 import jax.numpy as jp
 import mediapy as media
 from ml_collections import config_dict
@@ -284,7 +285,7 @@ def main(argv):
 
   # Initialize Weights & Biases if required
   if _USE_WANDB.value and not _PLAY_ONLY.value:
-    wandb.init(project="mjxrl-816", entity="fionalluo", name=exp_name)
+    wandb.init(project="mjxrl-816", entity="vlongle", name=exp_name)
     wandb.config.update(env_cfg.to_dict())
     wandb.config.update({"env_name": _ENV_NAME.value})
 
