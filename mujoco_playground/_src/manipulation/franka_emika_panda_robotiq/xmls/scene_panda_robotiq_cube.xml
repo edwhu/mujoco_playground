@@ -22,13 +22,13 @@
   </visual>
 
   <asset>
-    <texture name="box" type="cube" fileup="fileup.png" fileback="fileback.png"
-      filedown="filedown.png" filefront="filefront.png" fileleft="fileleft.png"
-      fileright="fileright.png"/>
+    <texture name="box" type="cube" fileup="../../assets/fileup.png" fileback="../../assets/fileback.png"
+      filedown="../../assets/filedown.png" filefront="../../assets/filefront.png" fileleft="../../assets/fileleft.png"
+      fileright="../../assets/fileright.png"/>
     <material name="box" texture="box"/>
-    <texture name="box_alpha" type="cube" fileup="fileup_light.png" fileback="fileback_light.png"
-      filedown="filedown_light.png" filefront="filefront_light.png" fileleft="fileleft_light.png"
-      fileright="fileright_light.png"/>
+    <texture name="box_alpha" type="cube" fileup="../../assets/fileup_light.png" fileback="../../assets/fileback_light.png"
+      filedown="../../assets/filedown_light.png" filefront="../../assets/filefront_light.png" fileleft="../../assets/fileleft_light.png"
+      fileright="../../assets/fileright_light.png"/>
     <material name="box_alpha" texture="box_alpha"/>
     <texture type="skybox" builtin="gradient" rgb1="1 1 1" rgb2="1 1 1" width="800" height="800"/>
     <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="1 1 1" rgb2="1 1 1" markrgb="0 0 0"

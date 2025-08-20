@@ -69,90 +69,90 @@
     <material class="panda" name="silicone" rgba="0.1882 0.1882 0.1882 1"/>
 
     <!-- Collision meshes -->
-    <mesh name="link0_c" file="link0.stl"/>
-    <mesh name="link1_c" file="link1.stl"/>
-    <mesh name="link2_c" file="link2.stl"/>
-    <mesh name="link3_c" file="link3.stl"/>
-    <mesh name="link4_c" file="link4.stl"/>
-    <mesh name="link5_c0" file="link5_collision_0.obj"/>
-    <mesh name="link5_c1" file="link5_collision_1.obj"/>
-    <mesh name="link5_c2" file="link5_collision_2.obj"/>
-    <mesh name="link6_c" file="link6.stl"/>
-    <mesh name="link7_c" file="link7.stl"/>
-    <mesh name="hand_c" file="hand.stl"/>
+    <mesh name="link0_c" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0.stl"/>
+    <mesh name="link1_c" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link1.stl"/>
+    <mesh name="link2_c" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link2.stl"/>
+    <mesh name="link3_c" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link3.stl"/>
+    <mesh name="link4_c" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link4.stl"/>
+    <mesh name="link5_c0" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link5_collision_0.obj"/>
+    <mesh name="link5_c1" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link5_collision_1.obj"/>
+    <mesh name="link5_c2" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link5_collision_2.obj"/>
+    <mesh name="link6_c" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6.stl"/>
+    <mesh name="link7_c" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link7.stl"/>
+    <mesh name="hand_c" file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/hand.stl"/>
 
     <!-- Visual meshes -->
-    <mesh file="link0_0.obj"/>
-    <mesh file="link0_1.obj"/>
-    <mesh file="link0_2.obj"/>
-    <mesh file="link0_3.obj"/>
-    <mesh file="link0_4.obj"/>
-    <mesh file="link0_5.obj"/>
-    <mesh file="link0_7.obj"/>
-    <mesh file="link0_8.obj"/>
-    <mesh file="link0_9.obj"/>
-    <mesh file="link0_10.obj"/>
-    <mesh file="link0_11.obj"/>
-    <mesh file="link1.obj"/>
-    <mesh file="link2.obj"/>
-    <mesh file="link3_0.obj"/>
-    <mesh file="link3_1.obj"/>
-    <mesh file="link3_2.obj"/>
-    <mesh file="link3_3.obj"/>
-    <mesh file="link4_0.obj"/>
-    <mesh file="link4_1.obj"/>
-    <mesh file="link4_2.obj"/>
-    <mesh file="link4_3.obj"/>
-    <mesh file="link5_0.obj"/>
-    <mesh file="link5_1.obj"/>
-    <mesh file="link5_2.obj"/>
-    <mesh file="link6_0.obj"/>
-    <mesh file="link6_1.obj"/>
-    <mesh file="link6_2.obj"/>
-    <mesh file="link6_3.obj"/>
-    <mesh file="link6_4.obj"/>
-    <mesh file="link6_5.obj"/>
-    <mesh file="link6_6.obj"/>
-    <mesh file="link6_7.obj"/>
-    <mesh file="link6_8.obj"/>
-    <mesh file="link6_9.obj"/>
-    <mesh file="link6_10.obj"/>
-    <mesh file="link6_11.obj"/>
-    <mesh file="link6_12.obj"/>
-    <mesh file="link6_13.obj"/>
-    <mesh file="link6_14.obj"/>
-    <mesh file="link6_15.obj"/>
-    <mesh file="link6_16.obj"/>
-    <mesh file="link7_0.obj"/>
-    <mesh file="link7_1.obj"/>
-    <mesh file="link7_2.obj"/>
-    <mesh file="link7_3.obj"/>
-    <mesh file="link7_4.obj"/>
-    <mesh file="link7_5.obj"/>
-    <mesh file="link7_6.obj"/>
-    <mesh file="link7_7.obj"/>
-    <mesh file="hand_0.obj"/>
-    <mesh file="hand_1.obj"/>
-    <mesh file="hand_2.obj"/>
-    <mesh file="hand_3.obj"/>
-    <mesh file="hand_4.obj"/>
-    <mesh file="finger_0.obj"/>
-    <mesh file="finger_1.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_0.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_1.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_2.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_3.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_4.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_5.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_7.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_8.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_9.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_10.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link0_11.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link1.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link2.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link3_0.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link3_1.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link3_2.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link3_3.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link4_0.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link4_1.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link4_2.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link4_3.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link5_0.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link5_1.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link5_2.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_0.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_1.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_2.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_3.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_4.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_5.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_6.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_7.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_8.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_9.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_10.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_11.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_12.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_13.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_14.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_15.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link6_16.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link7_0.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link7_1.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link7_2.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link7_3.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link7_4.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link7_5.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link7_6.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/link7_7.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/hand_0.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/hand_1.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/hand_2.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/hand_3.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/hand_4.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/finger_0.obj"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/franka_emika_panda/assets/finger_1.obj"/>
 
     <!-- Force Torque meshes -->
-    <mesh name="fts300_base_mesh" file="robotiq_fts300_base.stl" scale="0.001 0.001 0.001" />
-    <mesh name="fts300_top_mesh" file="robotiq_fts300_top.stl" scale="0.001 0.001 0.001" />
-    <mesh name="fts300_coupling_mesh" file="robotiq_fts300_coupling.stl" scale="0.001 0.001 0.001" />
+    <mesh name="fts300_base_mesh" file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/robotiq_fts300_base.stl" scale="0.001 0.001 0.001" />
+    <mesh name="fts300_top_mesh" file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/robotiq_fts300_top.stl" scale="0.001 0.001 0.001" />
+    <mesh name="fts300_coupling_mesh" file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/robotiq_fts300_coupling.stl" scale="0.001 0.001 0.001" />
 
     <!-- Gripper Meshes -->
-    <mesh file="base.stl"/>
-    <mesh file="base_coupling.stl"/>
-    <mesh file="c-a01-85-open.stl"/>
-    <mesh file="driver.stl"/>
-    <mesh file="coupler.stl"/>
-    <mesh file="spring_link.stl"/>
-    <mesh file="follower.stl"/>
-    <mesh file="tongue.stl"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/base.stl"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/base_coupling.stl"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/c-a01-85-open.stl"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/driver.stl"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/coupler.stl"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/spring_link.stl"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/follower.stl"/>
+    <mesh file="../../../../external_deps/mujoco_menagerie/robotiq_2f85_v4/assets/tongue.stl"/>
   </asset>
 
   <worldbody>
