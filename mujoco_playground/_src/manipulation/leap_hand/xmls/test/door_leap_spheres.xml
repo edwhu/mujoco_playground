@@ -149,6 +149,7 @@
         <geom name="palm_collision_8" size="0.022 0.026 0.023" pos="-0.078 -0.053 -0.0115" type="box"/>
         <geom name="palm_collision_9" size="0.002 0.018 0.017" pos="-0.098 -0.009 -0.006" type="box"/>
         <geom name="palm_collision_10" size="0.022 0.028 0.002" pos="-0.078 -0.003 0.01" type="box"/>
+        <!-- <geom name="palm_base_sphere" size="0.01" pos="0 0 0" type="sphere"/> -->
         <body name="if_bs" pos="-0.007 0.023 -0.0187" quat="0.5 0.5 0.5 -0.5">
           <inertial pos="-0.022516 0.033882 0.016359" quat="0.388092 0.677951 -0.247713 0.573067" mass="0.044"
             diaginertia="1.74972e-05 1.61504e-05 7.21342e-06"/>
@@ -178,6 +179,7 @@
                 <geom name="if_ds_visual" pos="0.0132 -0.0061 0.0144" quat="2.67949e-08 1 0 0" class="visual"
                   mesh="distal"/>
                 <geom name="if_ds_collision_1" size="0.01 0.003 0.015" pos="0 -0.017 0.015" type="box"/>
+                <geom name="if_tip_sphere" size="0.01" pos="0 -0.0475 0.015" type="sphere"/>
                 <geom name="if_tip" class="tip"/>
                 <geom type="mesh" mesh="tip" class="visual" material="gray"/>
                 <site name="if_tip" pos="0 -0.05 0.015" group="4"/>
@@ -213,6 +215,7 @@
                 <geom name="mf_ds_visual" pos="0.0132 -0.0061 0.0145" quat="1.32679e-06 1 0 0" class="visual"
                   mesh="distal"/>
                 <geom name="mf_ds_collision_1" size="0.01 0.003 0.015" pos="0 -0.017 0.015" type="box"/>
+                <geom name="mf_tip_sphere" size="0.01" pos="0 -0.0475 0.015" type="sphere"/>
                 <geom name="mf_tip" class="tip"/>
                 <geom type="mesh" mesh="tip" class="visual" material="gray"/>
                 <site name="mf_tip" pos="0 -0.05 0.015" group="4"/>
@@ -246,6 +249,7 @@
                 <joint name="rf_dip" class="dip"/>
                 <geom name="rf_ds_visual" pos="0.0132 -0.0061 0.0145" quat="0 1 0 0" class="visual" mesh="distal"/>
                 <geom name="rf_ds_collision_1" size="0.01 0.003 0.015" pos="0 -0.017 0.015" type="box"/>
+                <geom name="rf_tip_sphere" size="0.01" pos="0 -0.0475 0.015" type="sphere" contype="1" conaffinity="1"/>
                 <geom name="rf_tip" class="tip"/>
                 <geom type="mesh" mesh="tip" class="visual" material="gray"/>
                 <site name="rf_tip" pos="0 -0.05 0.015" group="4"/>
@@ -277,6 +281,7 @@
                 <joint name="th_ipl" class="thumb_ipl"/>
                 <geom name="th_ds_visual" pos="0.0625 0.0784 0.0489" quat="1 0 0 0" class="visual" mesh="thumb_distal"/>
                 <geom name="th_ds_collision_1" size="0.01 0.018 0.012" pos="0 -0.0085 -0.015" type="box"/>
+                <geom name="th_tip_sphere" size="0.01" pos="0 -0.06 -0.015" type="sphere"/>
                 <geom name="th_tip" class="thumb_tip"/>
                 <site name="th_tip" pos="0 -0.06 -0.015" group="4"/>
                 <geom type="mesh" mesh="thumb_tip" class="visual" material="gray"/>
