@@ -14,11 +14,7 @@
     <material name="black" rgba="0.2 0.2 0.2 1"/>
     <material name="gray" rgba="0.5 0.5 0.5 1"/>
     <mesh name="leap_mount" file="meshes/leap_mount.obj"/>
-    <!-- Example path to palm right -->
-    <!-- mujoco_playground/external_deps/mujoco_menagerie/leap_hand/assets/palm_right.obj -->
-    <!-- original path, incorrect. -->
-    <!-- <mesh name="palm" file="../../../../../mujoco_menagerie/leap_hand/assets/palm_right.obj"/> -->
-    <!-- correct path -->
+
     <mesh name="palm" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/palm_right.obj"/>
     <mesh name="base" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/base.obj"/>
     <mesh name="proximal" file="../../../../external_deps/mujoco_menagerie/leap_hand/assets/proximal.obj"/>
@@ -32,9 +28,6 @@
   </asset>
 
   <default>
-    <default class="leap_touch">
-      <site type="sphere" size="0.005" rgba="0.8 0.8 0.8 0.15" group="4"/>
-    </default>
     <default class="leap_rh">
       <geom group="3" friction="0.2" solref="0.02 1.5" solimp="0.9 0.99 0.001"/>
       <default class="visual">
@@ -134,7 +127,7 @@
     <light name="spotlight" mode="targetbodycom" target="palm" pos="3 0 4"/>
     <body name="leap_mount" pos="0 0 0" quat="0 0.707 0.707 0" childclass="leap_rh">
       <joint name="H_Tx" pos="0 0 0" axis="1 0 0" type="slide" range="-0.4 0.9" damping="5" armature="0.1" actuatorfrcrange="-100.0 100.0"/>
-      <joint name="H_Ty" pos="0 0 0" axis="0 1 0" type="slide" range="-0.25 0.25" damping="5" armature="0.1" actuatorfrcrange="-100.0 100.0"/>
+      <joint name="H_Ty" pos="0 0 0" axis="0 1 0" type="slide" range="-0.55 0.55" damping="5" armature="0.1" actuatorfrcrange="-100.0 100.0"/>
       <joint name="H_Rx" pos="0 0 0" axis="1 0 0" range="-2 2" damping="5" armature="0.1" actuatorfrcrange="-50.0 50.0"/>
       <joint name="H_Ry" pos="0 0 0" axis="0 1 0" range="-2 2" damping="5" armature="0.1" actuatorfrcrange="-50.0 50.0"/>
       <joint name="H_Rz" pos="0 0 0" axis="0 0 1" range="-2 2" damping="5" armature="0.1" actuatorfrcrange="-50.0 50.0"/>      <geom name="leap_mount_visual" pos="0 0 0" quat="1 0 0 0" class="visual" mesh="leap_mount"/>
@@ -340,7 +333,7 @@
 
   <actuator>
     <position name="A_H_Tx" joint="H_Tx" ctrllimited="true" ctrlrange="-0.4 0.9"  kp="300" kv="30"/>
-    <position name="A_H_Ty" joint="H_Ty" ctrllimited="true" ctrlrange="-0.25 0.25" kp="300" kv="30"/>
+    <position name="A_H_Ty" joint="H_Ty" ctrllimited="true" ctrlrange="-0.55 0.55" kp="300" kv="30"/>
     <position name="A_H_Rx" joint="H_Rx" ctrllimited="true" ctrlrange="-2 2" kp="150" kv="15"/>
     <position name="A_H_Ry" joint="H_Ry" ctrllimited="true" ctrlrange="-2 2" kp="150" kv="15"/>
     <position name="A_H_Rz" joint="H_Rz" ctrllimited="true" ctrlrange="-2 2" kp="150" kv="15"/>
