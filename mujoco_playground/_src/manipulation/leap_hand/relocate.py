@@ -65,7 +65,7 @@ class Relocate(leap_hand_base.LeapHandEnv):
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
     super().__init__(
-        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_relocate.xml",
+        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/relocate_scene.xml",
         config=config,
         config_overrides=config_overrides,
     )

@@ -57,7 +57,7 @@ def default_config() -> config_dict.ConfigDict:
   )
 
 
-class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
+class RelocateTouch(leap_hand_base.LeapHandEnv):
   """Relocate an object to a target position using the Leap Hand."""
 
   def __init__(
@@ -66,7 +66,7 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
     super().__init__(
-        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/scene_mjx_relocate_touch_simple.xml",
+        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/relocate_scene_touch.xml",
         config=config,
         config_overrides=config_overrides,
     )
@@ -79,9 +79,9 @@ class RelocateTouchSimple(leap_hand_base.LeapHandEnv):
     self._hand_dqids = mjx_env.get_qvel_ids(self.mj_model, hand_joint_names)
     
     # Get object body ID and qpos address (following the pattern from pick_cartesian.py)
-    self._obj_body = self._mj_model.body("Object").id
+    self._obj_body = self._mj_model.body("cube").id
     self._obj_qposadr = self._mj_model.jnt_qposadr[
-        self._mj_model.body("Object").jntadr[0]
+        self._mj_model.body("cube").jntadr[0]
     ]
     
     # Get site IDs for palm and target
