@@ -65,18 +65,18 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     self._post_init()
     
     # Debug: print simulation/mjx settings that affect collisions
-    try:
-      print("[DoorOpen] sim_dt:", float(self.sim_dt))
-      print("[DoorOpen] ctrl_dt:", float(self.dt))
-      print("[DoorOpen] n_substeps:", int(self.n_substeps))
-      print("[DoorOpen] mj_model.nv (dofs):", int(self._mj_model.nv))
-      print("[DoorOpen] mj_model.nbody:", int(self._mj_model.nbody))
-      print("[DoorOpen] mj_model.ngeom:", int(self._mj_model.ngeom))
-      print("[DoorOpen] mj_model.nsensordata:", int(self._mj_model.nsensordata))
-      print("[DoorOpen] mjx_model.nu (actuators):", int(self._mjx_model.nu))
-      print("[DoorOpen] mjx_model.ngeom:", int(self._mjx_model.ngeom))
-    except Exception as e:
-      print("[DoorOpen] debug print failed:", e)
+    # try:
+    #   print("[DoorOpen] sim_dt:", float(self.sim_dt))
+    #   print("[DoorOpen] ctrl_dt:", float(self.dt))
+    #   print("[DoorOpen] n_substeps:", int(self.n_substeps))
+    #   print("[DoorOpen] mj_model.nv (dofs):", int(self._mj_model.nv))
+    #   print("[DoorOpen] mj_model.nbody:", int(self._mj_model.nbody))
+    #   print("[DoorOpen] mj_model.ngeom:", int(self._mj_model.ngeom))
+    #   print("[DoorOpen] mj_model.nsensordata:", int(self._mj_model.nsensordata))
+    #   print("[DoorOpen] mjx_model.nu (actuators):", int(self._mjx_model.nu))
+    #   print("[DoorOpen] mjx_model.ngeom:", int(self._mjx_model.ngeom))
+    # except Exception as e:
+    #   print("[DoorOpen] debug print failed:", e)
 
   def _post_init(self) -> None:
     # Get hand joint IDs (including base motion joints) - only hand joints are controllable
@@ -145,11 +145,11 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
 
   def step(self, state: mjx_env.State, action: jax.Array) -> mjx_env.State:
     # Clip actions to actuator control ranges before scaling
-    jax.debug.print("act: {x}", x=action)
+    # jax.debug.print("act: {x}", x=action)
     motor_targets = self._default_pose + action
-    jax.debug.print("before clip: {x}", x=motor_targets)
+    # jax.debug.print("before clip: {x}", x=motor_targets)
     motor_targets = jp.clip(motor_targets, self._lowers, self._uppers)
-    jax.debug.print("after clip: {x}", x=motor_targets)
+    # jax.debug.print("after clip: {x}", x=motor_targets)
     data = mjx_env.step(
         self.mjx_model, state.data, motor_targets, self.n_substeps
     )
@@ -157,57 +157,57 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
 
     # Debug: print current contacts (count and geom pairs)
     # Use MJX contact buffers directly; no host conversion
-    try:
-      contact_geoms = data._impl.contact.geom  # shape (nconmax, 2)
-      contact_dists = data._impl.contact.dist  # shape (nconmax,)
-      # In MJX, unused contact slots are typically padded with dist==1.0
-      active = contact_dists < 1.0
-      ncon = jp.sum(active)
-      n_pen = jp.sum(contact_dists < 0.0)
-      n_near = jp.sum((contact_dists >= 0.0) & (contact_dists < 1e-2))
-      # Print first K rows for quick inspection
-      K = 10
-      pairs_head = contact_geoms[:K]
-      dists_head = contact_dists[:K]
-      active_head = active[:K]
-      # jax.debug.print(
-      #     (
-      #       "[DoorOpen] contacts: {ncon} | penetrating: {npen} | near(<1e-2): {nnear}\n"
-      #       "[DoorOpen] pairs[:{k}]: {pairs}\n"
-      #       "[DoorOpen] dists[:{k}]: {dists}\n"
-      #       "[DoorOpen] active[:{k}]: {active}"
-      #     ),
-      #     ncon=ncon,
-      #     npen=n_pen,
-      #     nnear=n_near,
-      #     k=K,
-      #     pairs=pairs_head,
-      #     dists=dists_head,
-      #     active=active_head,
-      # )
+    # try:
+    #   contact_geoms = data._impl.contact.geom  # shape (nconmax, 2)
+    #   contact_dists = data._impl.contact.dist  # shape (nconmax,)
+    #   # In MJX, unused contact slots are typically padded with dist==1.0
+    #   active = contact_dists < 1.0
+    #   ncon = jp.sum(active)
+    #   n_pen = jp.sum(contact_dists < 0.0)
+    #   n_near = jp.sum((contact_dists >= 0.0) & (contact_dists < 1e-2))
+    #   # Print first K rows for quick inspection
+    #   K = 10
+    #   pairs_head = contact_geoms[:K]
+    #   dists_head = contact_dists[:K]
+    #   active_head = active[:K]
+    #   # jax.debug.print(
+    #   #     (
+    #   #       "[DoorOpen] contacts: {ncon} | penetrating: {npen} | near(<1e-2): {nnear}\n"
+    #   #       "[DoorOpen] pairs[:{k}]: {pairs}\n"
+    #   #       "[DoorOpen] dists[:{k}]: {dists}\n"
+    #   #       "[DoorOpen] active[:{k}]: {active}"
+    #   #     ),
+    #   #     ncon=ncon,
+    #   #     npen=n_pen,
+    #   #     nnear=n_near,
+    #   #     k=K,
+    #   #     pairs=pairs_head,
+    #   #     dists=dists_head,
+    #   #     active=active_head,
+    #   # )
 
-      # Also print human-readable names for the first K contacts via host callback
-      # def _print_named_contacts(pairs_np, dists_np):
-      #   try:
-      #     msgs = []
-      #     for i in range(min(len(pairs_np), K)):
-      #       if not (dists_np[i] < 1.0):
-      #         continue
-      #       g1 = int(pairs_np[i, 0])
-      #       g2 = int(pairs_np[i, 1])
-      #       name1 = mujoco.mj_id2name(self._mj_model, mujoco.mjtObj.mjOBJ_GEOM, g1) or str(g1)
-      #       name2 = mujoco.mj_id2name(self._mj_model, mujoco.mjtObj.mjOBJ_GEOM, g2) or str(g2)
-      #       msgs.append(f"{name1} <-> {name2} (dist={float(dists_np[i]):.5f})")
-      #     if msgs:
-      #       print("[DoorOpen] named contacts:", " | ".join(msgs))
-      #     else:
-      #       print("[DoorOpen] named contacts: (none in head)")
-      #   except Exception as _e:
-      #     print("[DoorOpen] named contact print failed:", _e)
+    #   # Also print human-readable names for the first K contacts via host callback
+    #   # def _print_named_contacts(pairs_np, dists_np):
+    #   #   try:
+    #   #     msgs = []
+    #   #     for i in range(min(len(pairs_np), K)):
+    #   #       if not (dists_np[i] < 1.0):
+    #   #       continue
+    #   #       g1 = int(pairs_np[i, 0])
+    #   #       g2 = int(pairs_np[i, 1])
+    #   #       name1 = mujoco.mj_id2name(self._mj_model, mujoco.mjtObj.mjOBJ_GEOM, g1) or str(g1)
+    #   #       name2 = mujoco.mj_id2name(self._mj_model, mujoco.mjtObj.mjOBJ_GEOM, g2) or str(g2)
+    #   #       msgs.append(f"{name1} <-> {name2} (dist={float(dists_np[i]):.5f})")
+    #   #     if msgs:
+    #   #       print("[DoorOpen] named contacts:", " | ".join(msgs))
+    #   #     else:
+    #   #       print("[DoorOpen] named contacts: (none in head)")
+    #   #   except Exception as _e:
+    #   #     print("[DoorOpen] named contact print failed:", _e)
 
-      # jax.debug.callback(_print_named_contacts, pairs_head, dists_head, ordered=True)
-    except Exception as e:  # This branch should not trigger under JIT
-      jax.debug.print("[DoorOpen] contact debug failed (JAX): {e}", e=e)
+    #   # jax.debug.callback(_print_named_contacts, pairs_head, dists_head, ordered=True)
+    # except Exception as e:  # This branch should not trigger under JIT
+    #   jax.debug.print("[DoorOpen] contact debug failed (JAX): {e}", e=e)
 
     obs = self._get_obs(data, state.info, state.obs["state"])
     done = self._get_termination(data)

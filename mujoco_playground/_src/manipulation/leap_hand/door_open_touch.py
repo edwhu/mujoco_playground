@@ -267,12 +267,13 @@ class DoorOpenTouch(leap_hand_base.LeapHandEnv):
     curr_handle_angle = data.qpos[self._latch_qid]
     last_handle_angle = jp.squeeze(info["last_handle_angle"])  # shape () from (1,)
     handle_angle_reward = curr_handle_angle - last_handle_angle
+    # Zero out handle reward once the door is open enough
     handle_angle_reward = jp.where(current_angle > 0.1, 0.0, handle_angle_reward)
     
     return {
         "get_to_handle": -palm_to_handle_dist,  # Closer to current handle is better
         "velocity_penalty": -jp.sum(jp.square(qvel)),  # Penalty for high velocities
-        "translation_velocity_penalty": -jp.sum(jp.square(qvel[0:2])), # Penalty for translation joints
+        "translation_velocity_penalty": -jp.sum(jp.square(qvel[0:2])), # Penalty for high translation velocities
         "action_rate": -self._cost_action_rate(
             action, info["last_act"], info["last_last_act"]
         ),
@@ -300,7 +301,7 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
     rng, kx, ky, kz = jax.random.split(rng, 4)
     tx = jax.random.uniform(kx, (), minval=-0.5, maxval=0.5)
     ty = jax.random.uniform(ky, (), minval=-0.2, maxval=0.2)
-    # tz = jax.random.uniform(kz, (), minval=-0.01, maxval=0.05)
+    # tz = jax.random.uniform(kz, (), minval=-0.00, maxval=0.00)
 
     # Get the original frame position and add the offset
     original_pos = model.body_pos[frame_body_id]
