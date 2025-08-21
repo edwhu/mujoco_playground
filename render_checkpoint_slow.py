@@ -293,6 +293,17 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
         scene_option.flags[mujoco.mjtVisFlag.mjVIS_PERTFORCE] = False
         scene_option.flags[mujoco.mjtVisFlag.mjVIS_CONTACTFORCE] = False
 
+        # Set up camera for side view
+        camera_option = mujoco.MjvCamera()
+        # Set camera to free mode for manual positioning
+        camera_option.type = mujoco.mjtCamera.mjCAMERA_FREE
+        # Position camera for side view (adjust these values as needed)
+        camera_option.distance = 2.0  # Distance from lookat point
+        camera_option.azimuth = 90.0  # Side view (90 degrees = right side, -90 = left side)
+        camera_option.elevation = 0.0  # Horizontal view
+        # Set lookat point to center of the scene (adjust as needed)
+        camera_option.lookat = np.array([0.0, 0.0, 0.5])  # Look at center, slightly elevated
+
         # Sync model for this episode if domain randomization is enabled
         if hasattr(env, '_mjx_model_v') and hasattr(env, '_in_axes'):
             print(f"Syncing model for episode {episode_num+1} with randomized body positions")
@@ -318,7 +329,7 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
                 
                 try:
                     episode_frames = env.render(
-                        traj, height=480, width=640, scene_option=scene_option
+                        traj, height=480, width=640, scene_option=scene_option, camera_option=camera_option
                     )
                     frames.extend(episode_frames)
                 finally:
@@ -327,13 +338,13 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
             else:
                 # No body position randomization, render normally
                 episode_frames = env.render(
-                    traj, height=480, width=640, scene_option=scene_option
+                    traj, height=480, width=640, scene_option=scene_option, camera_option=camera_option
                 )
                 frames.extend(episode_frames)
         else:
             print("Using standard render (no domain randomization)")
             episode_frames = env.render(
-                traj, height=480, width=640, scene_option=scene_option
+                traj, height=480, width=640, scene_option=scene_option, camera_option=camera_option
             )
             frames.extend(episode_frames)
     
