@@ -320,7 +320,7 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
                 
                 try:
                     episode_frames = env.render(
-                        traj, height=480, width=640, scene_option=scene_option
+                        traj, height=480, width=640, scene_option=scene_option, camera="fixed"
                     )
                     frames.extend(episode_frames)
                 finally:
@@ -329,13 +329,13 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
             else:
                 # No body position randomization, render normally
                 episode_frames = env.render(
-                    traj, height=480, width=640, scene_option=scene_option
+                    traj, height=480, width=640, scene_option=scene_option, camera="fixed"
                 )
                 frames.extend(episode_frames)
         else:
             print("Using standard render (no domain randomization)")
             episode_frames = env.render(
-                traj, height=480, width=640, scene_option=scene_option
+                traj, height=480, width=640, scene_option=scene_option, camera="fixed"
             )
             frames.extend(episode_frames)
     

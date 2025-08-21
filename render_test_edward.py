@@ -72,5 +72,5 @@ for step in tqdm(range(200)):
 
 render_every = 1
 scene_option = mujoco.MjvOption()
-frames = env.render(rollout[::render_every], height=480, width=640, camera="side")
+frames = env.render(rollout[::render_every], height=480, width=640, camera="fixed")
 media.write_video("test_env_collision.mp4", frames, fps=1.0 / env.dt / render_every)
