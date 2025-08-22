@@ -26,6 +26,7 @@ from mujoco_playground._src.manipulation.franka_emika_panda import open_cabinet 
 from mujoco_playground._src.manipulation.franka_emika_panda import pick as panda_pick
 from mujoco_playground._src.manipulation.franka_emika_panda import pick_cartesian as panda_pick_cartesian
 from mujoco_playground._src.manipulation.franka_emika_panda_robotiq import push_cube as robotiq_push_cube
+from mujoco_playground._src.manipulation.franka_emika_panda_robotiq import push_cube_touch as robotiq_push_cube_touch
 from mujoco_playground._src.manipulation.leap_hand import door_open as leap_door_open
 from mujoco_playground._src.manipulation.leap_hand import door_open_touch as leap_door_open_touch
 from mujoco_playground._src.manipulation.leap_hand import door_open_touch_simple as leap_door_open_touch_simple
@@ -48,6 +49,7 @@ _envs = {
     "PandaPickCubeCartesian": panda_pick_cartesian.PandaPickCubeCartesian,
     "PandaOpenCabinet": panda_open_cabinet.PandaOpenCabinet,
     "PandaRobotiqPushCube": robotiq_push_cube.PandaRobotiqPushCube,
+    "PandaRobotiqPushCubeTouch": robotiq_push_cube_touch.PandaRobotiqPushCube,
     "LeapDoorOpen": leap_door_open.DoorOpen,
     "LeapDoorOpenTouch": leap_door_open_touch.DoorOpenTouch,
     "LeapDoorOpenTouchSimple": leap_door_open_touch_simple.DoorOpenTouchSimple,
@@ -68,6 +70,7 @@ _cfgs = {
     "PandaPickCubeCartesian": panda_pick_cartesian.default_config,
     "PandaOpenCabinet": panda_open_cabinet.default_config,
     "PandaRobotiqPushCube": robotiq_push_cube.default_config,
+    "PandaRobotiqPushCubeTouch": robotiq_push_cube_touch.default_config,
     "LeapDoorOpen": leap_door_open.default_config,
     "LeapDoorOpenTouch": leap_door_open_touch.default_config,
     "LeapDoorOpenTouchSimple": leap_door_open_touch_simple.default_config,

@@ -32,7 +32,18 @@ WORKSPACE_MIN = (0.3, -0.5, 0.0)
 WORKSPACE_MAX = (0.75, 0.7, 0.5)
 OBJ_SAMPLE_MIN = (0.4, -0.2, -0.005)
 OBJ_SAMPLE_MAX = (0.65, 0.2, 0.04)
-
+TOUCH_SENSOR_NAMES = [
+    "left_finger_touch_back_site",
+    "left_finger_touch_front_site",
+    "left_finger_touch_bottom_site",
+    "left_finger_touch_left_site",
+    "left_finger_touch_right_site",
+    "right_finger_touch_back_site",
+    "right_finger_touch_front_site",
+    "right_finger_touch_bottom_site",
+    "right_finger_touch_left_site",
+    "right_finger_touch_right_site",
+]
 
 def default_config():
   """Returns reward config for the environment."""
@@ -84,6 +95,7 @@ def default_config():
               action_rate=-0.1,
           ),
       ),
+      binarize_touch_sensors=True,
   )
 
 
@@ -108,7 +120,7 @@ class PandaRobotiqPushCube(panda_robotiq.PandaRobotiqBase):
   ):
     super().__init__(
         config,
-        panda_robotiq._ENV_DIR / "xmls/scene_panda_robotiq_cube.xml",
+        panda_robotiq._ENV_DIR / "xmls/scene_panda_robotiq_cube_touch.xml",
         config_overrides,
     )
     self._post_init(obj_name="box", keyframe="home")
@@ -551,6 +563,7 @@ class PandaRobotiqPushCube(panda_robotiq.PandaRobotiqBase):
 
     target_orientation = target_mat.ravel()[3:]
     obj_orientation_w_noise = math.quat_to_mat(obj_quat_w_noise).ravel()[3:]
+    touch = self.get_touch_sensors(data)
 
     obs = jp.concatenate([
         target_pos,
@@ -565,9 +578,20 @@ class PandaRobotiqPushCube(panda_robotiq.PandaRobotiqBase):
         # Object position and orientation.
         obj_orientation_w_noise,
         obj_pos_w_noise,
+        touch,
     ])
     return obs
 
   @property
   def action_size(self):
     return 7
+
+  def get_touch_sensors(self, data: mjx.Data) -> jax.Array:
+    """Get touch sensor data."""
+    touch = jp.concatenate([
+        mjx_env.get_sensor_data(self.mj_model, data, name)
+        for name in TOUCH_SENSOR_NAMES
+    ])
+    if self._config.binarize_touch_sensors:
+      touch = touch > 0.0
+    return touch
