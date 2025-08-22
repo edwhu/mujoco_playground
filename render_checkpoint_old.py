@@ -231,9 +231,9 @@ def render_rollout(env, inference_fn, episode_length: int, render_every: int = 2
     scene_option.flags[mujoco.mjtVisFlag.mjVIS_PERTFORCE] = False
     scene_option.flags[mujoco.mjtVisFlag.mjVIS_CONTACTFORCE] = False
     
-    # Render frames
+    # Render frames using the fixed camera (top-down view)
     frames = env.render(
-        traj, height=480, width=640, scene_option=scene_option
+        traj, height=480, width=640, scene_option=scene_option, camera="fixed"
     )
     
     return frames, fps

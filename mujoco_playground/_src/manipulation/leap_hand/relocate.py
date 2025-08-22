@@ -297,6 +297,8 @@ class Relocate(leap_hand_base.LeapHandEnv):
   ) -> dict[str, jax.Array]:
     # Get object position directly from data
     obj_pos = data.xpos[self._obj_body]
+    # Adjust z position to encourage gripping at the bottom of the object
+    obj_pos = obj_pos.at[2].set(obj_pos[2] - 0.035)
     
     # Get world-frame fingertip positions directly from data using sites
     fingertip_site_names = ["th_tip", "if_tip", "mf_tip", "rf_tip"]
@@ -315,7 +317,7 @@ class Relocate(leap_hand_base.LeapHandEnv):
     # Get last timestep's distances
     last_fingertip_distances = info["last_fingertip_distances"]
     
-    # Calculate distance improvements (negative means closer)
+    # Calculate distance improvements
     fingertip_distance_improvements = last_fingertip_distances - current_fingertip_distances
     
     # Sum the improvements across all fingertips
