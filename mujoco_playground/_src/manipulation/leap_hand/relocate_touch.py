@@ -45,8 +45,8 @@ def default_config() -> config_dict.ConfigDict:
       reward_config=config_dict.create(
           scales=config_dict.create(
               fingertips_to_object=1.0,  # Reward for finger tips getting closer to object
-              cube_height=5.0,  # Reward for lifting the cube
-              cube_lifted=500.0,  # Large reward for successfully lifting cube above threshold
+              cube_height=50.0,  # Reward for lifting the cube
+              cube_lifted=1000.0,  # Large reward for successfully lifting cube above threshold
           ),
       ),
   )
