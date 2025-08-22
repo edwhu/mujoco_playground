@@ -45,8 +45,8 @@ def default_config() -> config_dict.ConfigDict:
       reward_config=config_dict.create(
           scales=config_dict.create(
               fingertips_to_object=1.0,  # Reward for finger tips getting closer to object
-              cube_height=1.0,  # Reward for lifting the cube
-              cube_lifted=100.0,  # Large reward for successfully lifting cube above threshold
+              cube_height=5.0,  # Reward for lifting the cube
+              cube_lifted=500.0,  # Large reward for successfully lifting cube above threshold
           ),
       ),
   )
@@ -102,7 +102,7 @@ class RelocateTouch(leap_hand_base.LeapHandEnv):
   def reset(self, rng: jax.Array) -> mjx_env.State:
     # Randomize object position like in pick_cartesian.py
     rng, rng_obj_x, rng_obj_y = jax.random.split(rng, 3)
-    obj_range = 0.0  # Similar to box_init_range in pick_cartesian.py
+    obj_range = 0.3  # Similar to box_init_range in pick_cartesian.py
     obj_pos = jp.array([
         jax.random.uniform(rng_obj_x, (), minval=-obj_range, maxval=obj_range),  # Randomize X position
         jax.random.uniform(rng_obj_y, (), minval=-obj_range, maxval=obj_range),  # Randomize Y position
@@ -181,7 +181,7 @@ class RelocateTouch(leap_hand_base.LeapHandEnv):
     state.info["last_last_act"] = state.info["last_act"]
     state.info["last_act"] = action
     # Update last object height and fingertip distances for next step
-    obj_pos = self.get_cube_position(data)
+    obj_pos = data.xpos[self._obj_body]
     state.info["last_obj_height"] = obj_pos[2]
     
     # Calculate current fingertip distances for next step
@@ -303,18 +303,14 @@ class RelocateTouch(leap_hand_base.LeapHandEnv):
       metrics: dict[str, Any],
       done: jax.Array,
   ) -> dict[str, jax.Array]:
-    # Get object position
-    obj_pos = self.get_cube_position(data)
+    # Get object position directly from data
+    obj_pos = data.xpos[self._obj_body]
     
     # Get world-frame fingertip positions directly from data using sites
     fingertip_site_names = ["th_tip", "if_tip", "mf_tip", "rf_tip"]
     world_fingertip_positions = jp.array([
         data.site_xpos[self._mj_model.site(name).id] for name in fingertip_site_names
     ])
-    
-    # Debug print the positions
-    # jax.debug.print("World fingertip positions: {pos}", pos=world_fingertip_positions)
-    # jax.debug.print("Object position: {obj}", obj=obj_pos)
     
     # Calculate distances using world-frame positions
     current_fingertip_distances = jp.array([
@@ -323,8 +319,6 @@ class RelocateTouch(leap_hand_base.LeapHandEnv):
         jp.linalg.norm(world_fingertip_positions[2] - obj_pos),  # Ring finger
         jp.linalg.norm(world_fingertip_positions[3] - obj_pos),  # Thumb
     ])
-    
-    # jax.debug.print("Fingertip distances: {dist}", dist=current_fingertip_distances)
     
     # Get last timestep's distances
     last_fingertip_distances = info["last_fingertip_distances"]
