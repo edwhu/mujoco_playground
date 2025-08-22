@@ -284,7 +284,7 @@ def main(argv):
 
   # Initialize Weights & Biases if required
   if _USE_WANDB.value and not _PLAY_ONLY.value:
-    wandb.init(project="mjxrl-819", entity="fionalluo", name=exp_name)
+    wandb.init(project="mjxrl-821", entity="fionalluo", name=exp_name)
     wandb.config.update(env_cfg.to_dict())
     wandb.config.update({"env_name": _ENV_NAME.value})
 

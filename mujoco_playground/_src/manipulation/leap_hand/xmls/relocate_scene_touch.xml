@@ -32,6 +32,14 @@
 
 
   <sensor>
+    <!-- cube. -->
+    <framepos name="cube_position" objtype="body" objname="cube"/>
+    <framequat name="cube_orientation" objtype="body" objname="cube"/>
+    <framelinvel name="cube_linvel" objtype="body" objname="cube"/>
+    <frameangvel name="cube_angvel" objtype="body" objname="cube"/>
+    <frameangacc name="cube_angacc" objtype="body" objname="cube"/>
+    <framezaxis name="cube_upvector" objtype="body" objname="cube"/>
+
     <!-- hand. -->
     <framepos name="palm_position" objtype="site" objname="grasp_site"/>
     <framepos name="th_tip_position" objtype="site" objname="th_tip" reftype="site" refname="grasp_site"/>

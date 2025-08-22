@@ -44,13 +44,9 @@ def default_config() -> config_dict.ConfigDict:
       ),
       reward_config=config_dict.create(
           scales=config_dict.create(
-              get_to_ball=0.1,
-              ball_off_table=1.0,
-              make_hand_go_to_target=0.5,
-              make_ball_go_to_target=0.5,
-              ball_close_to_target=10.0,
-              ball_very_close_to_target=20.0,
-              ball_fell_off=10.0,
+              fingertips_to_object=1.0,  # Reward for finger tips getting closer to object
+              cube_height=1.0,  # Reward for lifting the cube
+              cube_lifted=100.0,  # Large reward for successfully lifting cube above threshold
           ),
       ),
   )
@@ -136,14 +132,16 @@ class Relocate(leap_hand_base.LeapHandEnv):
         "last_act": jp.zeros(self.mjx_model.nu),
         "last_last_act": jp.zeros(self.mjx_model.nu),
         "motor_targets": data.ctrl,
+        "last_obj_height": obj_pos[2],  # Store initial object height
+        "last_fingertip_distances": jp.zeros(4),  # Store initial fingertip distances
     }
 
     metrics = {}
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    # State size = hand joints + previous actions + target position (x, y only)
-    state_size = len(self._hand_qids) + self.mjx_model.nu + 2
+    # State size = hand joints + previous actions + target position (x, y only) + DEBUG cube state
+    state_size = len(self._hand_qids) + self.mjx_model.nu + 2 + 13  # +13 for obj_pos(3) + obj_quat(4) + obj_linvel(3) + obj_angvel(3)
     obs_history = jp.zeros(self._config.history_len * state_size)
     obs = self._get_obs(data, info, obs_history)
     reward, done = jp.zeros(2)  # pylint: disable=redefined-outer-name
@@ -165,6 +163,10 @@ class Relocate(leap_hand_base.LeapHandEnv):
     }
     reward = sum(rewards.values()) * self.dt  # pylint: disable=redefined-outer-name
 
+    # Check for cube_lifted condition and end episode if true
+    cube_lifted_done = rewards["cube_lifted"] > 0.0
+    done = done | cube_lifted_done
+
     # Check for NaN in final reward and end episode if detected
     has_nan_reward = jp.isnan(reward)
     reward = jp.where(has_nan_reward, jp.zeros(()), reward)
@@ -172,6 +174,20 @@ class Relocate(leap_hand_base.LeapHandEnv):
 
     state.info["last_last_act"] = state.info["last_act"]
     state.info["last_act"] = action
+    # Update last object height and fingertip distances for next step
+    obj_pos = self.get_cube_position(data)
+    state.info["last_obj_height"] = obj_pos[2]
+    
+    # Calculate current fingertip distances for next step
+    fingertip_positions = self.get_fingertip_positions(data)
+    current_fingertip_distances = jp.array([
+        jp.linalg.norm(fingertip_positions[0] - obj_pos),  # Index finger
+        jp.linalg.norm(fingertip_positions[1] - obj_pos),  # Middle finger  
+        jp.linalg.norm(fingertip_positions[2] - obj_pos),  # Ring finger
+        jp.linalg.norm(fingertip_positions[3] - obj_pos),  # Thumb
+    ])
+    state.info["last_fingertip_distances"] = current_fingertip_distances
+    
     for k, v in rewards.items():
       state.metrics[f"reward/{k}"] = v
 
@@ -180,10 +196,12 @@ class Relocate(leap_hand_base.LeapHandEnv):
     return state
 
   def _get_termination(self, data: mjx.Data) -> jax.Array:
-    # Episode ends only when object falls off table (z < -0.05)
-    # No early termination when close to target - let it run full episode
+    # Episode ends when object falls off table (z < -0.05) or when cube is lifted above threshold
     obj_pos = data.xpos[self._obj_body]
     obj_fell_off = obj_pos[2] < -0.05
+    
+    # Check if cube is lifted above threshold (this will be handled in reward function)
+    # The termination will be set in the step function based on the reward
     
     return obj_fell_off
 
@@ -203,10 +221,21 @@ class Relocate(leap_hand_base.LeapHandEnv):
     target_pos = data.site_xpos[self._target_site_id]
     target_xy = target_pos[:2]  # Only x and y coordinates since z is constant
     
+    # Get object data using sensors (only what's needed for reward and future state prediction)
+    obj_pos = self.get_cube_position(data)
+    obj_quat = self.get_cube_orientation(data)
+    obj_linvel = self.get_cube_linvel(data)
+    obj_angvel = self.get_cube_angvel(data)
+    
     state = jp.concatenate([
         noisy_joint_angles,  # Hand joints (27 values: 6 base motion + 21 finger joints)
         info["last_act"],  # Previous actions (27 values)
         target_xy,  # Target position (2 values: x, y)
+        # DEBUG: Add cube state information
+        obj_pos,  # Object position (3 values: x, y, z)
+        obj_quat,  # Object quaternion (4 values: qw, qx, qy, qz)
+        obj_linvel,  # Object linear velocity (3 values: vx, vy, vz)
+        obj_angvel,  # Object angular velocity (3 values: ωx, ωy, ωz)
     ])
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
@@ -214,11 +243,6 @@ class Relocate(leap_hand_base.LeapHandEnv):
     # Get palm and target positions
     palm_pos = data.site_xpos[self._palm_site_id]
     target_pos = data.site_xpos[self._target_site_id]
-    
-    # Get object data using sensors (only what's needed for reward and future state prediction)
-    obj_pos = data.xpos[self._obj_body]  # Use body position directly
-    obj_linvel = data.qvel[self._obj_qposadr:self._obj_qposadr+3]  # Linear velocity (x,y,z)
-    obj_angvel = data.qvel[self._obj_qposadr+3:self._obj_qposadr+6]  # Angular velocity (rx,ry,rz)
     
     # Get fingertip positions (useful for understanding hand configuration)
     fingertip_positions = self.get_fingertip_positions(data)
@@ -249,41 +273,48 @@ class Relocate(leap_hand_base.LeapHandEnv):
       metrics: dict[str, Any],
       done: jax.Array,
   ) -> dict[str, jax.Array]:
-    # Get positions using sensors
-    palm_pos = data.site_xpos[self._palm_site_id]
-    obj_pos = data.xpos[self._obj_body]  # Use body position directly
-    target_pos = data.site_xpos[self._target_site_id]
+    # Get object position
+    obj_pos = self.get_cube_position(data)
     
-    # Calculate distances
-    palm_to_obj_dist = jp.linalg.norm(palm_pos - obj_pos)
-    palm_to_target_dist = jp.linalg.norm(palm_pos - target_pos)
-    obj_to_target_dist = jp.linalg.norm(obj_pos - target_pos)
+    # Get fingertip positions
+    fingertip_positions = self.get_fingertip_positions(data)
     
-    # Check if object is off table (lifted)
-    obj_off_table = obj_pos[2] > 0.06
+    # Calculate current fingertip distances to object
+    current_fingertip_distances = jp.array([
+        jp.linalg.norm(fingertip_positions[0] - obj_pos),  # Index finger
+        jp.linalg.norm(fingertip_positions[1] - obj_pos),  # Middle finger  
+        jp.linalg.norm(fingertip_positions[2] - obj_pos),  # Ring finger
+        jp.linalg.norm(fingertip_positions[3] - obj_pos),  # Thumb
+    ])
     
-    # Check if hand is in contact with object
-    hand_obj_contact = self._check_hand_object_contact(data)
+    # Get last timestep's distances
+    last_fingertip_distances = info["last_fingertip_distances"]
     
-    # Only reward obj_off_table if hand is in contact with object
-    obj_off_table_with_contact = obj_off_table & hand_obj_contact
+    # Calculate distance improvements (negative means closer)
+    fingertip_distance_improvements = last_fingertip_distances - current_fingertip_distances
     
-    # Check if object is close to target
-    obj_close_to_target = obj_to_target_dist < 0.1
-    obj_very_close_to_target = obj_to_target_dist < 0.05
+    # Sum the improvements across all fingertips
+    fingertips_to_object_reward = jp.sum(fingertip_distance_improvements)
     
-    # Check if object fell off table (for penalty)
-    obj_fell_off = obj_pos[2] < -0.05
+    # Check if any fingertip is touching the object (using contact detection)
+    hand_obj_contact = self._check_hand_object_contact(obj_pos, fingertip_positions)
     
-    # Follow Adroit reward structure as dictionary components
+    # Calculate cube height change
+    current_obj_height = obj_pos[2]
+    last_obj_height = info["last_obj_height"]
+    height_change = current_obj_height - last_obj_height
+    
+    # Only reward height change if touching the object
+    cube_height_reward = jp.where(hand_obj_contact, height_change, 0.0)
+    
+    # Check if cube is lifted above threshold (0.25)
+    cube_lifted = current_obj_height > 0.25
+    cube_lifted_reward = jp.where(cube_lifted & hand_obj_contact, 1.0, 0.0)
+    
     rewards = {
-        "get_to_ball": -palm_to_obj_dist,  # Take hand to object (negative distance)
-        "ball_off_table": jp.where(obj_off_table_with_contact, 1.0, 0.0),  # Bonus for lifting the object (only if in contact)
-        "make_hand_go_to_target": jp.where(obj_off_table_with_contact, -palm_to_target_dist, 0.0),  # Make hand go to target when lifted
-        "make_ball_go_to_target": jp.where(obj_off_table_with_contact, -obj_to_target_dist, 0.0),  # Make object go to target when lifted
-        "ball_close_to_target": jp.where(obj_close_to_target, 1.0, 0.0),  # Bonus for object close to target
-        "ball_very_close_to_target": jp.where(obj_very_close_to_target, 1.0, 0.0),  # Bonus for object very close to target
-        "ball_fell_off": jp.where(obj_fell_off, -1.0, 0.0),  # Penalty for object falling off table
+        "fingertips_to_object": fingertips_to_object_reward,
+        "cube_height": cube_height_reward,
+        "cube_lifted": cube_lifted_reward,
     }
     
     return rewards
@@ -298,15 +329,19 @@ class Relocate(leap_hand_base.LeapHandEnv):
         pass  # Skip if body doesn't exist
     return hand_body_ids
 
-  def _check_hand_object_contact(self, data: mjx.Data) -> jax.Array:
-    """Check if hand is in contact with the object using MuJoCo contact detection."""
-    # Check if any hand body is in contact with object
-    has_contact = jp.array(False)
-    for hand_body_id in self._hand_body_ids:
-      # Check if this hand body is in contact with object
-      contact = jp.any(data.contact.geom1 == hand_body_id) & jp.any(data.contact.geom2 == self._obj_body)
-      contact |= jp.any(data.contact.geom1 == self._obj_body) & jp.any(data.contact.geom2 == hand_body_id)
-      has_contact |= contact
+  def _check_hand_object_contact(self, obj_pos: jax.Array, fingertip_positions: jax.Array) -> jax.Array:
+    """Check if hand is in contact with the object using distance-based detection."""
+    # Calculate distances from all fingertips to object
+    distances = jp.array([
+        jp.linalg.norm(fingertip_positions[0] - obj_pos),  # Index finger
+        jp.linalg.norm(fingertip_positions[1] - obj_pos),  # Middle finger  
+        jp.linalg.norm(fingertip_positions[2] - obj_pos),  # Ring finger
+        jp.linalg.norm(fingertip_positions[3] - obj_pos),  # Thumb
+    ])
+    
+    # Check if any fingertip is within contact threshold (0.06 meters)
+    contact_threshold = 0.06
+    has_contact = jp.any(distances < contact_threshold)
     
     return has_contact
 
