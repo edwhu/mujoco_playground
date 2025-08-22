@@ -155,7 +155,7 @@ class Relocate(leap_hand_base.LeapHandEnv):
     state.info["motor_targets"] = motor_targets
 
     obs = self._get_obs(data, state.info, state.obs["state"])
-    done = self._get_termination(data)
+    done = jp.array(False)  # Only terminate when cube is lifted (handled in reward logic)
 
     rewards = self._get_reward(data, action, state.info, state.metrics, done)
     rewards = {
@@ -195,15 +195,7 @@ class Relocate(leap_hand_base.LeapHandEnv):
     state = state.replace(data=data, obs=obs, reward=reward, done=done)
     return state
 
-  def _get_termination(self, data: mjx.Data) -> jax.Array:
-    # Episode ends when object falls off table (z < -0.05) or when cube is lifted above threshold
-    obj_pos = data.xpos[self._obj_body]
-    obj_fell_off = obj_pos[2] < -0.05
-    
-    # Check if cube is lifted above threshold (this will be handled in reward function)
-    # The termination will be set in the step function based on the reward
-    
-    return obj_fell_off
+
 
   def _get_obs(
       self, data: mjx.Data, info: dict[str, Any], obs_history: jax.Array
@@ -216,10 +208,6 @@ class Relocate(leap_hand_base.LeapHandEnv):
         * self._config.noise_config.level
         * self._config.noise_config.scales.joint_pos
     )
-
-    # Get target position for the policy to know where to move the object
-    target_pos = data.site_xpos[self._target_site_id]
-    target_xy = target_pos[:2]  # Only x and y coordinates since z is constant
     
     # Get object data using sensors (only what's needed for reward and future state prediction)
     obj_pos = self.get_cube_position(data)
@@ -227,36 +215,70 @@ class Relocate(leap_hand_base.LeapHandEnv):
     obj_linvel = self.get_cube_linvel(data)
     obj_angvel = self.get_cube_angvel(data)
     
+    # Add noise to cube state for policy observations (following reorient.py pattern)
+    info["rng"], pos_rng, quat_rng, linvel_rng, angvel_rng = jax.random.split(info["rng"], 5)
+    
+    # Add noise to cube position
+    noisy_obj_pos = (
+        obj_pos
+        + (2 * jax.random.uniform(pos_rng, shape=obj_pos.shape) - 1)
+        * self._config.noise_config.level
+        * self._config.noise_config.scales.joint_pos  # Using joint_pos scale for position noise
+    )
+    
+    # Add noise to cube quaternion (normalize to keep it valid)
+    noisy_obj_quat = mjx._src.math.normalize(
+        obj_quat
+        + jax.random.normal(quat_rng, shape=(4,))
+        * self._config.noise_config.level
+        * self._config.noise_config.scales.joint_pos  # Using joint_pos scale for quaternion noise
+    )
+    
+    # Add noise to velocities
+    noisy_obj_linvel = (
+        obj_linvel
+        + (2 * jax.random.uniform(linvel_rng, shape=obj_linvel.shape) - 1)
+        * self._config.noise_config.level
+        * self._config.noise_config.scales.joint_pos
+    )
+    
+    noisy_obj_angvel = (
+        obj_angvel
+        + (2 * jax.random.uniform(angvel_rng, shape=obj_angvel.shape) - 1)
+        * self._config.noise_config.level
+        * self._config.noise_config.scales.joint_pos
+    )
+    
     state = jp.concatenate([
         noisy_joint_angles,  # Hand joints (27 values: 6 base motion + 21 finger joints)
         info["last_act"],  # Previous actions (27 values)
-        target_xy,  # Target position (2 values: x, y)
-        # DEBUG: Add cube state information
-        obj_pos,  # Object position (3 values: x, y, z)
-        obj_quat,  # Object quaternion (4 values: qw, qx, qy, qz)
-        obj_linvel,  # Object linear velocity (3 values: vx, vy, vz)
-        obj_angvel,  # Object angular velocity (3 values: ωx, ωy, ωz)
+        # DEBUG: Add cube state information (noisy for policy)
+        noisy_obj_pos,  # Object position (3 values: x, y, z)
+        noisy_obj_quat,  # Object quaternion (4 values: qw, qx, qy, qz)
+        noisy_obj_linvel,  # Object linear velocity (3 values: vx, vy, vz)
+        noisy_obj_angvel,  # Object angular velocity (3 values: ωx, ωy, ωz)
     ])
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
 
     # Get palm and target positions
     palm_pos = data.site_xpos[self._palm_site_id]
-    target_pos = data.site_xpos[self._target_site_id]
     
-    # Get fingertip positions (useful for understanding hand configuration)
-    fingertip_positions = self.get_fingertip_positions(data)
+    # Get world-frame fingertip positions for critic
+    fingertip_site_names = ["th_tip", "if_tip", "mf_tip", "rf_tip"]
+    world_fingertip_positions = jp.concatenate([
+        data.site_xpos[self._mj_model.site(name).id] for name in fingertip_site_names
+    ], axis=-1)
 
     privileged_state = jp.concatenate([
         state,
         joint_angles,  # Hand pose affects future actions
         data.qvel[self._hand_dqids],  # Hand velocities affect future positions
-        fingertip_positions,  # Hand configuration affects grasping
+        world_fingertip_positions,  # World-frame hand configuration affects grasping
         palm_pos,
-        obj_pos,
-        target_pos,
-        obj_linvel,  # Object velocity helps predict future position
-        obj_angvel,  # Object angular velocity affects future orientation
+        obj_pos,  # True object position for critic
+        obj_linvel,  # True object velocity for critic
+        obj_angvel,  # True object angular velocity for critic
         data.qvel,  # For velocity penalty
     ])
 
@@ -276,16 +298,25 @@ class Relocate(leap_hand_base.LeapHandEnv):
     # Get object position
     obj_pos = self.get_cube_position(data)
     
-    # Get fingertip positions
-    fingertip_positions = self.get_fingertip_positions(data)
-    
-    # Calculate current fingertip distances to object
-    current_fingertip_distances = jp.array([
-        jp.linalg.norm(fingertip_positions[0] - obj_pos),  # Index finger
-        jp.linalg.norm(fingertip_positions[1] - obj_pos),  # Middle finger  
-        jp.linalg.norm(fingertip_positions[2] - obj_pos),  # Ring finger
-        jp.linalg.norm(fingertip_positions[3] - obj_pos),  # Thumb
+    # Get world-frame fingertip positions directly from data using sites
+    fingertip_site_names = ["th_tip", "if_tip", "mf_tip", "rf_tip"]
+    world_fingertip_positions = jp.array([
+        data.site_xpos[self._mj_model.site(name).id] for name in fingertip_site_names
     ])
+    
+    # Debug print the positions
+    # jax.debug.print("World fingertip positions: {pos}", pos=world_fingertip_positions)
+    # jax.debug.print("Object position: {obj}", obj=obj_pos)
+    
+    # Calculate distances using world-frame positions
+    current_fingertip_distances = jp.array([
+        jp.linalg.norm(world_fingertip_positions[0] - obj_pos),  # Index finger
+        jp.linalg.norm(world_fingertip_positions[1] - obj_pos),  # Middle finger  
+        jp.linalg.norm(world_fingertip_positions[2] - obj_pos),  # Ring finger
+        jp.linalg.norm(world_fingertip_positions[3] - obj_pos),  # Thumb
+    ])
+    
+    # jax.debug.print("Fingertip distances: {dist}", dist=current_fingertip_distances)
     
     # Get last timestep's distances
     last_fingertip_distances = info["last_fingertip_distances"]
@@ -297,7 +328,7 @@ class Relocate(leap_hand_base.LeapHandEnv):
     fingertips_to_object_reward = jp.sum(fingertip_distance_improvements)
     
     # Check if any fingertip is touching the object (using contact detection)
-    hand_obj_contact = self._check_hand_object_contact(obj_pos, fingertip_positions)
+    hand_obj_contact = self._check_hand_object_contact(obj_pos, world_fingertip_positions)
     
     # Calculate cube height change
     current_obj_height = obj_pos[2]
