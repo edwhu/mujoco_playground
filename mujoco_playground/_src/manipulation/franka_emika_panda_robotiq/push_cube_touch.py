@@ -595,3 +595,30 @@ class PandaRobotiqPushCube(panda_robotiq.PandaRobotiqBase):
     if self._config.binarize_touch_sensors:
       touch = touch > 0.0
     return touch
+
+def domain_randomize(model: mjx.Model, rng: jax.Array):
+  mj_model = PandaRobotiqPushCube().mj_model
+  cube_geom_id = mj_model.geom("box").id
+
+  @jax.vmap
+  def rand(rng):
+    # box size was originally 0.07553, 0.11482, 0.05073
+    rng, key = jax.random.split(rng)
+    geom_size = model.geom_size.at[cube_geom_id].set(
+        jax.random.uniform(
+            key,
+            (3,),
+            minval=jp.array([0.03, 0.03, 0.04]),
+            maxval=jp.array([0.08, 0.012, 0.055]),
+        )
+    )
+    return geom_size
+
+  geom_size = rand(rng)
+
+  in_axes = jax.tree_util.tree_map(lambda x: None, model)
+  in_axes = in_axes.tree_replace({"geom_size": 0})
+
+  model = model.tree_replace({"geom_size": geom_size})
+
+  return model, in_axes

@@ -94,6 +94,8 @@ _randomizer = {
     "LeapCubeRotateZAxis": leap_rotate_z.domain_randomize,
     "LeapCubeRotateZAxisTouch": leap_rotate_z_touch.domain_randomize,
     "LeapCubeRotateZAxisTouchCircleDetail": leap_rotate_z_touch_circle_detail.domain_randomize,
+    "PandaRobotiqPushCube": robotiq_push_cube.domain_randomize,
+    "PandaRobotiqPushCubeTouch": robotiq_push_cube_touch.domain_randomize,
 }
 
 
