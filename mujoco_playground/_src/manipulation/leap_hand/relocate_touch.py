@@ -106,7 +106,7 @@ class RelocateTouch(leap_hand_base.LeapHandEnv):
     obj_pos = jp.array([
         jax.random.uniform(rng_obj_x, (), minval=-obj_range, maxval=obj_range),  # Randomize X position
         jax.random.uniform(rng_obj_y, (), minval=-obj_range, maxval=obj_range),  # Randomize Y position
-        0.04,  # Fixed Z position on table
+        -0.215,  # Fixed Z position on table
     ])
 
     # Use exact XML initial pose for hand (no randomization)
@@ -318,7 +318,7 @@ class RelocateTouch(leap_hand_base.LeapHandEnv):
     cube_height_reward = jp.where(hand_obj_contact, height_change, 0.0)
     
     # Check if cube is lifted above threshold (0.25)
-    cube_lifted = current_obj_height > 0.25
+    cube_lifted = current_obj_height > 0.1
     cube_lifted_reward = jp.where(cube_lifted & hand_obj_contact, 1.0, 0.0)
     
     rewards = {

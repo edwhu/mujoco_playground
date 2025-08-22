@@ -74,9 +74,9 @@ class Relocate(leap_hand_base.LeapHandEnv):
     self._hand_dqids = mjx_env.get_qvel_ids(self.mj_model, hand_joint_names)
     
     # Get object body ID and qpos address (following the pattern from pick_cartesian.py)
-    self._obj_body = self._mj_model.body("Object").id
+    self._obj_body = self._mj_model.body("cube").id
     self._obj_qposadr = self._mj_model.jnt_qposadr[
-        self._mj_model.body("Object").jntadr[0]
+        self._mj_model.body("cube").jntadr[0]
     ]
     
     # Get site IDs for palm and target
@@ -101,7 +101,7 @@ class Relocate(leap_hand_base.LeapHandEnv):
     obj_pos = jp.array([
         jax.random.uniform(rng_obj_x, (), minval=-obj_range, maxval=obj_range),  # Randomize X position
         jax.random.uniform(rng_obj_y, (), minval=-obj_range, maxval=obj_range),  # Randomize Y position
-        0.04,  # Fixed Z position on table
+        -0.215,  # Fixed Z position on table
     ])
 
     # Use exact XML initial pose for hand (no randomization)
@@ -308,7 +308,7 @@ class Relocate(leap_hand_base.LeapHandEnv):
     cube_height_reward = jp.where(hand_obj_contact, height_change, 0.0)
     
     # Check if cube is lifted above threshold (0.25)
-    cube_lifted = current_obj_height > 0.25
+    cube_lifted = current_obj_height > 0.1
     cube_lifted_reward = jp.where(cube_lifted & hand_obj_contact, 1.0, 0.0)
     
     rewards = {
