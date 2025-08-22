@@ -322,14 +322,8 @@ class RelocateTouch(leap_hand_base.LeapHandEnv):
         jp.linalg.norm(world_fingertip_positions[3] - obj_pos),  # Thumb
     ])
     
-    # Get last timestep's distances
-    last_fingertip_distances = info["last_fingertip_distances"]
-    
-    # Calculate distance improvements (negative means closer)
-    fingertip_distance_improvements = last_fingertip_distances - current_fingertip_distances
-    
-    # Sum the improvements across all fingertips
-    fingertips_to_object_reward = jp.sum(fingertip_distance_improvements)
+    # Use negative of current distances as reward (closer = higher reward)
+    fingertips_to_object_reward = -jp.sum(current_fingertip_distances)
     
     # Check if any fingertip is touching the object (using contact detection)
     hand_obj_contact = self._check_hand_object_contact(obj_pos, world_fingertip_positions)
@@ -375,7 +369,7 @@ class RelocateTouch(leap_hand_base.LeapHandEnv):
     ])
     
     # Check if any fingertip is within contact threshold (0.06 meters)
-    contact_threshold = 0.06  # the cube is 0.035 m wide, 0.05 is around 0.035 * √2, so 0.06 is a good threshold
+    contact_threshold = 0.07  # the cube is 0.035 m wide, 0.05 is around 0.035 * √2, so 0.06 is a good threshold
     has_contact = jp.any(distances < contact_threshold)
     
     return has_contact
