@@ -38,8 +38,8 @@
         <geom size="0.01 0.012 0.016" pos="-0.0012969 -0.0335524 0.0145207" quat="0.703552 0.709596 -0.0292107 -0.0252203" type="box" friction="0.7 0.05 0.0002" rgba=".5 .5 .5 .3"/>
       </default>
       <default class="thumb_tip">
-        <geom type="capsule" size="0.012 0.008" pos="0.0 -0.04 -0.015" quat="1 1 0 0" friction="0.7 0.05 0.0002"/>
-        <!-- <geom size="0.01 0.012 0.016" pos="-0.00127744 -0.0455619 -0.0144774" quat="0.708101 0.705072 -0.0294902 -0.024426" type="box" friction="0.7 0.05 0.0002" rgba=".5 .5 .5 .3"/> -->
+        <!-- <geom type="capsule" size="0.012 0.008" pos="0.0 -0.04 -0.015" quat="1 1 0 0" friction="0.7 0.05 0.0002"/> -->
+        <geom size="0.01 0.012 0.016" pos="-0.00127744 -0.0455619 -0.0144774" quat="0.708101 0.705072 -0.0294902 -0.024426" type="box" friction="0.7 0.05 0.0002" rgba=".5 .5 .5 .3"/>
       </default>
 
       <position kp="3.0" inheritrange="1"/>
@@ -81,16 +81,12 @@
         <joint range="-1.57 1.57" axis="0 0 -1" damping="5" armature="0.1" actuatorfrcrange="-50.0 50.0" frictionloss="0.02"/>
         <position kp="100" kv="10" inheritrange="1"/>
       </default>
-      <default class="shoulder_roll">
-        <joint range="-1.57 1.57" axis="0 0 -1" damping="5" armature="0.1" actuatorfrcrange="-50.0 50.0" frictionloss="0.02"/>
-        <position kp="100" kv="10" inheritrange="1"/>
-      </default>
-      <default class="elbow_flexion">
-        <joint range="0 3.14" axis="0 0 -1" damping="5" armature="0.1" actuatorfrcrange="-40.0 40.0" frictionloss="0.02"/>
+      <default class="elbow_roll">
+        <joint range="-1.57 1.57" axis="0 0 -1" damping="5" armature="0.1" actuatorfrcrange="-40.0 40.0" frictionloss="0.02"/>
         <position kp="80" kv="8" inheritrange="1"/>
       </default>
-      <default class="elbow_pronation">
-        <joint range="-1.57 1.57" axis="0 0 -1" damping="5" armature="0.1" actuatorfrcrange="-40.0 40.0" frictionloss="0.02"/>
+      <default class="elbow_flexion">
+        <joint range="-1.57 0" axis="0 0 -1" damping="5" armature="0.1" actuatorfrcrange="-40.0 40.0" frictionloss="0.02"/>
         <position kp="80" kv="8" inheritrange="1"/>
       </default>
       <default class="wrist_pitch">
@@ -152,7 +148,7 @@
     <light name="spotlight" mode="targetbodycom" target="palm" pos="3 0 4"/>
     
     <!-- 7-DoF Humanoid Robot Arm -->
-    <body name="shoulder_base" pos="0 0 0.3" childclass="leap_rh">
+    <body name="shoulder_base" pos="0 0 0" childclass="leap_rh" quat="0.5  -0.5   0.5   0.5">
       <!-- Shoulder base is fixed to world (no joint needed) -->
       
       <!-- All shoulder joints positioned at the base -->
@@ -161,8 +157,6 @@
         <joint name="shoulder_pitch_joint" axis="0 1 0" class="shoulder_pitch"/>
         <!-- Shoulder yaw: side-to-side movement -->
         <joint name="shoulder_yaw_joint" axis="1 0 0" class="shoulder_yaw"/>
-        <!-- Shoulder roll: internal/external rotation -->
-        <joint name="shoulder_roll_joint" axis="0 0 1" class="shoulder_roll"/>
         
         <!-- Upper arm segment -->
         <body name="upper_arm" pos="0 0 0" childclass="leap_rh">
@@ -171,10 +165,10 @@
           
           <!-- All elbow joints positioned at the elbow -->
           <body name="elbow_joints" pos="0 0 0.3" childclass="leap_rh">
-            <!-- Elbow flexion: bend the elbow -->
-            <joint name="elbow_flexion_joint" axis="0 1 0" class="elbow_flexion"/>
+            <!-- Elbow roll: internal/external rotation -->
+            <joint name="elbow_roll_joint" axis="0 0 1" class="elbow_roll"/>
             <!-- Elbow pronation: forearm rotation -->
-            <joint name="elbow_pronation_joint" axis="0 0 1" class="elbow_pronation"/>
+            <joint name="elbow_flexion_joint" axis="1 0 0" class="elbow_flexion"/>
             
             <!-- Forearm segment -->
             <body name="forearm" pos="0 0 0" childclass="leap_rh">
@@ -361,9 +355,8 @@
     <!-- Arm actuators (7 DoF) -->
     <position name="shoulder_pitch_act" joint="shoulder_pitch_joint" class="shoulder_pitch"/>
     <position name="shoulder_yaw_act" joint="shoulder_yaw_joint" class="shoulder_yaw"/>
-    <position name="shoulder_roll_act" joint="shoulder_roll_joint" class="shoulder_roll"/>
+    <position name="elbow_roll_act" joint="elbow_roll_joint" class="elbow_roll"/>
     <position name="elbow_flexion_act" joint="elbow_flexion_joint" class="elbow_flexion"/>
-    <position name="elbow_pronation_act" joint="elbow_pronation_joint" class="elbow_pronation"/>
     <position name="wrist_pitch_act" joint="wrist_pitch_joint" class="wrist_pitch"/>
     <position name="wrist_roll_act" joint="wrist_roll_joint" class="wrist_roll"/>
     
