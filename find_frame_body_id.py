@@ -9,7 +9,7 @@ def find_frame_body_id():
     """Find the frame body ID in the door_scene.xml model."""
     
     # Path to the door_scene.xml file
-    xml_path = Path("mujoco_playground/_src/manipulation/leap_hand/xmls/door_scene.xml")
+    xml_path = Path("mujoco_playground/_src/manipulation/leap_hand/xmls/door_scene_arm.xml")
     
     if not xml_path.exists():
         print(f"Error: XML file not found at {xml_path}")
