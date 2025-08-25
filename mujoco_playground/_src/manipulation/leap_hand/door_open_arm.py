@@ -79,7 +79,7 @@ class DoorOpenArm(leap_hand_base.LeapHandEnv):
     #   print("[DoorOpen] debug print failed:", e)
 
   def _post_init(self) -> None:
-    # Get arm joint IDs (7 arm actuators)
+    # Get arm joint IDs (6 controllable arm joints)
     # Omit shoulder_pitch_joint, since we want it to exist but not be controllable
     arm_joint_names = [
         "shoulder_yaw_joint", "elbow_roll_joint", "elbow_flexion_joint",
@@ -130,8 +130,8 @@ class DoorOpenArm(leap_hand_base.LeapHandEnv):
     # Set arm and hand joints
     qpos = qpos.at[self._arm_qids].set(q_arm)
     qpos = qpos.at[self._hand_qids].set(q_hand)
-    qvel = qvel.at[self._arm_dqids].set(v_all[:7])  # First 7 are arm joints
-    qvel = qvel.at[self._hand_dqids].set(v_all[7:])  # Rest are hand joints
+    qvel = qvel.at[self._arm_dqids].set(v_all[:6])  # First 6 are controllable arm joints
+    qvel = qvel.at[self._hand_dqids].set(v_all[6:])  # Rest are hand joints
     # Explicitly set door and latch closed at start
     qpos = qpos.at[self._door_qid].set(0.0)
     qpos = qpos.at[self._latch_qid].set(0.0)
@@ -157,7 +157,7 @@ class DoorOpenArm(leap_hand_base.LeapHandEnv):
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    # State size is 23 total joints (7 arm + 16 hand) + 23 previous actions = 46
+    # State size is 22 total joints (6 controllable arm + 16 hand) + 22 previous actions = 44
     state_size = len(self._all_qids) + self.mjx_model.nu
     obs_history = jp.zeros(self._config.history_len * state_size)
     obs = self._get_obs(data, info, obs_history)
@@ -275,8 +275,8 @@ class DoorOpenArm(leap_hand_base.LeapHandEnv):
     )
 
     state = jp.concatenate([
-        noisy_joint_angles,  # All joints (23 values: 7 arm + 16 hand)
-        info["last_act"],  # Previous actions (23 values)
+        noisy_joint_angles,  # All joints (22 values: 6 controllable arm + 16 hand)
+        info["last_act"],  # Previous actions (22 values)
     ])
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)

@@ -358,8 +358,7 @@
   </worldbody>
 
   <actuator>
-    <!-- Arm actuators (6 DoF) -->
-    <position name="shoulder_pitch_act" joint="shoulder_pitch_joint" class="shoulder_pitch"/>
+    <!-- Arm actuators (6 DoF) - shoulder_pitch_joint exists but is not controlled -->
     <position name="shoulder_yaw_act" joint="shoulder_yaw_joint" class="shoulder_yaw"/>
     <position name="elbow_roll_act" joint="elbow_roll_joint" class="elbow_roll"/>
     <position name="elbow_flexion_act" joint="elbow_flexion_joint" class="elbow_flexion"/>
