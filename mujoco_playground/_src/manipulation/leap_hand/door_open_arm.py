@@ -108,11 +108,14 @@ class DoorOpenArm(leap_hand_base.LeapHandEnv):
     # Initialize defaults from "home" keyframe to match viewer
     home_key = self._mj_model.keyframe("home")
     self._init_q = jp.array(home_key.qpos)
+    self._init_ctrl = jp.array(home_key.ctrl)
     default_arm_pose = self._init_q[self._arm_qids]
     default_hand_pose = self._init_q[self._hand_qids]
     self._default_arm_pose = default_arm_pose
     self._default_hand_pose = default_hand_pose
     self._default_pose = jp.concatenate([default_arm_pose, default_hand_pose])
+    
+    print("DEFAULT POSE", self._default_pose)
     
     # Get actuator limits for all controllable joints
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
@@ -140,7 +143,7 @@ class DoorOpenArm(leap_hand_base.LeapHandEnv):
         self.mjx_model,
         qpos=qpos,
         qvel=qvel,
-        ctrl=q_all,
+        ctrl=self._init_ctrl,
         # No mocap bodies in this environment, so don't pass mocap_pos
     )
 
