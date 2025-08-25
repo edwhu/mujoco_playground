@@ -29,6 +29,7 @@ from mujoco_playground._src.manipulation.franka_emika_panda_robotiq import push_
 from mujoco_playground._src.manipulation.leap_hand import door_open as leap_door_open
 from mujoco_playground._src.manipulation.leap_hand import door_open_touch_complex as leap_door_open_touch_complex
 from mujoco_playground._src.manipulation.leap_hand import door_open_touch as leap_door_open_touch
+from mujoco_playground._src.manipulation.leap_hand import door_open_arm as leap_door_open_arm
 from mujoco_playground._src.manipulation.leap_hand import relocate as leap_relocate
 from mujoco_playground._src.manipulation.leap_hand import relocate_touch as leap_relocate_touch
 from mujoco_playground._src.manipulation.leap_hand import reorient as leap_cube_reorient
@@ -49,6 +50,7 @@ _envs = {
     "PandaOpenCabinet": panda_open_cabinet.PandaOpenCabinet,
     "PandaRobotiqPushCube": robotiq_push_cube.PandaRobotiqPushCube,
     "LeapDoorOpen": leap_door_open.DoorOpen,
+    "LeapDoorOpenArm": leap_door_open_arm.DoorOpenArm,
     "LeapDoorOpenTouchComplex": leap_door_open_touch_complex.DoorOpenTouchComplex,
     "LeapDoorOpenTouch": leap_door_open_touch.DoorOpenTouch,
     "LeapRelocate": leap_relocate.Relocate,
@@ -70,6 +72,7 @@ _cfgs = {
     "PandaRobotiqPushCube": robotiq_push_cube.default_config,
     "LeapDoorOpen": leap_door_open.default_config,
     "LeapDoorOpenTouch": leap_door_open_touch.default_config,
+    "LeapDoorOpenArm": leap_door_open_arm.default_config,
     "LeapDoorOpenTouchComplex": leap_door_open_touch_complex.default_config,
     "LeapRelocate": leap_relocate.default_config,
     "LeapRelocateTouch": leap_relocate_touch.default_config,
@@ -83,6 +86,7 @@ _cfgs = {
 _randomizer = {
     "LeapDoorOpen": leap_door_open.domain_randomize,
     "LeapDoorOpenTouch": leap_door_open_touch.domain_randomize,
+    "LeapDoorOpenArm": leap_door_open_arm.domain_randomize,
     "LeapDoorOpenTouchComplex": leap_door_open_touch_complex.domain_randomize,
     "LeapRelocate": leap_relocate.domain_randomize,
     "LeapRelocateTouch": leap_relocate_touch.domain_randomize,
