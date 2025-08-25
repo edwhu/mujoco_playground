@@ -152,7 +152,7 @@
     <light name="spotlight" mode="targetbodycom" target="palm" pos="3 0 4"/>
     
     <!-- 7-DoF Humanoid Robot Arm -->
-    <body name="shoulder_base" pos="0 0.1 0" childclass="leap_rh" quat="0.5  -0.5   0.5   0.5">
+    <body name="shoulder_base" pos="0 0 0" childclass="leap_rh" quat="0.5  -0.5   0.5   0.5">
       <!-- Shoulder base is fixed to world (no joint needed) -->
       
       <!-- All shoulder joints positioned at the base -->
@@ -358,7 +358,8 @@
   </worldbody>
 
   <actuator>
-    <!-- Arm actuators (6 DoF) -->
+    <!-- Arm actuators (7 DoF) -->
+    <position name="shoulder_pitch_act" joint="shoulder_pitch_joint" class="shoulder_pitch"/>
     <position name="shoulder_yaw_act" joint="shoulder_yaw_joint" class="shoulder_yaw"/>
     <position name="elbow_roll_act" joint="elbow_roll_joint" class="elbow_roll"/>
     <position name="elbow_flexion_act" joint="elbow_flexion_joint" class="elbow_flexion"/>

@@ -58,31 +58,43 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
       config_overrides: Optional[Dict[str, Union[str, int, list[Any]]]] = None,
   ):
     super().__init__(
-        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/door_scene.xml",
+        xml_path="mujoco_playground/_src/manipulation/leap_hand/xmls/door_scene_arm.xml",
         config=config,
         config_overrides=config_overrides,
     )
     self._post_init()
     
     # Debug: print simulation/mjx settings that affect collisions
-    try:
-      print("[DoorOpen] sim_dt:", float(self.sim_dt))
-      print("[DoorOpen] ctrl_dt:", float(self.dt))
-      print("[DoorOpen] n_substeps:", int(self.n_substeps))
-      print("[DoorOpen] mj_model.nv (dofs):", int(self._mj_model.nv))
-      print("[DoorOpen] mj_model.nbody:", int(self._mj_model.nbody))
-      print("[DoorOpen] mj_model.ngeom:", int(self._mj_model.ngeom))
-      print("[DoorOpen] mj_model.nsensordata:", int(self._mj_model.nsensordata))
-      print("[DoorOpen] mjx_model.nu (actuators):", int(self._mjx_model.nu))
-      print("[DoorOpen] mjx_model.ngeom:", int(self._mjx_model.ngeom))
-    except Exception as e:
-      print("[DoorOpen] debug print failed:", e)
+    # try:
+    #   print("[DoorOpen] sim_dt:", float(self.sim_dt))
+    #   print("[DoorOpen] ctrl_dt:", float(self.dt))
+    #   print("[DoorOpen] n_substeps:", int(self.n_substeps))
+    #   print("[DoorOpen] mj_model.nv (dofs):", int(self._mj_model.nv))
+    #   print("[DoorOpen] mj_model.nbody:", int(self._mj_model.nbody))
+    #   print("[DoorOpen] mj_model.ngeom:", int(self._mj_model.ngeom))
+    #   print("[DoorOpen] mj_model.nsensordata:", int(self._mj_model.nsensordata))
+    #   print("[DoorOpen] mjx_model.nu (actuators):", int(self._mjx_model.nu))
+    #   print("[DoorOpen] mjx_model.ngeom:", int(self._mjx_model.ngeom))
+    # except Exception as e:
+    #   print("[DoorOpen] debug print failed:", e)
 
   def _post_init(self) -> None:
+    # Get arm joint IDs (6 arm actuators)
+    arm_joint_names = [
+        "shoulder_yaw_joint", "elbow_roll_joint", "elbow_flexion_joint",
+        "wrist_pitch_joint", "wrist_yaw_joint", "wrist_roll_joint"
+    ]
+    self._arm_qids = mjx_env.get_qpos_ids(self.mj_model, arm_joint_names)
+    self._arm_dqids = mjx_env.get_qvel_ids(self.mj_model, arm_joint_names)
+    
     # Get hand joint IDs (including base motion joints) - only hand joints are controllable
     hand_joint_names = ["H_Tx", "H_Ty", "H_Rx", "H_Ry", "H_Rz"] + consts.JOINT_NAMES
     self._hand_qids = mjx_env.get_qpos_ids(self.mj_model, hand_joint_names)
     self._hand_dqids = mjx_env.get_qvel_ids(self.mj_model, hand_joint_names)
+    
+    # Combine all controllable joint IDs
+    self._all_qids = jp.concatenate([self._arm_qids, self._hand_qids])
+    self._all_dqids = jp.concatenate([self._arm_dqids, self._hand_dqids])
     
     # Get door and latch joint IDs (these are not controllable)
     self._door_qid = mjx_env.get_qpos_ids(self.mj_model, ["door_hinge"])[0]
@@ -92,25 +104,33 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     self._palm_site_id = self._mj_model.site("palm_site").id
     self._handle_site_id = self._mj_model.site("S_handle").id
     
-    # Initialize defaults from model qpos0 to match viewer
-    self._qpos0 = jp.array(self._mj_model.qpos0)
-    default_hand_pose = self._qpos0[self._hand_qids]
-    self._default_pose = default_hand_pose
+    # Initialize defaults from "home" keyframe to match viewer
+    home_key = self._mj_model.keyframe("home")
+    self._init_q = jp.array(home_key.qpos)
+    default_arm_pose = self._init_q[self._arm_qids]
+    default_hand_pose = self._init_q[self._hand_qids]
+    self._default_arm_pose = default_arm_pose
+    self._default_hand_pose = default_hand_pose
+    self._default_pose = jp.concatenate([default_arm_pose, default_hand_pose])
     
-    # Get actuator limits for hand joints only
+    # Get actuator limits for all controllable joints
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
 
   def reset(self, rng: jax.Array) -> mjx_env.State:
-    # Use exact XML initial pose (no randomization)
-    q_hand = self._default_pose
-    v_hand = jp.zeros_like(self._default_pose)
+    # Use exact "home" keyframe pose (no randomization)
+    q_arm = self._default_arm_pose
+    q_hand = self._default_hand_pose
+    q_all = self._default_pose
+    v_all = jp.zeros_like(self._default_pose)
 
-    # Start from model qpos0 so all non-hand joints match viewer exactly
-    qpos = jp.array(self._mj_model.qpos0)
+    # Start from "home" keyframe so all joints match viewer exactly
+    qpos = jp.array(self._init_q)
     qvel = jp.zeros_like(qpos)
-    # Set hand joints
+    # Set arm and hand joints
+    qpos = qpos.at[self._arm_qids].set(q_arm)
     qpos = qpos.at[self._hand_qids].set(q_hand)
-    qvel = qvel.at[self._hand_dqids].set(v_hand)
+    qvel = qvel.at[self._arm_dqids].set(v_all[:6])  # First 6 are arm joints
+    qvel = qvel.at[self._hand_dqids].set(v_all[6:])  # Rest are hand joints
     # Explicitly set door and latch closed at start
     qpos = qpos.at[self._door_qid].set(0.0)
     qpos = qpos.at[self._latch_qid].set(0.0)
@@ -119,7 +139,7 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
         self.mjx_model,
         qpos=qpos,
         qvel=qvel,
-        ctrl=q_hand,
+        ctrl=q_all,
         # No mocap bodies in this environment, so don't pass mocap_pos
     )
 
@@ -136,8 +156,8 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    # State size is 21 hand joints + 21 previous actions = 42
-    state_size = len(self._hand_qids) + self.mjx_model.nu
+    # State size is 27 total joints (6 arm + 21 hand) + 27 previous actions = 54
+    state_size = len(self._all_qids) + self.mjx_model.nu
     obs_history = jp.zeros(self._config.history_len * state_size)
     obs = self._get_obs(data, info, obs_history)
     reward, done = jp.zeros(2)  # pylint: disable=redefined-outer-name
@@ -145,9 +165,11 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
 
   def step(self, state: mjx_env.State, action: jax.Array) -> mjx_env.State:
     # Clip actions to actuator control ranges before scaling
+    # jax.debug.print("act: {x}", x=action)
     motor_targets = self._default_pose + action
+    # jax.debug.print("before clip: {x}", x=motor_targets)
     motor_targets = jp.clip(motor_targets, self._lowers, self._uppers)
-    
+    # jax.debug.print("after clip: {x}", x=motor_targets)
     data = mjx_env.step(
         self.mjx_model, state.data, motor_targets, self.n_substeps
     )
@@ -155,57 +177,57 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
 
     # Debug: print current contacts (count and geom pairs)
     # Use MJX contact buffers directly; no host conversion
-    try:
-      contact_geoms = data._impl.contact.geom  # shape (nconmax, 2)
-      contact_dists = data._impl.contact.dist  # shape (nconmax,)
-      # In MJX, unused contact slots are typically padded with dist==1.0
-      active = contact_dists < 1.0
-      ncon = jp.sum(active)
-      n_pen = jp.sum(contact_dists < 0.0)
-      n_near = jp.sum((contact_dists >= 0.0) & (contact_dists < 1e-2))
-      # Print first K rows for quick inspection
-      K = 10
-      pairs_head = contact_geoms[:K]
-      dists_head = contact_dists[:K]
-      active_head = active[:K]
-      jax.debug.print(
-          (
-            "[DoorOpen] contacts: {ncon} | penetrating: {npen} | near(<1e-2): {nnear}\n"
-            "[DoorOpen] pairs[:{k}]: {pairs}\n"
-            "[DoorOpen] dists[:{k}]: {dists}\n"
-            "[DoorOpen] active[:{k}]: {active}"
-          ),
-          ncon=ncon,
-          npen=n_pen,
-          nnear=n_near,
-          k=K,
-          pairs=pairs_head,
-          dists=dists_head,
-          active=active_head,
-      )
+    # try:
+    #   contact_geoms = data._impl.contact.geom  # shape (nconmax, 2)
+    #   contact_dists = data._impl.contact.dist  # shape (nconmax,)
+    #   # In MJX, unused contact slots are typically padded with dist==1.0
+    #   active = contact_dists < 1.0
+    #   ncon = jp.sum(active)
+    #   n_pen = jp.sum(contact_dists < 0.0)
+    #   n_near = jp.sum((contact_dists >= 0.0) & (contact_dists < 1e-2))
+    #   # Print first K rows for quick inspection
+    #   K = 10
+    #   pairs_head = contact_geoms[:K]
+    #   dists_head = contact_dists[:K]
+    #   active_head = active[:K]
+    #   # jax.debug.print(
+    #   #     (
+    #   #       "[DoorOpen] contacts: {ncon} | penetrating: {npen} | near(<1e-2): {nnear}\n"
+    #   #       "[DoorOpen] pairs[:{k}]: {pairs}\n"
+    #   #       "[DoorOpen] dists[:{k}]: {dists}\n"
+    #   #       "[DoorOpen] active[:{k}]: {active}"
+    #   #     ),
+    #   #     ncon=ncon,
+    #   #     npen=n_pen,
+    #   #     nnear=n_near,
+    #   #     k=K,
+    #   #     pairs=pairs_head,
+    #   #     dists=dists_head,
+    #   #     active=active_head,
+    #   # )
 
-      # Also print human-readable names for the first K contacts via host callback
-      def _print_named_contacts(pairs_np, dists_np):
-        try:
-          msgs = []
-          for i in range(min(len(pairs_np), K)):
-            if not (dists_np[i] < 1.0):
-              continue
-            g1 = int(pairs_np[i, 0])
-            g2 = int(pairs_np[i, 1])
-            name1 = mujoco.mj_id2name(self._mj_model, mujoco.mjtObj.mjOBJ_GEOM, g1) or str(g1)
-            name2 = mujoco.mj_id2name(self._mj_model, mujoco.mjtObj.mjOBJ_GEOM, g2) or str(g2)
-            msgs.append(f"{name1} <-> {name2} (dist={float(dists_np[i]):.5f})")
-          if msgs:
-            print("[DoorOpen] named contacts:", " | ".join(msgs))
-          else:
-            print("[DoorOpen] named contacts: (none in head)")
-        except Exception as _e:
-          print("[DoorOpen] named contact print failed:", _e)
+    #   # Also print human-readable names for the first K contacts via host callback
+    #   # def _print_named_contacts(pairs_np, dists_np):
+    #   #   try:
+    #   #     msgs = []
+    #   #     for i in range(min(len(pairs_np), K)):
+    #   #       if not (dists_np[i] < 1.0):
+    #   #       continue
+    #   #       g1 = int(pairs_np[i, 0])
+    #   #       g2 = int(pairs_np[i, 1])
+    #   #       name1 = mujoco.mj_id2name(self._mj_model, mujoco.mjtObj.mjOBJ_GEOM, g1) or str(g1)
+    #   #       name2 = mujoco.mj_id2name(self._mj_model, mujoco.mjtObj.mjOBJ_GEOM, g2) or str(g2)
+    #   #       msgs.append(f"{name1} <-> {name2} (dist={float(dists_np[i]):.5f})")
+    #   #     if msgs:
+    #   #       print("[DoorOpen] named contacts:", " | ".join(msgs))
+    #   #     else:
+    #   #       print("[DoorOpen] named contacts: (none in head)")
+    #   #   except Exception as _e:
+    #   #     print("[DoorOpen] named contact print failed:", _e)
 
-      jax.debug.callback(_print_named_contacts, pairs_head, dists_head, ordered=True)
-    except Exception as e:  # This branch should not trigger under JIT
-      jax.debug.print("[DoorOpen] contact debug failed (JAX): {e}", e=e)
+    #   # jax.debug.callback(_print_named_contacts, pairs_head, dists_head, ordered=True)
+    # except Exception as e:  # This branch should not trigger under JIT
+    #   jax.debug.print("[DoorOpen] contact debug failed (JAX): {e}", e=e)
 
     obs = self._get_obs(data, state.info, state.obs["state"])
     done = self._get_termination(data)
@@ -241,18 +263,19 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
   def _get_obs(
       self, data: mjx.Data, info: dict[str, Any], obs_history: jax.Array
   ) -> Dict[str, jax.Array]:
-    joint_angles = data.qpos[self._hand_qids]
+    # Get all joint angles (arm + hand)
+    all_joint_angles = data.qpos[self._all_qids]
     info["rng"], noise_rng = jax.random.split(info["rng"])
     noisy_joint_angles = (
-        joint_angles
-        + (2 * jax.random.uniform(noise_rng, shape=joint_angles.shape) - 1)
+        all_joint_angles
+        + (2 * jax.random.uniform(noise_rng, shape=all_joint_angles.shape) - 1)
         * self._config.noise_config.level
         * self._config.noise_config.scales.joint_pos
     )
 
     state = jp.concatenate([
-        noisy_joint_angles,  # Hand joints (21 values: 5 base motion + 16 finger joints)
-        info["last_act"],  # Previous actions (21 values)
+        noisy_joint_angles,  # All joints (27 values: 6 arm + 21 hand)
+        info["last_act"],  # Previous actions (27 values)
     ])
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
@@ -274,8 +297,8 @@ class DoorOpen(leap_hand_base.LeapHandEnv):
 
     privileged_state = jp.concatenate([
         state,
-        joint_angles,
-        data.qvel[self._hand_dqids],
+        all_joint_angles,
+        data.qvel[self._all_dqids],
         fingertip_positions,
         data.actuator_force,
         palm_pos,
@@ -352,7 +375,7 @@ def domain_randomize(model: mjx.Model, rng: jax.Array):
   def randomize_door_pos(rng):
     # Sample continuous frame offsets within joint ranges
     rng, kx, ky, kz = jax.random.split(rng, 4)
-    tx = jax.random.uniform(kx, (), minval=-0.5, maxval=0.5)
+    tx = jax.random.uniform(kx, (), minval=-0.2, maxval=0.2)
     ty = jax.random.uniform(ky, (), minval=-0.2, maxval=0.2)
     # tz = jax.random.uniform(kz, (), minval=-0.00, maxval=0.00)
     
