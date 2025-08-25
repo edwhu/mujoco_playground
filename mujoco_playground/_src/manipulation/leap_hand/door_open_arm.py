@@ -114,9 +114,7 @@ class DoorOpenArm(leap_hand_base.LeapHandEnv):
     self._default_arm_pose = default_arm_pose
     self._default_hand_pose = default_hand_pose
     self._default_pose = jp.concatenate([default_arm_pose, default_hand_pose])
-    
-    print("DEFAULT POSE", self._default_pose)
-    
+        
     # Get actuator limits for all controllable joints
     self._lowers, self._uppers = self.mj_model.actuator_ctrlrange.T
 
