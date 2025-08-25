@@ -13,6 +13,7 @@ if OS_ENV_PREALLOCATE not in os.environ:
   os.environ[OS_ENV_PREALLOCATE] = "false"
 
 import jax
+assert jax.default_backend() == "gpu", f"Default backend is {jax.default_backend()}. Must use GPU"
 import jax.numpy as jp
 import mediapy as media
 import mujoco
@@ -35,7 +36,7 @@ _CHECKPOINT_DIR = flags.DEFINE_string(
     "checkpoint_dir", None, "Path to checkpoint directory", required=True
 )
 _ENV_NAME = flags.DEFINE_string(
-    "env_name", "LeapDoorOpenRandom", "Environment name"
+    "env_name", None, "Environment name", required=True
 )
 _OUTPUT_PATH = flags.DEFINE_string(
     "output_path", "rollout.mp4", "Output video path"

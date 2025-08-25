@@ -125,7 +125,7 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
     for k in self._config.reward_config.scales.keys():
       metrics[f"reward/{k}"] = jp.zeros(())
 
-    obs_history = jp.zeros(self._config.history_len * 56) # if obs dim changes, need to update this.
+    obs_history = jp.zeros(self._config.history_len * 52) # if obs dim changes, need to update this.
     obs = self._get_obs(data, info, obs_history)
     reward, done = jp.zeros(2)  # pylint: disable=redefined-outer-name
     return mjx_env.State(data, obs, reward, done, metrics, info)
@@ -188,7 +188,7 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
         noisy_joint_angles,  # 16
         touch,  # 20
         info["last_act"],  # 16
-    ])  # 48
+    ])  # 52
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
 

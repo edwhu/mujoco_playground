@@ -175,7 +175,7 @@ class CubeRotateZAxis(leap_hand_base.LeapHandEnv):
     state = jp.concatenate([
         noisy_joint_angles,  # 16
         info["last_act"],  # 16
-    ])  # 48
+    ])  # 32
     obs_history = jp.roll(obs_history, state.size)
     obs_history = obs_history.at[: state.size].set(state)
 
