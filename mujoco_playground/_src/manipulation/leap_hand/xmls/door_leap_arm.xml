@@ -158,7 +158,7 @@
       <!-- All shoulder joints positioned at the base -->
       <body name="shoulder_joints" pos="0 0 0" childclass="leap_rh">
         <!-- Shoulder pitch: forward/backward movement -->
-        <joint name="shoulder_pitch_joint" axis="0 1 0" class="shoulder_pitch"/>
+        <!-- <joint name="shoulder_pitch_joint" axis="0 1 0" class="shoulder_pitch"/> -->
         <!-- Shoulder yaw: side-to-side movement -->
         <joint name="shoulder_yaw_joint" axis="1 0 0" class="shoulder_yaw"/>
         
